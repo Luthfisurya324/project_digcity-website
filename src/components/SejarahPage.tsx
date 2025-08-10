@@ -1,5 +1,5 @@
 import React from 'react';
-import { Award, UserGroup, Target, BookOpen, Shield, TrendingUp, AlertTriangle, BookMarked, Users, Rocket } from 'lucide-react';
+import { Award, Target, BookOpen, Shield, TrendingUp, AlertTriangle, BookMarked, Users, Rocket } from 'lucide-react';
 
 const SejarahPage: React.FC = () => {
   return (
