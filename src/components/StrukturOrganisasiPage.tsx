@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, Shield, Archive, DollarSign, Users, Camera, Megaphone } from 'lucide-react';
+import { User, Shield, DollarSign, Users, Camera } from 'lucide-react';
 
 const StrukturOrganisasiPage: React.FC = () => {
   const organizationStructure = [

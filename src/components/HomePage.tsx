@@ -1,8 +1,18 @@
 import React from 'react';
 import innovationSvg from '../assets/digital-innovation.svg';
-import { ArrowRight, Rocket, Users, Trophy, Target } from 'lucide-react';
+import { ArrowRight, Lightbulb, RefreshCw, Award, CheckCircle2, Target, Calendar, MessageSquare, Users } from 'lucide-react';
 
-const HomePage: React.FC = () => {
+interface HomePageProps {
+  onPageChange?: (page: string) => void;
+}
+
+const HomePage: React.FC<HomePageProps> = ({ onPageChange }) => {
+  const handleNavigation = (page: string) => {
+    if (onPageChange) {
+      onPageChange(page);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-secondary-50 via-white to-white">
       {/* Hero Section */}
@@ -37,16 +47,24 @@ const HomePage: React.FC = () => {
                   Himpunan Mahasiswa Bisnis Digital — Universitas Ibn Khaldun Bogor
                 </p>
                 <p className="mt-4 text-base text-secondary-600 max-w-2xl md:max-w-none">
-                  Kolaborasi, inovasi, dan prestasi dalam ekosistem bisnis digital untuk mencetak talenta siap industri.
+                  Berdampak • Adaptif • Inovatif • Kompeten — Temukan berbagai acara dan kegiatan kami, sampaikan kritik & saran untuk kemajuan himpunan.
                 </p>
                 <div className="mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center md:justify-start">
-                  <button className="group inline-flex items-center justify-center bg-primary-600 text-white px-6 py-3 rounded-lg font-semibold shadow-lg shadow-primary-600/20 hover:bg-primary-700 transition-colors">
-                    Bergabung Dengan Kami
+                  <button 
+                    onClick={() => handleNavigation('events')}
+                    className="group inline-flex items-center justify-center bg-primary-600 text-white px-6 py-3 rounded-lg font-semibold shadow-lg shadow-primary-600/20 hover:bg-primary-700 transition-colors"
+                  >
+                    <Calendar className="mr-2 h-5 w-5" />
+                    Jelajahi Acara Kami
                     <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-0.5" />
                   </button>
-                  <a href="#tentang" className="inline-flex items-center justify-center bg-white text-secondary-800 px-6 py-3 rounded-lg font-semibold border border-secondary-200 hover:bg-secondary-50 transition-colors">
-                    Pelajari Lebih Lanjut
-                  </a>
+                  <button 
+                    onClick={() => handleNavigation('kontak')}
+                    className="inline-flex items-center justify-center bg-white text-secondary-800 px-6 py-3 rounded-lg font-semibold border border-secondary-200 hover:bg-secondary-50 transition-colors"
+                  >
+                    <MessageSquare className="mr-2 h-5 w-5" />
+                    Kritik & Saran
+                  </button>
                 </div>
               </div>
 
@@ -61,39 +79,68 @@ const HomePage: React.FC = () => {
         </div>
       </section>
 
+      {/* Events Promotion Section */}
+      <section className="py-16 bg-gradient-to-r from-primary-600 to-primary-700">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center text-white">
+            <Calendar className="mx-auto h-16 w-16 mb-4 opacity-90" />
+            <h2 className="text-3xl font-bold mb-4">Acara & Kegiatan Terbaru</h2>
+            <p className="text-xl mb-8 text-primary-100 max-w-3xl mx-auto">
+              Jangan lewatkan berbagai workshop, seminar, kompetisi, dan acara networking yang kami selenggarakan. Bergabunglah untuk mengembangkan skill dan memperluas jaringan Anda!
+            </p>
+            <button 
+              onClick={() => handleNavigation('events')}
+              className="inline-flex items-center justify-center bg-white text-primary-600 px-8 py-4 rounded-lg font-semibold hover:bg-primary-50 transition-colors shadow-lg"
+            >
+              Lihat Semua Acara
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </button>
+          </div>
+        </div>
+      </section>
+
       {/* About Section */}
       <section id="tentang" className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
             <h2 className="text-3xl md:text-4xl font-bold text-secondary-900 mb-3">Tentang DIGCITY</h2>
-            <p className="text-lg text-secondary-600 max-w-3xl mx-auto">Himpunan mahasiswa yang berfokus pada pengembangan bisnis digital dan kewirausahaan mahasiswa</p>
+            <p className="text-lg text-secondary-600 max-w-3xl mx-auto">Wadah pengembangan potensi mahasiswa Bisnis Digital yang menekankan nilai Berdampak, Adaptif, Inovatif, dan Kompeten.</p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6 md:gap-8">
+          <div className="grid md:grid-cols-4 gap-6 md:gap-8">
             <div className="group relative p-6 rounded-2xl border border-secondary-200 bg-white/70 backdrop-blur hover:shadow-xl hover:-translate-y-0.5 transition-all">
               <div className="w-14 h-14 bg-primary-100 rounded-xl flex items-center justify-center mb-4 text-primary-600">
-                <Rocket size={28} />
+                <CheckCircle2 size={28} />
               </div>
-              <h3 className="text-xl font-semibold text-secondary-900 mb-2">Inovasi</h3>
-              <p className="text-secondary-600">Mengembangkan ide-ide kreatif dalam bidang bisnis digital</p>
+              <h3 className="text-xl font-semibold text-secondary-900 mb-2">Berdampak</h3>
+              <p className="text-secondary-600">Memberi manfaat nyata bagi mahasiswa, program studi, universitas, dan masyarakat.</p>
               <div className="absolute inset-0 -z-10 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-tr from-secondary-100 to-primary-100" />
             </div>
 
             <div className="group relative p-6 rounded-2xl border border-secondary-200 bg-white/70 backdrop-blur hover:shadow-xl hover:-translate-y-0.5 transition-all">
               <div className="w-14 h-14 bg-primary-100 rounded-xl flex items-center justify-center mb-4 text-primary-600">
-                <Users size={28} />
+                <RefreshCw size={28} />
               </div>
-              <h3 className="text-xl font-semibold text-secondary-900 mb-2">Kolaborasi</h3>
-              <p className="text-secondary-600">Membangun jaringan dan kerjasama antar mahasiswa</p>
+              <h3 className="text-xl font-semibold text-secondary-900 mb-2">Adaptif</h3>
+              <p className="text-secondary-600">Mampu menyesuaikan diri dengan perubahan zaman dan kebutuhan mahasiswa.</p>
               <div className="absolute inset-0 -z-10 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-tr from-secondary-100 to-primary-100" />
             </div>
 
             <div className="group relative p-6 rounded-2xl border border-secondary-200 bg-white/70 backdrop-blur hover:shadow-xl hover:-translate-y-0.5 transition-all">
               <div className="w-14 h-14 bg-primary-100 rounded-xl flex items-center justify-center mb-4 text-primary-600">
-                <Trophy size={28} />
+                <Lightbulb size={28} />
               </div>
-              <h3 className="text-xl font-semibold text-secondary-900 mb-2">Prestasi</h3>
-              <p className="text-secondary-600">Meraih pencapaian terbaik dalam bidang akademik dan non-akademik</p>
+              <h3 className="text-xl font-semibold text-secondary-900 mb-2">Inovatif</h3>
+              <p className="text-secondary-600">Pelopor program dan kegiatan yang baru serta bermanfaat.</p>
+              <div className="absolute inset-0 -z-10 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-tr from-secondary-100 to-primary-100" />
+            </div>
+
+            <div className="group relative p-6 rounded-2xl border border-secondary-200 bg-white/70 backdrop-blur hover:shadow-xl hover:-translate-y-0.5 transition-all">
+              <div className="w-14 h-14 bg-primary-100 rounded-xl flex items-center justify-center mb-4 text-primary-600">
+                <Award size={28} />
+              </div>
+              <h3 className="text-xl font-semibold text-secondary-900 mb-2">Kompeten</h3>
+              <p className="text-secondary-600">Mengembangkan pengetahuan dan keterampilan yang mendalam serta aplikatif.</p>
               <div className="absolute inset-0 -z-10 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-tr from-secondary-100 to-primary-100" />
             </div>
           </div>
@@ -108,7 +155,7 @@ const HomePage: React.FC = () => {
               <Target className="absolute -top-6 -left-6 w-16 h-16 text-primary-200/30" />
               <h2 className="text-3xl font-bold text-secondary-900 mb-6">Visi</h2>
               <p className="text-lg text-secondary-700 leading-relaxed">
-                Menjadi organisasi kemahasiswaan terdepan dalam pengembangan bisnis digital yang menghasilkan lulusan yang kompeten, inovatif, dan berjiwa entrepreneur di era digital.
+                Mewujudkan DIGCITY sebagai organisasi yang Berdampak, Adaptif, Inovatif, Kompeten, yang menjadi wadah bagi mahasiswa Bisnis Digital untuk mengembangkan potensi diri, berprestasi, serta berkontribusi nyata bagi kemajuan program studi, fakultas, universitas, dan masyarakat.
               </p>
             </div>
             
@@ -117,21 +164,90 @@ const HomePage: React.FC = () => {
               <ul className="space-y-4 text-lg text-secondary-700">
                 <li className="flex items-start">
                   <span className="w-2.5 h-2.5 bg-primary-600 rounded-full mt-3 mr-3 flex-shrink-0"></span>
-                  Mengembangkan kompetensi mahasiswa dalam bidang bisnis digital
+                  Memperkuat budaya kolaborasi dan sinergi antar anggota DIGCITY serta dengan seluruh mahasiswa Bisnis Digital, Himpunan lain, dan seluruh civitas akademik di Universitas Ibn Khaldun Bogor.
                 </li>
                 <li className="flex items-start">
                   <span className="w-2.5 h-2.5 bg-primary-600 rounded-full mt-3 mr-3 flex-shrink-0"></span>
-                  Memfasilitasi pengembangan soft skill dan hard skill mahasiswa
+                  Menyelenggarakan program pengembangan diri yang komprehensif dan inovatif untuk meningkatkan kompetensi mahasiswa di bidang akademik, non-akademik, dan kewirausahaan.
                 </li>
                 <li className="flex items-start">
                   <span className="w-2.5 h-2.5 bg-primary-600 rounded-full mt-3 mr-3 flex-shrink-0"></span>
-                  Membangun jaringan kerjasama dengan industri dan stakeholder
+                  Memberikan kontribusi pemikiran dan karya nyata bagi kemajuan program studi, fakultas, universitas, dan masyarakat umum.
                 </li>
                 <li className="flex items-start">
                   <span className="w-2.5 h-2.5 bg-primary-600 rounded-full mt-3 mr-3 flex-shrink-0"></span>
-                  Menciptakan wadah kreativitas dan inovasi mahasiswa
+                  Mengembangkan sistem organisasi yang transparan, akuntabel, dan berkelanjutan.
                 </li>
               </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Membership Registration Info */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-gradient-to-r from-secondary-50 to-primary-50 rounded-3xl p-8 md:p-12 text-center">
+            <Users className="mx-auto h-16 w-16 text-primary-600 mb-6" />
+            <h2 className="text-3xl font-bold text-secondary-900 mb-4">Bergabung dengan DIGCITY</h2>
+            <p className="text-lg text-secondary-700 mb-6 max-w-3xl mx-auto">
+              Pendaftaran keanggotaan DIGCITY dibuka pada periode tertentu, yakni di awal setiap kepengurusan atau pada kesempatan khusus yang akan diumumkan melalui platform resmi kami.
+            </p>
+            <div className="bg-primary-100 rounded-2xl p-6 mb-8 border border-primary-200">
+              <p className="text-primary-800 font-medium">
+                <strong>Catatan Penting:</strong> Ikuti media sosial dan pengumuman resmi kami untuk mendapatkan informasi terkini mengenai jadwal pendaftaran anggota baru.
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button 
+                onClick={() => handleNavigation('kontak')}
+                className="inline-flex items-center justify-center bg-primary-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-primary-700 transition-colors"
+              >
+                <MessageSquare className="mr-2 h-5 w-5" />
+                Tanyakan Informasi Lebih Lanjut
+              </button>
+              <button 
+                onClick={() => handleNavigation('events')}
+                className="inline-flex items-center justify-center bg-white text-primary-600 px-8 py-3 rounded-lg font-semibold border border-primary-200 hover:bg-primary-50 transition-colors"
+              >
+                Lihat Acara Mendatang
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Nilai Organisasi Section */}
+      <section className="py-20 bg-secondary-50/40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-secondary-900 mb-3">Nilai Organisasi DIGCITY</h2>
+            <p className="text-secondary-600 max-w-3xl mx-auto">Pondasi perilaku dan budaya kerja yang menjadi arah gerak organisasi.</p>
+          </div>
+          <div className="grid md:grid-cols-2 gap-6 md:gap-8">
+            <div className="p-6 rounded-2xl border border-secondary-200 bg-white/70 backdrop-blur">
+              <h3 className="text-xl font-semibold text-secondary-900 mb-2">Etika</h3>
+              <p className="text-secondary-600">Menjaga integritas, transparansi, dan kesopanan dalam setiap interaksi serta pengambilan keputusan.</p>
+            </div>
+            <div className="p-6 rounded-2xl border border-secondary-200 bg-white/70 backdrop-blur">
+              <h3 className="text-xl font-semibold text-secondary-900 mb-2">Loyalitas</h3>
+              <p className="text-secondary-600">Mendahulukan kepentingan himpunan dibandingkan kepentingan pribadi.</p>
+            </div>
+            <div className="p-6 rounded-2xl border border-secondary-200 bg-white/70 backdrop-blur">
+              <h3 className="text-xl font-semibold text-secondary-900 mb-2">Eksplorasi</h3>
+              <p className="text-secondary-600">Terbuka terhadap ide-ide baru dan siap mempelajari hal di luar zona nyaman.</p>
+            </div>
+            <div className="p-6 rounded-2xl border border-secondary-200 bg-white/70 backdrop-blur">
+              <h3 className="text-xl font-semibold text-secondary-900 mb-2">Generasi</h3>
+              <p className="text-secondary-600">Mengidentifikasi dan mengembangkan potensi anggota untuk regenerasi yang kuat.</p>
+            </div>
+            <div className="p-6 rounded-2xl border border-secondary-200 bg-white/70 backdrop-blur">
+              <h3 className="text-xl font-semibold text-secondary-900 mb-2">Aksi</h3>
+              <p className="text-secondary-600">Memastikan setiap ide dan rencana terealisasi dengan baik.</p>
+            </div>
+            <div className="p-6 rounded-2xl border border-secondary-200 bg-white/70 backdrop-blur">
+              <h3 className="text-xl font-semibold text-secondary-900 mb-2">Netralisme</h3>
+              <p className="text-secondary-600">Menciptakan suasana kerja yang inklusif tanpa diskriminasi.</p>
             </div>
           </div>
         </div>
@@ -147,22 +263,41 @@ const HomePage: React.FC = () => {
           
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
             <div className="group text-center p-6 rounded-2xl border border-secondary-200 bg-white hover:shadow-lg transition-shadow">
-              <div className="text-4xl font-extrabold text-primary-600 mb-1">150+</div>
+              <div className="text-4xl font-extrabold text-primary-600 mb-1">98</div>
               <div className="text-secondary-600">Anggota Aktif</div>
             </div>
             <div className="group text-center p-6 rounded-2xl border border-secondary-200 bg-white hover:shadow-lg transition-shadow">
-              <div className="text-4xl font-extrabold text-primary-600 mb-1">25+</div>
-              <div className="text-secondary-600">Event Tahunan</div>
+              <div className="text-4xl font-extrabold text-primary-600 mb-1">15+</div>
+              <div className="text-secondary-600">Event</div>
             </div>
             <div className="group text-center p-6 rounded-2xl border border-secondary-200 bg-white hover:shadow-lg transition-shadow">
-              <div className="text-4xl font-extrabold text-primary-600 mb-1">10+</div>
-              <div className="text-secondary-600">Kerjasama Industri</div>
+              <div className="text-4xl font-extrabold text-primary-600 mb-1">5+</div>
+              <div className="text-secondary-600">Kolaborasi</div>
             </div>
             <div className="group text-center p-6 rounded-2xl border border-secondary-200 bg-white hover:shadow-lg transition-shadow">
-              <div className="text-4xl font-extrabold text-primary-600 mb-1">5</div>
+              <div className="text-4xl font-extrabold text-primary-600 mb-1">3</div>
               <div className="text-secondary-600">Tahun Berdiri</div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Contact CTA Section */}
+      <section className="py-20 bg-gradient-to-r from-secondary-700 to-secondary-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <MessageSquare className="mx-auto h-16 w-16 text-white mb-6 opacity-90" />
+          <h2 className="text-3xl font-bold text-white mb-4">Suara Anda Berharga</h2>
+          <p className="text-xl text-secondary-200 mb-8 max-w-3xl mx-auto">
+            Sampaikan kritik, saran, atau pertanyaan Anda kepada kami. Masukan dari mahasiswa sangat berarti untuk kemajuan DIGCITY dan program-program yang lebih baik.
+          </p>
+          <button 
+            onClick={() => handleNavigation('kontak')}
+            className="inline-flex items-center justify-center bg-white text-secondary-800 px-8 py-4 rounded-lg font-semibold hover:bg-secondary-50 transition-colors shadow-lg"
+          >
+            <MessageSquare className="mr-2 h-5 w-5" />
+            Kirim Kritik & Saran
+            <ArrowRight className="ml-2 h-5 w-5" />
+          </button>
         </div>
       </section>
     </div>

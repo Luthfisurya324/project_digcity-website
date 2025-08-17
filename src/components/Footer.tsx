@@ -22,7 +22,7 @@ const Footer: React.FC = () => {
               </div>
             </div>
             <p className="text-secondary-300 mb-4 max-w-md">
-              Himpunan mahasiswa yang berfokus pada pengembangan bisnis digital dan kewirausahaan mahasiswa di Universitas Ibn Khaldun Bogor.
+              Himpunan mahasiswa yang berfokus pada pengembangan kompetensi bisnis digital serta kewirausahaan di Universitas Ibn Khaldun Bogor.
             </p>
             <div className="flex space-x-4">
               <a href="#" className="text-secondary-400 hover:text-white transition-colors duration-200" aria-label="Twitter">
@@ -80,7 +80,7 @@ const Footer: React.FC = () => {
                 <MapPin className="w-5 h-5 text-primary-400 mt-0.5 flex-shrink-0" />
                 <p className="text-secondary-300 text-sm">
                   Universitas Ibn Khaldun Bogor<br />
-                  Jl. KH. Sholeh Iskandar, Bogor
+                  Jl. KH. Sholeh Iskandar, Kota Bogor
                 </p>
               </div>
               <div className="flex items-center space-x-3">
@@ -92,7 +92,7 @@ const Footer: React.FC = () => {
               <div className="flex items-center space-x-3">
                 <Phone className="w-5 h-5 text-primary-400 flex-shrink-0" />
                 <p className="text-secondary-300 text-sm">
-                  +62 812-3456-7890
+                  +62 851-5677-3573
                 </p>
               </div>
             </div>
@@ -103,14 +103,14 @@ const Footer: React.FC = () => {
         <div className="border-t border-secondary-700 mt-8 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="text-secondary-400 text-sm">
-              © 2024 DIGCITY - Digital Business Student Society. All rights reserved.
+              © 2025 DIGCITY — Digital Business Student Society. Hak cipta dilindungi.
             </p>
             <div className="flex space-x-6 mt-4 md:mt-0">
               <a href="#" className="text-secondary-400 hover:text-white text-sm transition-colors duration-200">
-                Privacy Policy
+                Kebijakan Privasi
               </a>
               <a href="#" className="text-secondary-400 hover:text-white text-sm transition-colors duration-200">
-                Terms of Service
+                Syarat Layanan
               </a>
             </div>
           </div>

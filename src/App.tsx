@@ -16,40 +16,68 @@ import Footer from './components/Footer'
 function App() {
   const [currentPage, setCurrentPage] = useState('home')
 
-  // Handle hash routing for admin access
-  useEffect(() => {
-    const handleHashChange = () => {
-      const hash = window.location.hash.slice(1) // Remove the # symbol
-      if (hash === 'admin') {
-        setCurrentPage('admin')
+  // Helper: derive page id from current location
+  const getPageFromLocation = (): string => {
+    // Prefer pathname (e.g., /events). Fallback to hash if provided.
+    const hash = window.location.hash.replace('#', '')
+    let path = window.location.pathname || '/'
+
+    // Normalize when app is served from subpath (strip trailing slash)
+    // Keep only first segment after leading slash
+    if (path !== '/') {
+      const segments = path.split('/').filter(Boolean)
+      if (segments.length > 0) {
+        return segments[0]
       }
     }
 
-    // Check initial hash on load
-    handleHashChange()
+    // Fallback: support legacy hash-based admin
+    if (hash === 'admin') return 'admin'
 
-    // Listen for hash changes
-    window.addEventListener('hashchange', handleHashChange)
+    return 'home'
+  }
 
-    return () => {
-      window.removeEventListener('hashchange', handleHashChange)
+  // Helper: push/replace browser URL without full page reload
+  const navigateToPage = (page: string, replace = false) => {
+    const targetPath = page === 'home' ? '/' : `/${page}`
+    const state = { page }
+    if (replace) {
+      window.history.replaceState(state, '', targetPath)
+    } else {
+      window.history.pushState(state, '', targetPath)
     }
+  }
+
+  // Initialize route and listen to back/forward navigation
+  useEffect(() => {
+    const initialPage = getPageFromLocation()
+    setCurrentPage(initialPage)
+    // Normalize URL to / or /page on first load
+    navigateToPage(initialPage, true)
+
+    const handlePopState = () => {
+      const pageFromPath = getPageFromLocation()
+      setCurrentPage(pageFromPath)
+      // Reset scroll position to top when using browser back/forward
+      window.scrollTo(0, 0)
+    }
+
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
   }, [])
 
-  // Update hash when page changes
+  // Update page + URL when user navigates via UI
   const handlePageChange = (page: string) => {
     setCurrentPage(page)
-    if (page === 'admin') {
-      window.location.hash = 'admin'
-    } else {
-      window.location.hash = ''
-    }
+    navigateToPage(page)
+    // Reset scroll position to top
+    window.scrollTo(0, 0)
   }
 
   const renderPage = () => {
     switch (currentPage) {
       case 'home':
-        return <HomePage />
+        return <HomePage onPageChange={handlePageChange} />
       case 'blog':
         return <BlogPage />
       case 'events':
@@ -71,7 +99,7 @@ function App() {
       case 'admin':
         return <AdminPage />
       default:
-        return <HomePage />
+        return <HomePage onPageChange={handlePageChange} />
     }
   }
 
