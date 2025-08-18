@@ -1,5 +1,10 @@
 # Panduan Deployment Vercel - DigCity Website
 
+## Domain Production
+
+**Domain Utama:** `digcity.my.id`  
+**Domain Alternatif:** `www.digcity.my.id` (redirect ke domain utama)
+
 ## Direktori Root untuk Deployment
 
 **PENTING:** Gunakan direktori root proyek sebagai direktori deployment Vercel:
@@ -41,14 +46,45 @@ Set di Vercel Dashboard > Settings > Environment Variables:
 
 ```bash
 # Supabase Configuration
-VITE_SUPABASE_URL=https://your-project-id.supabase.co
-VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
+VITE_SUPABASE_URL=https://your-production-project-id.supabase.co
+VITE_SUPABASE_ANON_KEY=your-production-anon-key
 
 # App Configuration
 VITE_APP_NAME=DIGCITY Website
 VITE_APP_VERSION=1.0.0
 VITE_DEV_MODE=false
 
+# Domain Configuration
+VITE_DOMAIN=digcity.my.id
+VITE_APP_URL=https://digcity.my.id
+VITE_API_BASE_URL=https://digcity.my.id/api
+
+# Performance and Security
+VITE_ENABLE_ANALYTICS=true
+VITE_ENABLE_ERROR_REPORTING=true
+VITE_SECURE_MODE=true
+VITE_HTTPS_ONLY=true
+```
+
+### 4. Domain Configuration
+
+Di Vercel Dashboard > Settings > Domains:
+1. Tambahkan domain `digcity.my.id`
+2. Tambahkan domain `www.digcity.my.id` (akan otomatis redirect)
+3. Pastikan SSL certificate aktif
+
+### 5. DNS Configuration
+
+Di DNS provider untuk domain `digcity.my.id`:
+```
+Type: A
+Name: @
+Value: 76.76.19.61
+
+Type: CNAME
+Name: www
+Value: cname.vercel-dns.com
+```
 # API Configuration
 VITE_API_BASE_URL=https://your-api-domain.com/api
 ```
