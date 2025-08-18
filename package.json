@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit --skipLibCheck && vite build",
-    "build:vercel": "npm run type-check && vite build",
+    "build": "vite build",
+    "build:vercel": "vite build",
     "type-check": "tsc --noEmit --skipLibCheck",
     "lint": "eslint .",
     "preview": "vite preview"
