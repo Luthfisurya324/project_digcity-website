@@ -1,6 +1,55 @@
-# React + TypeScript + Vite
+# DigCity Website
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Website resmi untuk DigCity yang dibangun dengan React + TypeScript + Vite.
+
+## Deployment ke Vercel
+
+### Direktori Root untuk Deployment
+
+Untuk deployment ke Vercel, pastikan Anda menggunakan **direktori root proyek** (`c:\dev\project_digcity-website`) sebagai direktori deployment. Direktori ini sudah dikonfigurasi dengan:
+
+- `vercel.json` - Konfigurasi deployment Vercel
+- `package.json` - Dependencies dan build scripts
+- `vite.config.ts` - Konfigurasi Vite
+- `index.html` - Entry point aplikasi
+- `src/` - Source code aplikasi
+- `public/` - Static assets
+
+### Langkah Deployment
+
+1. **Pastikan semua file konfigurasi ada:**
+   - ✅ `vercel.json` (sudah dikonfigurasi)
+   - ✅ `package.json` dengan build script
+   - ✅ `vite.config.ts`
+
+2. **Build Command:** `npm run build`
+3. **Output Directory:** `dist`
+4. **Install Command:** `npm install`
+5. **Dev Command:** `npm run dev`
+
+### Konfigurasi Vercel
+
+File `vercel.json` sudah dikonfigurasi dengan:
+- Framework: Vite
+- Build output: `dist/`
+- SPA routing support dengan rewrites
+
+### Environment Variables
+
+Untuk deployment production, pastikan Anda mengatur environment variables berikut di Vercel Dashboard:
+
+```
+VITE_SUPABASE_URL=https://your-project-id.supabase.co
+VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
+VITE_APP_NAME=DIGCITY Website
+VITE_APP_VERSION=1.0.0
+VITE_DEV_MODE=false
+VITE_API_BASE_URL=https://your-api-domain.com/api
+```
+
+**Catatan:** File `.env.example` berisi template untuk environment variables yang diperlukan.
+
+## Development Setup
 
 Currently, two official plugins are available:
 
