@@ -40,7 +40,7 @@ const HomePage: React.FC<HomePageProps> = ({ onPageChange }) => {
                   <span className="w-2 h-2 rounded-full bg-primary-500 animate-pulse" />
                   Digital Business Student Society
                 </div>
-                <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-secondary-900">
+                <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-secondary-900 mb-6">
                   DIGCITY
                 </h1>
                 <p className="mt-4 text-lg md:text-xl text-secondary-700">

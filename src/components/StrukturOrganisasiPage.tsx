@@ -63,31 +63,38 @@ const StrukturOrganisasiPage: React.FC<StrukturOrganisasiPageProps> = ({ onPageC
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-primary-500 to-secondary-600 text-white py-16 overflow-hidden">
-        {/* Background pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <svg width="60" height="60" viewBox="0 0 60 60" className="absolute inset-0 w-full h-full">
+    <div className="min-h-screen bg-gradient-to-b from-secondary-50 via-white to-white">
+      {/* Header Section */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none">
+          {/* Decorative gradient blobs */}
+          <div className="absolute -top-24 -left-24 w-72 h-72 rounded-full blur-3xl opacity-30 bg-gradient-to-br from-primary-400 to-secondary-400" />
+          <div className="absolute -bottom-16 -right-16 w-72 h-72 rounded-full blur-3xl opacity-20 bg-gradient-to-br from-secondary-300 to-primary-300" />
+          {/* Grid pattern */}
+          <svg className="absolute inset-0 w-full h-full opacity-10" xmlns="http://www.w3.org/2000/svg">
             <defs>
-              <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
-                <path d="M 60 0 L 0 0 0 60" fill="none" stroke="currentColor" strokeWidth="1"/>
+              <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+                <path d="M 32 0 L 0 0 0 32" fill="none" stroke="currentColor" strokeWidth="0.5" />
               </pattern>
             </defs>
-            <rect width="100%" height="100%" fill="url(#grid)" />
+            <rect width="100%" height="100%" fill="url(#grid)" className="text-secondary-300" />
           </svg>
         </div>
-        {/* Fade effect */}
-        <div className="absolute inset-0 bg-gradient-to-r from-primary-500/20 to-secondary-600/20"></div>
-        
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              Struktur Organisasi
-            </h1>
-            <p className="text-xl text-primary-100 max-w-3xl mx-auto">
-              Hierarki kepemimpinan dan pembagian tanggung jawab dalam organisasi DIGCITY
-            </p>
+
+        <div className="relative">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16 md:pt-28 md:pb-24">
+            <div className="text-center">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/70 backdrop-blur border border-secondary-200 text-secondary-700 text-sm mb-4">
+                <Users className="w-4 h-4 text-primary-500" />
+                Organization Structure
+              </div>
+              <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-secondary-900 mb-6">
+                Struktur Organisasi
+              </h1>
+              <p className="text-lg md:text-xl text-secondary-700 max-w-3xl mx-auto">
+                Hierarki kepemimpinan dan pembagian tanggung jawab dalam organisasi DIGCITY
+              </p>
+            </div>
           </div>
         </div>
       </section>

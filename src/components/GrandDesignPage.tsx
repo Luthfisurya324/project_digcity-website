@@ -1,4 +1,5 @@
 import React from 'react';
+import { Target } from 'lucide-react';
 
 interface GrandDesignPageProps {
   onPageChange: (page: string) => void;
@@ -127,17 +128,38 @@ const GrandDesignPage: React.FC<GrandDesignPageProps> = ({ onPageChange }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
-      <section className="bg-gradient-to-br from-primary-500 to-secondary-600 text-white py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              Grand Design DIGCITY
-            </h1>
-            <p className="text-xl text-primary-100 max-w-3xl mx-auto">
-              Rencana strategis jangka panjang untuk mewujudkan visi DIGCITY sebagai organisasi mahasiswa yang berdampak, adaptif, inovatif, dan kompeten dalam era digital
-            </p>
+    <div className="min-h-screen bg-gradient-to-b from-secondary-50 via-white to-white">
+      {/* Header Section */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none">
+          {/* Decorative gradient blobs */}
+          <div className="absolute -top-24 -left-24 w-72 h-72 rounded-full blur-3xl opacity-30 bg-gradient-to-br from-primary-400 to-secondary-400" />
+          <div className="absolute -bottom-16 -right-16 w-72 h-72 rounded-full blur-3xl opacity-20 bg-gradient-to-br from-secondary-300 to-primary-300" />
+          {/* Grid pattern */}
+          <svg className="absolute inset-0 w-full h-full opacity-10" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+                <path d="M 32 0 L 0 0 0 32" fill="none" stroke="currentColor" strokeWidth="0.5" />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#grid)" className="text-secondary-300" />
+          </svg>
+        </div>
+
+        <div className="relative">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16 md:pt-28 md:pb-24">
+            <div className="text-center">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/70 backdrop-blur border border-secondary-200 text-secondary-700 text-sm mb-4">
+                <Target className="w-4 h-4 text-primary-500" />
+                Strategic Plan
+              </div>
+              <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-secondary-900 mb-6">
+                Grand Design DIGCITY
+              </h1>
+              <p className="text-lg md:text-xl text-secondary-700 max-w-3xl mx-auto">
+                Rencana strategis jangka panjang untuk mewujudkan visi DIGCITY sebagai organisasi mahasiswa yang berdampak, adaptif, inovatif, dan kompeten dalam era digital
+              </p>
+            </div>
           </div>
         </div>
       </section>

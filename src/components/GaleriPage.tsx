@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { galleryAPI, type Gallery } from '../lib/supabase';
+import { Camera } from 'lucide-react';
 
 const GaleriPage: React.FC = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -62,43 +63,39 @@ const GaleriPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
-      <section className="relative py-16 md:py-24 bg-gradient-to-br from-primary-600 via-primary-700 to-secondary-600 overflow-hidden">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-10 left-10 w-20 h-20 border border-white/30 rounded-full"></div>
-          <div className="absolute top-32 right-20 w-16 h-16 border border-white/20 rounded-full"></div>
-          <div className="absolute bottom-20 left-1/4 w-12 h-12 border border-white/25 rounded-full"></div>
-          <div className="absolute bottom-32 right-1/3 w-8 h-8 border border-white/30 rounded-full"></div>
+    <div className="min-h-screen bg-gradient-to-b from-secondary-50 via-white to-white">
+      {/* Header Section */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none">
+          {/* Decorative gradient blobs */}
+          <div className="absolute -top-24 -left-24 w-72 h-72 rounded-full blur-3xl opacity-30 bg-gradient-to-br from-primary-400 to-secondary-400" />
+          <div className="absolute -bottom-16 -right-16 w-72 h-72 rounded-full blur-3xl opacity-20 bg-gradient-to-br from-secondary-300 to-primary-300" />
+          {/* Grid pattern */}
+          <svg className="absolute inset-0 w-full h-full opacity-10" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+                <path d="M 32 0 L 0 0 0 32" fill="none" stroke="currentColor" strokeWidth="0.5" />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#grid)" className="text-secondary-300" />
+          </svg>
         </div>
-        <div className="absolute inset-0 bg-black/10"></div>
-        
-        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          {/* Icon */}
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 rounded-full mb-6 backdrop-blur-sm">
-            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
+
+        <div className="relative">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16 md:pt-28 md:pb-24">
+            <div className="text-center">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/70 backdrop-blur border border-secondary-200 text-secondary-700 text-sm mb-4">
+                <Camera className="w-4 h-4 text-primary-500" />
+                Gallery
+              </div>
+              <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-secondary-900 mb-6">
+                Galeri DIGCITY
+              </h1>
+              <p className="text-lg md:text-xl text-secondary-700 max-w-3xl mx-auto">
+                Dokumentasi perjalanan dan pencapaian dalam membangun ekosistem bisnis digital yang berdampak
+              </p>
+            </div>
           </div>
-          
-          <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-white mb-4 leading-tight">
-            Galeri <span className="text-primary-200">DIGCITY</span>
-          </h1>
-          <p className="text-lg md:text-xl text-primary-100 max-w-2xl mx-auto mb-8 leading-relaxed">
-            Dokumentasi perjalanan dan pencapaian dalam membangun ekosistem bisnis digital yang berdampak
-          </p>
-          
-          <button 
-            onClick={() => document.getElementById('gallery-grid')?.scrollIntoView({ behavior: 'smooth' })}
-            className="inline-flex items-center justify-center bg-white text-primary-600 px-6 py-3 md:px-8 md:py-4 rounded-xl font-semibold hover:bg-primary-50 hover:scale-105 transition-all duration-300 shadow-xl hover:shadow-2xl"
-          >
-            <svg className="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-            </svg>
-            Jelajahi Galeri
-          </button>
         </div>
       </section>
 

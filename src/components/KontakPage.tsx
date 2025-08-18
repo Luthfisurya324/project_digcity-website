@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MapPin, Phone, Mail, Clock, ExternalLink } from 'lucide-react';
+import { Mail, Phone, MapPin, MessageCircle, Clock, ExternalLink } from 'lucide-react';
 
 const KontakPage: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -115,32 +115,38 @@ const KontakPage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-primary-500 to-secondary-600 text-white py-16">
-        <div className="absolute inset-0 opacity-20 pointer-events-none">
-          <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 800 600">
+    <div className="min-h-screen bg-gradient-to-b from-secondary-50 via-white to-white">
+      {/* Header Section */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none">
+          {/* Decorative gradient blobs */}
+          <div className="absolute -top-24 -left-24 w-72 h-72 rounded-full blur-3xl opacity-30 bg-gradient-to-br from-primary-400 to-secondary-400" />
+          <div className="absolute -bottom-16 -right-16 w-72 h-72 rounded-full blur-3xl opacity-20 bg-gradient-to-br from-secondary-300 to-primary-300" />
+          {/* Grid pattern */}
+          <svg className="absolute inset-0 w-full h-full opacity-10" xmlns="http://www.w3.org/2000/svg">
             <defs>
-              <pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse">
-                <path d="M 24 0 L 0 0 0 24" fill="none" stroke="currentColor" strokeWidth="0.5" />
+              <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+                <path d="M 32 0 L 0 0 0 32" fill="none" stroke="currentColor" strokeWidth="0.5" />
               </pattern>
-              <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="white" stopOpacity="0.4" />
-                <stop offset="100%" stopColor="white" stopOpacity="0" />
-              </linearGradient>
             </defs>
-            <rect width="100%" height="100%" fill="url(#grid)" />
-            <rect width="100%" height="100%" fill="url(#fade)" />
+            <rect width="100%" height="100%" fill="url(#grid)" className="text-secondary-300" />
           </svg>
         </div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-          <div className="text-center">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 drop-shadow-sm">
-              Kontak Kami
-            </h1>
-            <p className="text-lg md:text-xl text-primary-100 max-w-3xl mx-auto">
-              Hubungi kami untuk informasi lebih lanjut, kerjasama, atau bergabung dengan DIGCITY
-            </p>
+
+        <div className="relative">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16 md:pt-28 md:pb-24">
+            <div className="text-center">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/70 backdrop-blur border border-secondary-200 text-secondary-700 text-sm mb-4">
+                <MessageCircle className="w-4 h-4 text-primary-500" />
+                Contact Us
+              </div>
+              <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-secondary-900 mb-6">
+                Kontak Kami
+              </h1>
+              <p className="text-lg md:text-xl text-secondary-700 max-w-3xl mx-auto">
+                Hubungi kami untuk informasi lebih lanjut, kerjasama, atau bergabung dengan DIGCITY
+              </p>
+            </div>
           </div>
         </div>
       </section>
