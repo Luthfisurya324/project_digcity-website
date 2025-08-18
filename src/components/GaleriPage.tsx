@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { galleryAPI, type Gallery } from '../lib/supabase';
 import { Camera } from 'lucide-react';
 
@@ -12,7 +12,7 @@ const GaleriPage: React.FC = () => {
     loadGallery();
   }, []);
 
-  const loadGallery = async () => {
+  const loadGallery = useCallback(async () => {
     try {
       const galleryData = await galleryAPI.getAll();
       setGalleryItems(galleryData);
@@ -21,7 +21,7 @@ const GaleriPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -31,6 +31,10 @@ const GaleriPage: React.FC = () => {
       day: 'numeric'
     });
   };
+
+  const handleCategoryChange = useCallback((categoryId: string) => {
+    setSelectedCategory(categoryId);
+  }, []);
 
   // Use only Supabase data - no fallback dummy data
   const currentGallery = galleryItems;
@@ -152,8 +156,8 @@ const GaleriPage: React.FC = () => {
             {categories.map((category) => (
               <button
                 key={category.id}
-                onClick={() => setSelectedCategory(category.id)}
-                className={`px-5 py-2.5 rounded-xl font-medium transition-all duration-300 border-2 ${
+                onClick={() => handleCategoryChange(category.id)}
+                className={`interactive-element px-5 py-2.5 rounded-xl font-medium transition-all duration-300 border-2 ${
                   selectedCategory === category.id
                     ? 'bg-primary-600 text-white border-primary-600 shadow-lg transform scale-105'
                     : 'bg-white text-gray-700 border-gray-200 hover:border-primary-300 hover:bg-primary-50 hover:text-primary-600 shadow-sm hover:shadow-md'
@@ -210,7 +214,7 @@ const GaleriPage: React.FC = () => {
                       </p>
                       <button 
                         onClick={() => setSelectedImage(item.image_url)}
-                        className="text-primary-600 hover:text-primary-700 font-medium text-sm flex items-center"
+                        className="interactive-element text-primary-600 hover:text-primary-700 font-medium text-sm flex items-center"
                       >
                         Lihat Detail
                         <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">

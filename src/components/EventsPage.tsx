@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { eventAPI, type Event } from '../lib/supabase';
 import { Calendar, MapPin } from 'lucide-react';
 
@@ -22,6 +22,10 @@ const EventsPage: React.FC = () => {
       setLoading(false);
     }
   };
+
+  const handleCategoryChange = useCallback((category: string) => {
+    setSelectedCategory(category);
+  }, []);
 
   // Use only Supabase data - no fallback dummy data
   const displayEvents = events;
@@ -99,8 +103,8 @@ const EventsPage: React.FC = () => {
                   {categories.map((category) => (
                     <button
                       key={category}
-                      onClick={() => setSelectedCategory(category)}
-                      className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm border transition-colors duration-200 ${
+                      onClick={() => handleCategoryChange(category)}
+                      className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm border transition-colors duration-200 interactive-element ${
                         selectedCategory === category
                           ? 'bg-primary-600 text-white border-primary-600'
                           : 'bg-white text-secondary-700 border-secondary-200 hover:bg-primary-600 hover:text-white hover:border-primary-600'

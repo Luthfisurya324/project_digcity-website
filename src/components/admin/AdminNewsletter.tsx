@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { newsletterAPI, type Newsletter } from '../../lib/supabase';
 
 const AdminNewsletter: React.FC = () => {
@@ -34,7 +34,7 @@ const AdminNewsletter: React.FC = () => {
     }
   };
 
-  const handleUnsubscribe = async (email: string) => {
+  const handleUnsubscribe = useCallback(async (email: string) => {
     if (!confirm(`Apakah Anda yakin ingin menghapus ${email} dari newsletter?`)) {
       return;
     }
@@ -50,7 +50,7 @@ const AdminNewsletter: React.FC = () => {
     } finally {
       setActionLoading(null);
     }
-  };
+  }, []);
 
   const filteredSubscribers = subscribers.filter(subscriber =>
     subscriber.email.toLowerCase().includes(searchTerm.toLowerCase())
@@ -66,7 +66,7 @@ const AdminNewsletter: React.FC = () => {
     });
   };
 
-  const exportSubscribers = () => {
+  const exportSubscribers = useCallback(() => {
     const csvContent = [
       ['Email', 'Tanggal Berlangganan', 'Status'],
       ...filteredSubscribers.map(sub => [
@@ -83,7 +83,7 @@ const AdminNewsletter: React.FC = () => {
     a.download = `newsletter-subscribers-${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
     window.URL.revokeObjectURL(url);
-  };
+  }, [filteredSubscribers]);
 
   if (loading) {
     return (
@@ -103,7 +103,7 @@ const AdminNewsletter: React.FC = () => {
         </div>
         <button
           onClick={exportSubscribers}
-          className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+          className="interactive-element bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
         >
           📥 Export CSV
         </button>
@@ -157,12 +157,12 @@ const AdminNewsletter: React.FC = () => {
               placeholder="Cari email subscriber..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-2 border border-secondary-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              className="interactive-element w-full px-4 py-2 border border-secondary-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             />
           </div>
           <button
             onClick={() => setSearchTerm('')}
-            className="px-4 py-2 text-secondary-600 hover:text-secondary-800"
+            className="interactive-element px-4 py-2 text-secondary-600 hover:text-secondary-800"
           >
             Clear
           </button>
@@ -227,7 +227,7 @@ const AdminNewsletter: React.FC = () => {
                         <button
                           onClick={() => handleUnsubscribe(subscriber.email)}
                           disabled={actionLoading === subscriber.email}
-                          className="text-red-600 hover:text-red-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="interactive-element text-red-600 hover:text-red-900 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           {actionLoading === subscriber.email ? 'Memproses...' : 'Unsubscribe'}
                         </button>

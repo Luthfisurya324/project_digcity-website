@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { ChevronDown, Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { OptimizedLogo } from './OptimizedImage';
+
 
 interface HeaderProps {
   currentPage: string;
@@ -47,23 +49,35 @@ const Header: React.FC<HeaderProps> = ({ currentPage, onPageChange }) => {
     return () => window.removeEventListener('resize', handleResize);
   }, [isMobileMenuOpen]);
 
-  const handleMobileMenuToggle = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
+  const handleMobileMenuToggle = useCallback(() => {
+    setIsMobileMenuOpen(prev => !prev);
     setIsAboutDropdownOpen(false); // Close desktop dropdown when opening mobile menu
-  };
+  }, []);
 
-  const handleMobileNavClick = (pageId: string) => {
-    onPageChange(pageId);
-    setIsMobileMenuOpen(false);
-  };
 
-  const navItems = [
+
+  const handleDropdownMouseEnter = useCallback(() => {
+    if (dropdownTimeout) {
+      clearTimeout(dropdownTimeout);
+      setDropdownTimeout(null);
+    }
+    setIsAboutDropdownOpen(true);
+  }, [dropdownTimeout]);
+
+  const handleDropdownMouseLeave = useCallback(() => {
+    const timeout = setTimeout(() => {
+      setIsAboutDropdownOpen(false);
+    }, 150);
+    setDropdownTimeout(timeout);
+  }, []);
+
+  const navItems = useMemo(() => [
     { id: 'home', label: 'Beranda' },
     { id: 'blog', label: 'Berita' },
     { id: 'events', label: 'Acara' },
-  ];
+  ], []);
 
-  const aboutMenuItems = [
+  const aboutMenuItems = useMemo(() => [
     { id: 'sejarah', label: 'Sejarah' },
     { id: 'logo', label: 'Logo' },
     { id: 'visi-misi', label: 'Visi Misi' },
@@ -71,38 +85,50 @@ const Header: React.FC<HeaderProps> = ({ currentPage, onPageChange }) => {
     { id: 'grand-design', label: 'Grand Design DIGCITY' },
     { id: 'galeri', label: 'Galeri DIGCITY' },
     { id: 'kontak', label: 'Kontak Kami' },
-  ];
+  ], []);
+
+
 
   return (
-    <header className="sticky top-0 z-40 bg-white/70 backdrop-blur border-b border-secondary-200 shadow-sm">
+    <header className="sticky top-0 z-40 bg-white/70 backdrop-blur border-b border-secondary-200 shadow-sm" role="banner">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
           {/* Logo */}
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 flex items-center justify-center">
-              <img 
-                src="/logo_digcity.png" 
-                alt="DIGCITY Logo" 
-                className="w-12 h-12 object-contain"
-              />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-secondary-900">DIGCITY</h1>
-              <p className="text-sm text-secondary-600">Digital Business Student Society</p>
-            </div>
+          <div className="flex items-center">
+            <button 
+              onClick={() => onPageChange('home')}
+              className="flex items-center space-x-3 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded-lg p-1"
+              aria-label="Kembali ke beranda DIGCITY"
+            >
+              <div className="w-12 h-12 flex items-center justify-center flex-shrink-0">
+                <OptimizedLogo 
+                  src="/logo_digcity.png" 
+                  alt="Logo DIGCITY - Himpunan Mahasiswa Bisnis Digital UIKA Bogor" 
+                  width={48}
+                  height={48}
+                  className="w-12 h-12 object-contain"
+                />
+              </div>
+              <div className="flex flex-col justify-center text-left">
+                <h1 className="text-xl font-bold text-secondary-900 leading-tight">DIGCITY</h1>
+                <p className="text-sm text-secondary-600 leading-tight">Digital Business Student Society</p>
+              </div>
+            </button>
           </div>
 
           {/* Navigation */}
-          <nav className="hidden md:flex space-x-8">
+          <nav className="hidden md:flex space-x-8" role="navigation" aria-label="Menu utama">
             {navItems.map((item) => (
               <button
                 key={item.id}
                 onClick={() => onPageChange(item.id)}
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
+
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${
                   currentPage === item.id
                     ? 'text-primary-600 bg-primary-50'
                     : 'text-secondary-700 hover:text-primary-600 hover:bg-primary-50'
                 }`}
+                aria-current={currentPage === item.id ? 'page' : undefined}
               >
                 {item.label}
               </button>
@@ -111,41 +137,27 @@ const Header: React.FC<HeaderProps> = ({ currentPage, onPageChange }) => {
             {/* Tentang Kami Mega Menu */}
             <div 
               className="relative"
-              onMouseEnter={() => {
-                if (dropdownTimeout) {
-                  clearTimeout(dropdownTimeout);
-                  setDropdownTimeout(null);
-                }
-                setIsAboutDropdownOpen(true);
-              }}
-              onMouseLeave={() => {
-                const timeout = setTimeout(() => {
-                  setIsAboutDropdownOpen(false);
-                }, 150);
-                setDropdownTimeout(timeout);
-              }}
+              onMouseEnter={handleDropdownMouseEnter}
+              onMouseLeave={handleDropdownMouseLeave}
             >
-              <button className="px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 text-secondary-700 hover:text-primary-600 hover:bg-primary-50 flex items-center">
+              <button 
+                className="px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 text-secondary-700 hover:text-primary-600 hover:bg-primary-50 flex items-center focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 interactive-element"
+                aria-expanded={isAboutDropdownOpen}
+                aria-haspopup="true"
+                aria-label="Menu tentang kami"
+              >
                Tentang Kami
-               <ChevronDown className={`w-4 h-4 ml-1 transition-transform ${isAboutDropdownOpen ? 'rotate-180' : ''}`} />
+               <ChevronDown className={`w-4 h-4 ml-1 transition-transform ${isAboutDropdownOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
               </button>
               
               {/* Dropdown Menu */}
               {isAboutDropdownOpen && (
                 <div 
-                  className="absolute top-full left-0 mt-1 w-64 bg-white rounded-xl shadow-xl border border-secondary-200 py-2 z-30"
-                  onMouseEnter={() => {
-                    if (dropdownTimeout) {
-                      clearTimeout(dropdownTimeout);
-                      setDropdownTimeout(null);
-                    }
-                  }}
-                  onMouseLeave={() => {
-                    const timeout = setTimeout(() => {
-                      setIsAboutDropdownOpen(false);
-                    }, 150);
-                    setDropdownTimeout(timeout);
-                  }}
+                  className="absolute top-full left-0 mt-1 w-64 bg-white rounded-xl shadow-xl border border-secondary-200 py-2 z-30 dropdown-menu"
+                  role="menu"
+                  aria-label="Submenu tentang kami"
+                  onMouseEnter={handleDropdownMouseEnter}
+                  onMouseLeave={handleDropdownMouseLeave}
                 >
                   {aboutMenuItems.map((item) => (
                     <button
@@ -154,11 +166,14 @@ const Header: React.FC<HeaderProps> = ({ currentPage, onPageChange }) => {
                         onPageChange(item.id);
                         setIsAboutDropdownOpen(false);
                       }}
-                      className={`w-full text-left px-4 py-3 text-sm transition-colors duration-200 hover:bg-primary-50 hover:text-primary-600 ${
+
+                      className={`w-full text-left px-4 py-3 text-sm transition-colors duration-200 hover:bg-primary-50 hover:text-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-inset ${
                         currentPage === item.id
                           ? 'text-primary-600 bg-primary-50'
                           : 'text-secondary-700'
                       }`}
+                      role="menuitem"
+                      aria-current={currentPage === item.id ? 'page' : undefined}
                     >
                       {item.label}
                     </button>
@@ -172,7 +187,7 @@ const Header: React.FC<HeaderProps> = ({ currentPage, onPageChange }) => {
           <div className="md:hidden">
             <button 
                 onClick={handleMobileMenuToggle}
-                className="relative p-3 text-secondary-700 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-all duration-200 focus-ring min-w-[48px] min-h-[48px] flex items-center justify-center"
+                className="relative p-3 text-secondary-700 hover:text-primary-600 hover:bg-primary-50 rounded-xl transition-all duration-200 focus-ring min-w-[48px] min-h-[48px] flex items-center justify-center interactive-element"
                 aria-label={isMobileMenuOpen ? 'Tutup menu' : 'Buka menu'}
                 aria-expanded={isMobileMenuOpen}
             >
@@ -216,7 +231,7 @@ const Header: React.FC<HeaderProps> = ({ currentPage, onPageChange }) => {
                 stiffness: 200,
                 duration: 0.3
               }}
-              className="fixed top-0 right-0 z-[60] h-screen w-80 max-w-[90vw] sm:max-w-[85vw] sm:w-96 bg-white shadow-2xl md:hidden flex flex-col"
+              className="fixed top-0 right-0 z-[60] h-screen w-80 max-w-[90vw] sm:max-w-[85vw] sm:w-96 bg-white shadow-2xl md:hidden flex flex-col mobile-menu"
               role="dialog"
               aria-modal="true"
               aria-labelledby="mobile-menu-title"
@@ -224,9 +239,11 @@ const Header: React.FC<HeaderProps> = ({ currentPage, onPageChange }) => {
         {/* Mobile Menu Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-secondary-200 bg-white">
           <div className="flex items-center space-x-4">
-            <img 
+            <OptimizedLogo 
               src="/logo_digcity.png" 
               alt="DIGCITY Logo" 
+              width={40}
+              height={40}
               className="w-10 h-10 object-contain flex-shrink-0"
             />
             <div className="min-w-0">
@@ -235,8 +252,8 @@ const Header: React.FC<HeaderProps> = ({ currentPage, onPageChange }) => {
             </div>
           </div>
           <button 
-            onClick={() => setIsMobileMenuOpen(false)}
-            className="p-2.5 text-secondary-500 hover:text-secondary-700 hover:bg-secondary-100 rounded-xl transition-colors focus-ring flex-shrink-0"
+            onClick={handleMobileMenuToggle}
+            className="p-2.5 text-secondary-500 hover:text-secondary-700 hover:bg-secondary-100 rounded-xl transition-colors focus-ring flex-shrink-0 interactive-element"
             aria-label="Tutup menu"
           >
             <X className="w-5 h-5" />
@@ -262,8 +279,8 @@ const Header: React.FC<HeaderProps> = ({ currentPage, onPageChange }) => {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.3 + (index * 0.1), duration: 0.3 }}
-                  onClick={() => handleMobileNavClick(item.id)}
-                  className={`w-full text-left px-4 py-3 rounded-lg text-base font-medium transition-all duration-200 flex items-center justify-between focus-ring ${
+                  onClick={() => onPageChange(item.id)}
+                  className={`w-full text-left px-4 py-3 rounded-lg text-base font-medium transition-all duration-200 flex items-center justify-between focus-ring interactive-element ${
                     currentPage === item.id
                       ? 'text-primary-600 bg-primary-50 shadow-sm border border-primary-100'
                       : 'text-secondary-700 hover:text-primary-600 hover:bg-primary-50'
@@ -295,8 +312,8 @@ const Header: React.FC<HeaderProps> = ({ currentPage, onPageChange }) => {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.7 + (index * 0.1), duration: 0.3 }}
-                  onClick={() => handleMobileNavClick(item.id)}
-                  className={`w-full text-left px-4 py-3 rounded-lg text-base transition-all duration-200 flex items-center justify-between focus-ring ${
+                  onClick={() => onPageChange(item.id)}
+                  className={`w-full text-left px-4 py-3 rounded-lg text-base transition-all duration-200 flex items-center justify-between focus-ring interactive-element ${
                     currentPage === item.id
                       ? 'text-primary-600 bg-primary-50 shadow-sm font-medium border border-primary-100'
                       : 'text-secondary-600 hover:text-primary-600 hover:bg-primary-50'

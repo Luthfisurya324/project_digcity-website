@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useCallback } from 'react'
 
 interface AdminLoginProps {
   onLogin: (email: string, password: string) => Promise<void>
@@ -10,7 +10,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError('')
@@ -22,7 +22,15 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
     } finally {
       setLoading(false)
     }
-  }
+  }, [email, password, onLogin]);
+
+  const handleEmailChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value)
+  }, []);
+
+  const handlePasswordChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setPassword(e.target.value)
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-500 to-secondary-600 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -61,8 +69,8 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
                 autoComplete="email"
                 required
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                onChange={handleEmailChange}
+                className="interactive-element w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                 placeholder="Enter your email"
               />
             </div>
@@ -78,8 +86,8 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
                 autoComplete="current-password"
                 required
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
+                onChange={handlePasswordChange}
+                className="interactive-element w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                 placeholder="Enter your password"
               />
             </div>
@@ -87,7 +95,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="interactive-element w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {loading ? (
                 <div className="flex items-center">

@@ -48,6 +48,34 @@
   .mobile-menu-scroll {
     scrollbar-width: thin;
     scrollbar-color: rgba(156, 163, 175, 0.3) transparent;
+  }
+
+  /* Remove transparency grid from SVG images */
+  .optimized-image {
+    background: white !important;
+    background-image: none !important;
+  }
+  
+  .critical-image {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+    background: white !important;
+  }
+  
+  /* Ensure SVG containers have solid background */
+  .optimized-image svg,
+  .critical-image svg {
+    background: white !important;
+  }
+  
+  /* Remove any checkerboard pattern from image containers */
+  img[src$=".svg"],
+  img[src*="data:image/svg"] {
+    background: white !important;
+    background-image: none !important;
+  }
+  
+  .mobile-menu-scroll {
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
   }

@@ -1,20 +1,33 @@
 import { useState, useEffect } from 'react'
 import Header from './components/Header'
 import HomePage from './components/HomePage'
-import BlogPage from './components/BlogPage'
-import EventsPage from './components/EventsPage'
-import SejarahPage from './components/SejarahPage'
-import LogoPage from './components/LogoPage'
-import VisiMisiPage from './components/VisiMisiPage'
-import StrukturOrganisasiPage from './components/StrukturOrganisasiPage'
-import GrandDesignPage from './components/GrandDesignPage'
-import GaleriPage from './components/GaleriPage'
-import KontakPage from './components/KontakPage'
-import AdminPage from './pages/AdminPage'
 import Footer from './components/Footer'
+import { useSEO } from './hooks/useSEO'
+import { getSEOConfig } from './config/seoConfig'
+import { usePerformance, useServiceWorker } from './hooks/usePerformance'
+import {
+  LazyBlogPage,
+  LazyEventsPage,
+  LazySejarahPage,
+  LazyLogoPage,
+  LazyVisiMisiPage,
+  LazyStrukturOrganisasiPage,
+  LazyGrandDesignPage,
+  LazyGaleriPage,
+  LazyKontakPage,
+  LazyAdminPage,
+  preloadCriticalPages,
+  preloadPage
+} from './components/LazyComponents'
+import PerformanceMonitor, { PerformanceAlert } from './components/PerformanceMonitor'
+import { initFormatDetection } from './utils/formatDetection'
 
 function App() {
   const [currentPage, setCurrentPage] = useState('home')
+  
+  // Initialize performance monitoring and service worker
+  const { preloadCriticalResources } = usePerformance()
+  const { registerServiceWorker } = useServiceWorker()
 
   // Helper: derive page id from current location
   const getPageFromLocation = (): string => {
@@ -65,39 +78,79 @@ function App() {
     window.addEventListener('popstate', handlePopState)
     return () => window.removeEventListener('popstate', handlePopState)
   }, [])
+  
+  // Initialize service worker and performance optimizations
+  useEffect(() => {
+    // Register service worker for caching and offline support
+    registerServiceWorker().catch(error => {
+      console.warn('Service Worker registration failed:', error)
+    })
+    
+    // Initialize format detection for modern image formats
+    initFormatDetection()
+    
+    // Preload critical resources
+    preloadCriticalResources()
+    
+    // Preload critical pages
+    preloadCriticalPages()
+    
+    // Add manifest link if not already present
+    if (!document.querySelector('link[rel="manifest"]')) {
+      const manifestLink = document.createElement('link')
+      manifestLink.rel = 'manifest'
+      manifestLink.href = '/manifest.json'
+      document.head.appendChild(manifestLink)
+    }
+    
+    // Add theme-color meta tag if not already present
+    if (!document.querySelector('meta[name="theme-color"]')) {
+      const themeColorMeta = document.createElement('meta')
+      themeColorMeta.name = 'theme-color'
+      themeColorMeta.content = '#1e40af'
+      document.head.appendChild(themeColorMeta)
+    }
+  }, [registerServiceWorker, preloadCriticalResources])
 
   // Update page + URL when user navigates via UI
   const handlePageChange = (page: string) => {
+    // Preload the target page before navigation with current page context
+    preloadPage(page, currentPage)
+    
     setCurrentPage(page)
     navigateToPage(page)
     // Reset scroll position to top
     window.scrollTo(0, 0)
   }
 
+  // Update SEO data when page changes
+  const seoConfig = getSEOConfig(currentPage)
+  useSEO(seoConfig)
+
   const renderPage = () => {
     switch (currentPage) {
       case 'home':
         return <HomePage onPageChange={handlePageChange} />
       case 'blog':
-        return <BlogPage />
+        return <LazyBlogPage />
       case 'events':
-        return <EventsPage />
+        return <LazyEventsPage />
       case 'sejarah':
-        return <SejarahPage />
+        return <LazySejarahPage />
       case 'logo':
-        return <LogoPage />
+        return <LazyLogoPage />
       case 'visi-misi':
-        return <VisiMisiPage />
+        return <LazyVisiMisiPage />
       case 'struktur-organisasi':
-        return <StrukturOrganisasiPage onPageChange={handlePageChange} />
+        return <LazyStrukturOrganisasiPage onPageChange={handlePageChange} />
       case 'grand-design':
-        return <GrandDesignPage onPageChange={handlePageChange} />
+        return <LazyGrandDesignPage onPageChange={handlePageChange} />
       case 'galeri':
-        return <GaleriPage />
+        return <LazyGaleriPage />
       case 'kontak':
-        return <KontakPage />
+        return <LazyKontakPage />
       case 'admin':
-        return <AdminPage />
+        return <LazyAdminPage />
       default:
         return <HomePage onPageChange={handlePageChange} />
     }
@@ -105,6 +158,10 @@ function App() {
 
   return (
     <div className="min-h-screen bg-white">
+      {/* Performance Monitoring (Development Only) */}
+      <PerformanceAlert threshold={60} />
+      <PerformanceMonitor enabled={process.env.NODE_ENV === 'development'} />
+      
       {currentPage !== 'admin' && (
         <Header currentPage={currentPage} onPageChange={handlePageChange} />
       )}

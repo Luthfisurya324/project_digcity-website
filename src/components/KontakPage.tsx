@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Mail, Phone, MapPin, MessageCircle, Clock, ExternalLink } from 'lucide-react';
 
 const KontakPage: React.FC = () => {
@@ -12,15 +12,15 @@ const KontakPage: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: value
     }));
-  };
+  }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     
@@ -33,7 +33,7 @@ const KontakPage: React.FC = () => {
       // Reset status after 3 seconds
       setTimeout(() => setSubmitStatus('idle'), 3000);
     }, 1000);
-  };
+  }, []);
 
   const contactInfo = [
     {
@@ -214,7 +214,7 @@ const KontakPage: React.FC = () => {
                       value={formData.name}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-300"
+                      className="interactive-element w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-300"
                       placeholder="Masukkan nama lengkap"
                     />
                   </div>
@@ -229,7 +229,7 @@ const KontakPage: React.FC = () => {
                       value={formData.email}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-300"
+                      className="interactive-element w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-300"
                       placeholder="nama@email.com"
                     />
                   </div>
@@ -245,7 +245,7 @@ const KontakPage: React.FC = () => {
                     value={formData.subject}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-300"
+                    className="interactive-element w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-300"
                   >
                     <option value="">Pilih subjek</option>
                     {subjectOptions.map((option) => (
@@ -265,7 +265,7 @@ const KontakPage: React.FC = () => {
                     onChange={handleInputChange}
                     required
                     rows={6}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-300 resize-none"
+                    className="interactive-element w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-300 resize-none"
                     placeholder="Tulis pesan Anda di sini..."
                   />
                 </div>
@@ -273,7 +273,7 @@ const KontakPage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full bg-primary-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-primary-700 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="interactive-element w-full bg-primary-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-primary-700 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSubmitting ? 'Mengirim...' : 'Kirim Pesan'}
                 </button>
@@ -318,7 +318,7 @@ const KontakPage: React.FC = () => {
                   href="https://maps.google.com"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-primary-600 text-white py-3 px-4 rounded-lg font-medium text-center hover:bg-primary-700 transition-colors duration-300"
+                  className="interactive-element bg-primary-600 text-white py-3 px-4 rounded-lg font-medium text-center hover:bg-primary-700 transition-colors duration-300"
                 >
                   Buka di Maps
                 </a>
@@ -326,7 +326,7 @@ const KontakPage: React.FC = () => {
                   href="https://wa.me/6285156773573"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-green-600 text-white py-3 px-4 rounded-lg font-medium text-center hover:bg-green-700 transition-colors duration-300"
+                  className="interactive-element bg-green-600 text-white py-3 px-4 rounded-lg font-medium text-center hover:bg-green-700 transition-colors duration-300"
                 >
                   Chat WhatsApp
                 </a>
@@ -355,7 +355,7 @@ const KontakPage: React.FC = () => {
                 href={social.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-gray-50 hover:bg-primary-50 rounded-xl p-6 text-center transition-colors duration-300 group"
+                className="interactive-element bg-gray-50 hover:bg-primary-50 rounded-xl p-6 text-center transition-colors duration-300 group"
               >
                 <div className="w-12 h-12 bg-primary-100 group-hover:bg-primary-200 rounded-full flex items-center justify-center mx-auto mb-4 text-primary-600 transition-colors duration-300">
                   {social.icon}

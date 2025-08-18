@@ -3,7 +3,25 @@ import react from '@vitejs/plugin-react'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    // Custom plugin for image optimization
+    {
+      name: 'image-optimization',
+      generateBundle(_options, bundle) {
+        // Add image optimization hints
+        Object.keys(bundle).forEach(fileName => {
+          if (/\.(png|jpe?g|gif|svg)$/i.test(fileName)) {
+            const asset = bundle[fileName];
+            if (asset.type === 'asset') {
+              // Add cache headers for images
+              asset.fileName = asset.fileName.replace(/\.(\w+)$/, '-[hash].$1');
+            }
+          }
+        });
+      }
+    }
+  ],
   base: '/',
   build: {
     outDir: 'dist',
@@ -13,14 +31,49 @@ export default defineConfig({
     cssCodeSplit: true,
     rollupOptions: {
       output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom'],
-          router: ['react-router-dom'],
-          supabase: ['@supabase/supabase-js'],
-          ui: ['lucide-react']
+        manualChunks: (id) => {
+          // Critical vendor chunks - load first
+          if (id.includes('react') || id.includes('react-dom')) {
+            return 'vendor-react';
+          }
+          
+          // Essential utilities for initial render
+          if (id.includes('lucide-react')) {
+            return 'vendor-icons';
+          }
+          
+          // Non-critical vendor chunks - lazy load
+          if (id.includes('@supabase')) {
+            return 'vendor-supabase';
+          }
+          
+          if (id.includes('framer-motion')) {
+            return 'vendor-animation';
+          }
+          
+          // Critical components for first paint
+          if (id.includes('Header.tsx') || id.includes('HomePage.tsx')) {
+            return 'components-critical';
+          }
+          
+          // Non-critical components
+          if (id.includes('components/') && !id.includes('Header.tsx') && !id.includes('HomePage.tsx')) {
+            return 'components-lazy';
+          }
+          
+          // Utilities
+          if (id.includes('utils/') || id.includes('hooks/')) {
+            return 'utils';
+          }
+          
+          // Default vendor chunk for other node_modules
+          if (id.includes('node_modules')) {
+            return 'vendor';
+          }
         },
         assetFileNames: (assetInfo) => {
-          const info = assetInfo.name.split('.')
+          const info = assetInfo.name?.split('.')
+          if (!info) return 'assets/[name]-[hash][extname]'
           const extType = info[info.length - 1]
           if (/png|jpe?g|svg|gif|tiff|bmp|ico/i.test(extType)) {
             return `assets/images/[name]-[hash][extname]`
@@ -28,21 +81,62 @@ export default defineConfig({
           if (/css/i.test(extType)) {
             return `assets/css/[name]-[hash][extname]`
           }
+          if (/woff2?|eot|ttf|otf/i.test(extType)) {
+            return `assets/fonts/[name]-[hash][extname]`
+          }
           return `assets/[name]-[hash][extname]`
         },
         chunkFileNames: 'assets/js/[name]-[hash].js',
         entryFileNames: 'assets/js/[name]-[hash].js'
+      },
+      // Enable tree shaking
+      treeshake: {
+        moduleSideEffects: false,
+        propertyReadSideEffects: false,
+        tryCatchDeoptimization: false
       }
     },
     chunkSizeWarningLimit: 1000
   },
+  // Optimize dependencies
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'lucide-react'],
+    exclude: ['@vite/client', '@vite/env']
+  },
   server: {
     port: 3000,
-    host: true
+    host: true,
+    open: false,
+    cors: true,
+    hmr: {
+      overlay: true,
+      port: 24678
+    },
+    fs: {
+      strict: true
+    }
   },
   preview: {
     port: 4173,
-    host: true
+    host: true,
+    // Enable compression
+    headers: {
+      'Cache-Control': 'public, max-age=31536000'
+    }
+  },
+  // Enable esbuild optimizations
+  esbuild: {
+    // Remove console logs in production
+    drop: process.env.NODE_ENV === 'production' ? ['console', 'debugger'] : [],
+    // Optimize for modern browsers
+    target: 'es2020',
+    // Enable tree shaking
+    treeShaking: true,
+    minifyIdentifiers: true,
+    minifySyntax: true,
+    minifyWhitespace: true,
+    legalComments: 'none',
+    format: 'esm'
   },
   define: {
     __APP_VERSION__: JSON.stringify(process.env.npm_package_version)

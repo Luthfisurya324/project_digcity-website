@@ -1,102 +1,151 @@
 import React from 'react';
 import { Twitter, Instagram, Github, Camera, MapPin, Mail, Phone } from 'lucide-react';
+import { OptimizedLogo } from './OptimizedImage';
 
 const Footer: React.FC = () => {
   return (
-    <footer className="bg-secondary-900 text-white">
+    <footer className="bg-secondary-900 text-white" role="contentinfo">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid md:grid-cols-4 gap-8">
           {/* Logo and Description */}
-          <div className="md:col-span-2">
+          <section className="md:col-span-2" aria-labelledby="footer-about">
             <div className="flex items-center space-x-3 mb-4">
               <div className="w-12 h-12 flex items-center justify-center">
-                <img 
+                <OptimizedLogo 
                   src="/logo_digcity.png" 
-                  alt="DIGCITY Logo" 
+                  alt="Logo DIGCITY - Himpunan Mahasiswa Bisnis Digital UIKA Bogor" 
+                  width={48}
+                  height={48}
                   className="w-12 h-12 object-contain"
                 />
               </div>
               <div>
-                <h3 className="text-xl font-bold">DIGCITY</h3>
+                <h3 id="footer-about" className="text-xl font-bold">DIGCITY</h3>
                 <p className="text-sm text-secondary-300">Digital Business Student Society</p>
               </div>
             </div>
             <p className="text-secondary-300 mb-4 max-w-md">
               Himpunan mahasiswa yang berfokus pada pengembangan kompetensi bisnis digital serta kewirausahaan di Universitas Ibn Khaldun Bogor.
             </p>
-            <div className="flex space-x-4">
-              <a href="#" className="text-secondary-400 hover:text-white transition-colors duration-200" aria-label="Twitter">
-                <Twitter className="w-6 h-6" />
+            <div className="flex space-x-4" role="list" aria-label="Media sosial DIGCITY">
+              <a 
+                href="https://twitter.com/digcity_uika" 
+                className="text-secondary-400 hover:text-white transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-secondary-900 rounded" 
+                aria-label="Ikuti DIGCITY di Twitter"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Twitter className="w-6 h-6" aria-hidden="true" />
               </a>
-              <a href="#" className="text-secondary-400 hover:text-white transition-colors duration-200" aria-label="Instagram">
-                <Instagram className="w-6 h-6" />
+              <a 
+                href="https://instagram.com/digcity_uika" 
+                className="text-secondary-400 hover:text-white transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-secondary-900 rounded" 
+                aria-label="Ikuti DIGCITY di Instagram"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Instagram className="w-6 h-6" aria-hidden="true" />
               </a>
-              <a href="#" className="text-secondary-400 hover:text-white transition-colors duration-200" aria-label="GitHub">
-                <Github className="w-6 h-6" />
+              <a 
+                href="https://github.com/digcity-uika" 
+                className="text-secondary-400 hover:text-white transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-secondary-900 rounded" 
+                aria-label="Lihat proyek DIGCITY di GitHub"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Github className="w-6 h-6" aria-hidden="true" />
               </a>
-              <a href="#" className="text-secondary-400 hover:text-white transition-colors duration-200" aria-label="Gallery">
-                <Camera className="w-6 h-6" />
+              <a 
+                href="#galeri" 
+                className="text-secondary-400 hover:text-white transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-secondary-900 rounded" 
+                aria-label="Lihat galeri foto DIGCITY"
+              >
+                <Camera className="w-6 h-6" aria-hidden="true" />
               </a>
             </div>
-          </div>
+          </section>
 
           {/* Quick Links */}
-          <div>
-            <h4 className="text-lg font-semibold mb-4">Tautan Cepat</h4>
-            <ul className="space-y-2">
+          <nav aria-labelledby="footer-navigation">
+            <h4 id="footer-navigation" className="text-lg font-semibold mb-4">Tautan Cepat</h4>
+            <ul className="space-y-2" role="list">
               <li>
-                <a href="#" className="text-secondary-300 hover:text-white transition-colors duration-200">
+                <a 
+                  href="#sejarah" 
+                  className="text-secondary-300 hover:text-white transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-secondary-900 rounded"
+                >
                   Tentang Kami
                 </a>
               </li>
               <li>
-                <a href="#" className="text-secondary-300 hover:text-white transition-colors duration-200">
+                <a 
+                  href="#visi-misi" 
+                  className="text-secondary-300 hover:text-white transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-secondary-900 rounded"
+                >
                   Visi & Misi
                 </a>
               </li>
               <li>
-                <a href="#" className="text-secondary-300 hover:text-white transition-colors duration-200">
+                <a 
+                  href="#struktur-organisasi" 
+                  className="text-secondary-300 hover:text-white transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-secondary-900 rounded"
+                >
                   Struktur Organisasi
                 </a>
               </li>
               <li>
-                <a href="#" className="text-secondary-300 hover:text-white transition-colors duration-200">
-                  Bergabung
+                <a 
+                  href="#events" 
+                  className="text-secondary-300 hover:text-white transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-secondary-900 rounded"
+                >
+                  Acara & Kegiatan
                 </a>
               </li>
               <li>
-                <a href="#" className="text-secondary-300 hover:text-white transition-colors duration-200">
+                <a 
+                  href="#kontak" 
+                  className="text-secondary-300 hover:text-white transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-secondary-900 rounded"
+                >
                   Kontak
                 </a>
               </li>
             </ul>
-          </div>
+          </nav>
 
           {/* Contact Info */}
-          <div>
-            <h4 className="text-lg font-semibold mb-4">Kontak</h4>
-            <div className="space-y-3">
+          <section aria-labelledby="footer-contact">
+            <h4 id="footer-contact" className="text-lg font-semibold mb-4">Kontak</h4>
+            <address className="space-y-3 not-italic">
               <div className="flex items-start space-x-3">
-                <MapPin className="w-5 h-5 text-primary-400 mt-0.5 flex-shrink-0" />
+                <MapPin className="w-5 h-5 text-primary-400 mt-0.5 flex-shrink-0" aria-hidden="true" />
                 <p className="text-secondary-300 text-sm">
+                  <span className="sr-only">Alamat: </span>
                   Universitas Ibn Khaldun Bogor<br />
                   Jl. KH. Sholeh Iskandar, Kota Bogor
                 </p>
               </div>
               <div className="flex items-center space-x-3">
-                <Mail className="w-5 h-5 text-primary-400 flex-shrink-0" />
-                <p className="text-secondary-300 text-sm">
+                <Mail className="w-5 h-5 text-primary-400 flex-shrink-0" aria-hidden="true" />
+                <a 
+                  href="mailto:info@digcity.id" 
+                  className="text-secondary-300 text-sm hover:text-white transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-secondary-900 rounded"
+                >
+                  <span className="sr-only">Email: </span>
                   info@digcity.id
-                </p>
+                </a>
               </div>
               <div className="flex items-center space-x-3">
-                <Phone className="w-5 h-5 text-primary-400 flex-shrink-0" />
-                <p className="text-secondary-300 text-sm">
+                <Phone className="w-5 h-5 text-primary-400 flex-shrink-0" aria-hidden="true" />
+                <a 
+                  href="tel:+6285156773573" 
+                  className="text-secondary-300 text-sm hover:text-white transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-secondary-900 rounded"
+                >
+                  <span className="sr-only">Telepon: </span>
                   +62 851-5677-3573
-                </p>
+                </a>
               </div>
-            </div>
-          </div>
+            </address>
+          </section>
         </div>
 
         {/* Bottom Section */}
@@ -105,14 +154,20 @@ const Footer: React.FC = () => {
             <p className="text-secondary-400 text-sm">
               © 2025 DIGCITY — Digital Business Student Society. Hak cipta dilindungi.
             </p>
-            <div className="flex space-x-6 mt-4 md:mt-0">
-              <a href="#" className="text-secondary-400 hover:text-white text-sm transition-colors duration-200">
+            <nav className="flex space-x-6 mt-4 md:mt-0" aria-label="Kebijakan dan syarat">
+              <a 
+                href="#kebijakan-privasi" 
+                className="text-secondary-400 hover:text-white text-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-secondary-900 rounded"
+              >
                 Kebijakan Privasi
               </a>
-              <a href="#" className="text-secondary-400 hover:text-white text-sm transition-colors duration-200">
+              <a 
+                href="#syarat-layanan" 
+                className="text-secondary-400 hover:text-white text-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-secondary-900 rounded"
+              >
                 Syarat Layanan
               </a>
-            </div>
+            </nav>
           </div>
         </div>
       </div>

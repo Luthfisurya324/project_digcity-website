@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Newspaper } from 'lucide-react';
 import { newsAPI, newsletterAPI, type News } from '../lib/supabase';
 
@@ -52,7 +52,7 @@ const BlogPage: React.FC = () => {
   const hasMorePosts = filteredPosts.length > currentDisplayedPosts.length;
 
   // Load more posts function
-  const loadMorePosts = async () => {
+  const loadMorePosts = useCallback(async () => {
     setLoadingMore(true);
     
     setTimeout(() => {
@@ -68,7 +68,7 @@ const BlogPage: React.FC = () => {
       setCurrentPage(nextPage);
       setLoadingMore(false);
     }, 500); // Small delay to show loading state
-  };
+  }, [currentPage, selectedCategory, blogPosts, postsPerPage]);
 
   // Reset pagination when category changes
   useEffect(() => {
@@ -91,7 +91,7 @@ const BlogPage: React.FC = () => {
   };
 
   // Newsletter subscription handler
-  const handleNewsletterSubscription = async (e: React.FormEvent) => {
+  const handleNewsletterSubscription = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!email.trim()) {
@@ -123,7 +123,7 @@ const BlogPage: React.FC = () => {
     } finally {
       setIsSubscribing(false);
     }
-  };
+  }, [email]);
 
   // Clear subscription message after 5 seconds
   useEffect(() => {
@@ -194,7 +194,7 @@ const BlogPage: React.FC = () => {
               <button
                 key={category}
                 onClick={() => setSelectedCategory(category)}
-                className={`px-4 sm:px-6 py-2 text-sm sm:text-base rounded-full transition-colors duration-200 shadow-sm ${
+                className={`interactive-element px-4 sm:px-6 py-2 text-sm sm:text-base rounded-full transition-colors duration-200 shadow-sm ${
                   selectedCategory === category
                     ? 'bg-primary-600 text-white'
                     : 'bg-white text-secondary-700 hover:bg-primary-600 hover:text-white'
@@ -236,7 +236,7 @@ const BlogPage: React.FC = () => {
                   </p>
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                     <span className="text-xs sm:text-sm text-secondary-500">Oleh {post.author}</span>
-                    <button className="text-primary-600 hover:text-primary-700 font-medium text-xs sm:text-sm text-left sm:text-right">
+                    <button className="interactive-element text-primary-600 hover:text-primary-700 font-medium text-xs sm:text-sm text-left sm:text-right">
                       Baca Selengkapnya →
                     </button>
                   </div>
@@ -264,7 +264,7 @@ const BlogPage: React.FC = () => {
               <button 
                 onClick={loadMorePosts}
                 disabled={loadingMore}
-                className="bg-primary-600 text-white px-6 sm:px-8 py-3 text-sm sm:text-base rounded-lg font-semibold hover:bg-primary-700 transition-colors duration-200 w-full sm:w-auto max-w-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                className="interactive-element bg-primary-600 text-white px-6 sm:px-8 py-3 text-sm sm:text-base rounded-lg font-semibold hover:bg-primary-700 transition-colors duration-200 w-full sm:w-auto max-w-xs disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loadingMore ? (
                   <div className="flex items-center justify-center gap-2">
@@ -298,12 +298,12 @@ const BlogPage: React.FC = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Masukkan email Anda"
                   disabled={isSubscribing}
-                  className="flex-1 px-4 py-3 text-sm sm:text-base rounded-lg border-0 focus:ring-2 focus:ring-primary-300 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="interactive-element flex-1 px-4 py-3 text-sm sm:text-base rounded-lg border-0 focus:ring-2 focus:ring-primary-300 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                 />
                 <button 
                   type="submit"
                   disabled={isSubscribing}
-                  className="bg-white text-primary-600 px-6 py-3 text-sm sm:text-base rounded-lg font-semibold hover:bg-primary-50 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed min-w-[120px] sm:min-w-[140px] whitespace-nowrap"
+                  className="interactive-element bg-white text-primary-600 px-6 py-3 text-sm sm:text-base rounded-lg font-semibold hover:bg-primary-50 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed min-w-[120px] sm:min-w-[140px] whitespace-nowrap"
                 >
                   {isSubscribing ? 'Memproses...' : 'Berlangganan'}
                 </button>

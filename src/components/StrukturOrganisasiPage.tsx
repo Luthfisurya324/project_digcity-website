@@ -220,7 +220,7 @@ const StrukturOrganisasiPage: React.FC<StrukturOrganisasiPageProps> = ({ onPageC
             Untuk informasi lebih lanjut atau kerjasama, silakan kunjungi halaman kontak kami
           </p>
           <div className="flex justify-center">
-            <button onClick={() => onPageChange?.('kontak')} className="bg-primary-600 text-white px-8 py-4 rounded-lg hover:bg-primary-700 transition-colors duration-300 text-lg font-semibold">
+            <button onClick={() => onPageChange?.('kontak')} className="bg-primary-600 text-white px-8 py-4 rounded-lg hover:bg-primary-700 transition-colors duration-300 text-lg font-semibold interactive-element">
               Hubungi Kami
             </button>
           </div>

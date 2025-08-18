@@ -16,19 +16,23 @@
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://digcity-website.vercel.app/" />
+    <meta property="og:url" content="https://digcity.my.id/" />
     <meta property="og:title" content="DIGCITY - Himpunan Mahasiswa Bisnis Digital UIKA Bogor" />
     <meta property="og:description" content="Website resmi DIGCITY, Himpunan Mahasiswa Bisnis Digital Universitas Ibn Khaldun Bogor. Organisasi yang berdampak, adaptif, inovatif, dan kompeten untuk pengembangan potensi mahasiswa." />
-    <meta property="og:image" content="/logo_digcity.png" />
+    <meta property="og:image" content="https://digcity.my.id/logo_digcity.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Logo DIGCITY - Himpunan Mahasiswa Bisnis Digital UIKA Bogor" />
     <meta property="og:site_name" content="DIGCITY" />
     <meta property="og:locale" content="id_ID" />
     
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content="https://digcity-website.vercel.app/" />
+    <meta property="twitter:url" content="https://digcity.my.id/" />
     <meta property="twitter:title" content="DIGCITY - Himpunan Mahasiswa Bisnis Digital UIKA Bogor" />
     <meta property="twitter:description" content="Website resmi DIGCITY, Himpunan Mahasiswa Bisnis Digital Universitas Ibn Khaldun Bogor. Organisasi yang berdampak, adaptif, inovatif, dan kompeten untuk pengembangan potensi mahasiswa." />
-    <meta property="twitter:image" content="/logo_digcity.png" />
+    <meta property="twitter:image" content="https://digcity.my.id/logo_digcity.png" />
+    <meta property="twitter:image:alt" content="Logo DIGCITY - Himpunan Mahasiswa Bisnis Digital UIKA Bogor" />
     
     <!-- Favicon and Icons -->
     <link rel="icon" type="image/png" href="/logo_digcity.png" />
@@ -41,8 +45,74 @@
     
     <!-- Performance and Security -->
     <meta name="referrer" content="origin-when-cross-origin" />
+    
+    <!-- Resource Hints for Performance -->
     <link rel="dns-prefetch" href="//fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="//fonts.gstatic.com" />
+    <link rel="dns-prefetch" href="//www.google-analytics.com" />
+    <link rel="dns-prefetch" href="//www.googletagmanager.com" />
+    <link rel="dns-prefetch" href="//cdnjs.cloudflare.com" />
+    
+    <!-- Preload Critical Resources -->
+    <link rel="preload" href="/logo_digcity.png" as="image" type="image/png" fetchpriority="high" />
+    <link rel="preload" href="/src/assets/digital-innovation.png" as="image" type="image/png" fetchpriority="high" />
+    <link rel="preload" href="/src/assets/react.svg" as="image" type="image/svg+xml" />
+    <link rel="preload" href="/vite.svg" as="image" type="image/svg+xml" />
+    <link rel="preload" href="/src/index.css" as="style" />
+    <link rel="preload" href="/src/styles/performance.css" as="style" />
+    <link rel="preload" href="/src/main.tsx" as="script" />
+    
+    <!-- Preload Critical Fonts -->
+    <link rel="preload" href="https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiJ-Ek-_EeA.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyeAZ9hiJ-Ek-_EeAmA.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiJ-Ek-_EeA.woff2" as="font" type="font/woff2" crossorigin />
+    
+    <!-- Inline Critical CSS -->
+    <style>
+      /* Critical above-the-fold styles */
+      *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+      html{font-family:Inter,system-ui,-apple-system,sans-serif;line-height:1.5;-webkit-text-size-adjust:100%}
+      body{background:#fff;color:#1f2937;font-size:16px}
+      .hero-section{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);contain:layout style paint}
+      .loading-skeleton{background:#f3f4f6;animation:pulse 2s cubic-bezier(0.4,0,0.6,1) infinite}
+      @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+      .optimized-image{image-rendering:-webkit-optimize-contrast;contain:layout style;transform:translateZ(0)}
+    </style>
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    
+    <!-- Additional performance optimizations -->
+    <link rel="modulepreload" href="/src/main.tsx" />
+    <link rel="prefetch" href="/manifest.json" />
+    <link rel="prefetch" href="/robots.txt" />
+    
+    <!-- Optimized Google Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" media="print" onload="this.media='all'; this.onload=null;" />
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" /></noscript>
+    
+    <!-- Fallback font loading -->
+    <style>
+      /* Ensure fallback fonts are available immediately */
+      .font-loading {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      }
+    </style>
+    
+    <!-- Performance CSS -->
+    <link rel="stylesheet" href="/src/styles/performance.css" />
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://digcity.my.id/" />
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+    
+    <!-- Additional Performance Hints -->
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="DIGCITY" />
     
     <!-- Structured Data -->
     <script type="application/ld+json">
@@ -50,18 +120,31 @@
       "@context": "https://schema.org",
       "@type": "Organization",
       "name": "DIGCITY",
-      "description": "Himpunan Mahasiswa Bisnis Digital Universitas Ibn Khaldun Bogor",
-      "url": "https://digcity-website.vercel.app/",
-      "logo": "https://digcity-website.vercel.app/logo_digcity.png",
+      "alternateName": "Himpunan Mahasiswa Bisnis Digital UIKA Bogor",
+      "description": "Himpunan Mahasiswa Bisnis Digital Universitas Ibn Khaldun Bogor yang berdampak, adaptif, inovatif, dan kompeten",
+      "url": "https://digcity.my.id/",
+      "logo": "https://digcity.my.id/logo_digcity.png",
+      "image": "https://digcity.my.id/logo_digcity.png",
       "foundingDate": "2024",
       "address": {
         "@type": "PostalAddress",
         "addressLocality": "Bogor",
+        "addressRegion": "Jawa Barat",
         "addressCountry": "ID"
       },
       "parentOrganization": {
         "@type": "EducationalOrganization",
-        "name": "Universitas Ibn Khaldun Bogor"
+        "name": "Universitas Ibn Khaldun Bogor",
+        "url": "https://uika-bogor.ac.id"
+      },
+      "sameAs": [
+        "https://instagram.com/digcity_uika",
+        "https://linkedin.com/company/digcity-uika"
+      ],
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "contactType": "customer service",
+        "availableLanguage": "Indonesian"
       }
     }
     </script>
