@@ -114,12 +114,6 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
     hasError ? 'bg-gray-200' : ''
   ].filter(Boolean).join(' ');
 
-  const placeholderClasses = [
-    'absolute inset-0 transition-opacity duration-300',
-    isLoaded ? 'opacity-0' : 'opacity-100',
-    placeholder === 'blur' ? 'blur-sm' : 'bg-gray-200'
-  ].filter(Boolean).join(' ');
-
   if (hasError) {
     return (
       <div 
