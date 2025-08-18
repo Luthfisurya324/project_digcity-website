@@ -4,6 +4,7 @@ import path from 'path'
 
 // https://vite.dev/config/
 export default defineConfig({
+  root: './',
   plugins: [
     react({
       babel: {
@@ -28,7 +29,6 @@ export default defineConfig({
     }
   ],
   base: '/',
-  root: process.cwd(),
   publicDir: 'public',
   resolve: {
     alias: {
@@ -43,6 +43,9 @@ export default defineConfig({
     target: 'es2020',
     cssCodeSplit: true,
     rollupOptions: {
+      input: {
+        main: path.resolve(__dirname, 'index.html')
+      },
       output: {
         manualChunks: (id) => {
           // Critical vendor chunks - load first
