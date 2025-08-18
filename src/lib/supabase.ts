@@ -46,6 +46,15 @@ export interface Gallery {
   updated_at: string
 }
 
+export interface Newsletter {
+  id: string
+  email: string
+  subscribed_at: string
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
 export interface User {
   id: string
   email: string
@@ -278,5 +287,77 @@ export const authAPI = {
     
     if (error) return false
     return data.role === 'admin'
+  }
+}
+
+// Newsletter API
+export const newsletterAPI = {
+  // Subscribe to newsletter
+  async subscribe(email: string) {
+    const { data, error } = await supabase
+      .from('newsletter')
+      .insert([{ email }])
+      .select()
+      .single()
+    
+    if (error) {
+      // Check if email already exists
+      if (error.code === '23505') {
+        throw new Error('Email sudah terdaftar dalam newsletter')
+      }
+      throw error
+    }
+    return data
+  },
+
+  // Unsubscribe from newsletter
+  async unsubscribe(email: string) {
+    const { data, error } = await supabase
+      .from('newsletter')
+      .update({ is_active: false })
+      .eq('email', email)
+      .select()
+      .single()
+    
+    if (error) throw error
+    return data
+  },
+
+  // Get all active subscribers (admin only)
+  async getAllSubscribers() {
+    const { data, error } = await supabase
+      .from('newsletter')
+      .select('*')
+      .eq('is_active', true)
+      .order('subscribed_at', { ascending: false })
+    
+    if (error) throw error
+    return data
+  },
+
+  // Get subscriber count
+  async getSubscriberCount() {
+    const { count, error } = await supabase
+      .from('newsletter')
+      .select('*', { count: 'exact', head: true })
+      .eq('is_active', true)
+    
+    if (error) throw error
+    return count || 0
+  },
+
+  // Check if email is subscribed
+  async isSubscribed(email: string) {
+    const { data, error } = await supabase
+      .from('newsletter')
+      .select('is_active')
+      .eq('email', email)
+      .single()
+    
+    if (error) {
+      if (error.code === 'PGRST116') return false // No rows found
+      throw error
+    }
+    return data.is_active
   }
 }

@@ -1,24 +1,52 @@
 import React from 'react';
 import { User, Shield, DollarSign, Users, Camera } from 'lucide-react';
 
-const StrukturOrganisasiPage: React.FC = () => {
+interface StrukturOrganisasiPageProps {
+  onPageChange?: (page: string) => void;
+}
+
+const StrukturOrganisasiPage: React.FC<StrukturOrganisasiPageProps> = ({ onPageChange }) => {
   const organizationStructure = [
     {
       level: 'BPH (Executive Committee)',
       positions: [
-        { title: 'CEO (Chief Executive Officer)', name: 'Luthfi Surya Saputra', description: 'Pemimpin tertinggi yang bertanggung jawab atas arah strategis dan keputusan utama organisasi' },
-        { title: 'COO (Chief Operating Officer)', name: 'TBA', description: 'Fokus pada pengelolaan operasional sehari-hari dan memastikan segala proses berjalan lancar' },
-        { title: 'CAO (Chief Administrative Officer)', name: 'TBA', description: 'Mengelola aspek administratif dan kebijakan organisasi' },
-        { title: 'CFO (Chief Financial Officer)', name: 'TBA', description: 'Bertanggung jawab atas manajemen keuangan, perencanaan anggaran, dan laporan keuangan' }
+        { 
+          title: 'CEO (Chief Executive Officer)', 
+          description: 'Pemimpin tertinggi yang bertanggung jawab atas arah strategis dan keputusan utama organisasi. Memimpin seluruh kegiatan organisasi dan mengambil keputusan strategis untuk kemajuan DIGCITY.' 
+        },
+        { 
+          title: 'COO (Chief Operating Officer)', 
+          description: 'Fokus pada pengelolaan operasional sehari-hari dan memastikan segala proses berjalan lancar. Mengkoordinasikan pelaksanaan program kerja dan memastikan efektivitas operasional organisasi.' 
+        },
+        { 
+          title: 'CAO (Chief Administrative Officer)', 
+          description: 'Mengelola aspek administratif dan kebijakan organisasi. Bertanggung jawab atas sistem administrasi, dokumentasi, dan implementasi kebijakan internal organisasi.' 
+        },
+        { 
+          title: 'CFO (Chief Financial Officer)', 
+          description: 'Bertanggung jawab atas manajemen keuangan, perencanaan anggaran, dan laporan keuangan. Mengelola keuangan organisasi secara transparan dan akuntabel.' 
+        }
       ]
     },
     {
       level: 'Kepala Divisi',
       positions: [
-        { title: 'Head of CMI (Creative Media Information)', name: 'TBA', description: 'Bertanggung jawab untuk merancang dan mengelola seluruh konten kreatif serta informasi yang disebarkan oleh organisasi' },
-        { title: 'Head of ECRAV (Economy Creative)', name: 'TBA', description: 'Fokus pada pengembangan program atau proyek yang berhubungan dengan ekonomi kreatif' },
-        { title: 'Head of POD (People Organizing and Development)', name: 'TBA', description: 'Bertanggung jawab untuk pengelolaan sumber daya manusia dalam organisasi' },
-        { title: 'Head of PR (Public Relation)', name: 'TBA', description: 'Bertanggung jawab untuk menjaga citra organisasi di mata publik' }
+        { 
+          title: 'Head of CMI (Creative Media Information)', 
+          description: 'Bertanggung jawab untuk merancang dan mengelola seluruh konten kreatif serta informasi yang disebarkan oleh organisasi. Mengelola media sosial, pembuatan konten visual, dan strategi komunikasi digital DIGCITY.' 
+        },
+        { 
+          title: 'Head of ECRAV (Economy Creative)', 
+          description: 'Fokus pada pengembangan program atau proyek yang berhubungan dengan ekonomi kreatif. Mengelola bisnis merchandise, program kewirausahaan, dan pengembangan ekonomi kreatif untuk anggota.' 
+        },
+        { 
+          title: 'Head of POD (People Organizing and Development)', 
+          description: 'Bertanggung jawab untuk pengelolaan sumber daya manusia dalam organisasi. Mengelola rekrutmen, pengembangan anggota, pelatihan kepemimpinan, dan program pengembangan diri.' 
+        },
+        { 
+          title: 'Head of PR (Public Relation)', 
+          description: 'Bertanggung jawab untuk menjaga citra organisasi di mata publik. Mengelola hubungan eksternal, kampanye branding, dan representasi DIGCITY di berbagai event dan kegiatan.' 
+        }
       ]
     }
   ];
@@ -102,14 +130,9 @@ const StrukturOrganisasiPage: React.FC = () => {
                         </div>
                         
                         {/* Position Title */}
-                        <h4 className="text-lg font-bold text-secondary-900 mb-2">
+                        <h4 className="text-lg font-bold text-secondary-900 mb-4">
                           {position.title}
                         </h4>
-                        
-                        {/* Name */}
-                        <p className="text-primary-600 font-semibold mb-3">
-                          {position.name}
-                        </p>
                         
                         {/* Description */}
                         <p className="text-sm text-secondary-600 leading-relaxed">
@@ -150,15 +173,15 @@ const StrukturOrganisasiPage: React.FC = () => {
                 <Shield className="w-8 h-8 text-primary-600" />
               </div>
               <h3 className="text-lg font-semibold text-secondary-900 mb-2">Executive Leadership</h3>
-              <p className="text-secondary-600 text-sm">BPH memberikan arahan strategis dan mengambil keputusan utama untuk kemajuan organisasi</p>
+              <p className="text-secondary-600 text-sm">BPH memberikan arahan strategis, mengelola operasional, administrasi, dan keuangan organisasi secara transparan dan akuntabel</p>
             </div>
 
             <div className="text-center p-6 rounded-lg border border-gray-100 bg-white hover:shadow-lg transition-all duration-300">
               <div className="w-16 h-16 bg-secondary-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Camera className="w-8 h-8 text-secondary-600" />
               </div>
-              <h3 className="text-lg font-semibold text-secondary-900 mb-2">Creative Media</h3>
-              <p className="text-secondary-600 text-sm">CMI mengelola konten kreatif dan informasi untuk branding organisasi</p>
+              <h3 className="text-lg font-semibold text-secondary-900 mb-2">Creative Media Information</h3>
+              <p className="text-secondary-600 text-sm">CMI mengelola konten kreatif, media sosial, strategi komunikasi digital, dan branding organisasi</p>
             </div>
 
             <div className="text-center p-6 rounded-lg border border-gray-100 bg-white hover:shadow-lg transition-all duration-300">
@@ -166,15 +189,15 @@ const StrukturOrganisasiPage: React.FC = () => {
                 <DollarSign className="w-8 h-8 text-accent-600" />
               </div>
               <h3 className="text-lg font-semibold text-secondary-900 mb-2">Economy Creative</h3>
-              <p className="text-secondary-600 text-sm">ECRAV mengembangkan program ekonomi kreatif dan kewirausahaan</p>
+              <p className="text-secondary-600 text-sm">ECRAV mengembangkan bisnis merchandise, program kewirausahaan, dan ekonomi kreatif untuk anggota</p>
             </div>
 
             <div className="text-center p-6 rounded-lg border border-gray-100 bg-white hover:shadow-lg transition-all duration-300">
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Users className="w-8 h-8 text-green-600" />
               </div>
-              <h3 className="text-lg font-semibold text-secondary-900 mb-2">People Development</h3>
-              <p className="text-secondary-600 text-sm">POD dan PR mengelola SDM dan hubungan masyarakat untuk kemajuan organisasi</p>
+              <h3 className="text-lg font-semibold text-secondary-900 mb-2">People & Public Relations</h3>
+              <p className="text-secondary-600 text-sm">POD mengelola SDM dan pengembangan anggota, sementara PR menjaga hubungan eksternal dan citra organisasi</p>
             </div>
           </div>
         </div>
@@ -187,18 +210,12 @@ const StrukturOrganisasiPage: React.FC = () => {
             Hubungi Pengurus
           </h2>
           <p className="text-lg text-secondary-600 mb-8">
-            Untuk informasi lebih lanjut atau kerjasama, silakan hubungi pengurus DIGCITY
+            Untuk informasi lebih lanjut atau kerjasama, silakan kunjungi halaman kontak kami
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="mailto:info@digcity.org" className="bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition-colors duration-300">
-              Email Resmi
-            </a>
-            <a href="https://wa.me/6281234567890" className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors duration-300">
-              WhatsApp
-            </a>
-            <a href="https://instagram.com/digcity_official" className="bg-pink-600 text-white px-6 py-3 rounded-lg hover:bg-pink-700 transition-colors duration-300">
-              Instagram
-            </a>
+          <div className="flex justify-center">
+            <button onClick={() => onPageChange?.('kontak')} className="bg-primary-600 text-white px-8 py-4 rounded-lg hover:bg-primary-700 transition-colors duration-300 text-lg font-semibold">
+              Hubungi Kami
+            </button>
           </div>
         </div>
       </section>

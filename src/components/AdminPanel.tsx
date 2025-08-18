@@ -5,6 +5,7 @@ import AdminDashboard from './admin/AdminDashboard'
 import AdminEvents from './admin/AdminEvents'
 import AdminNews from './admin/AdminNews'
 import AdminGallery from './admin/AdminGallery'
+import AdminNewsletter from './admin/AdminNewsletter'
 
 interface User {
   id: string
@@ -87,7 +88,8 @@ const AdminPanel: React.FC = () => {
     { id: 'dashboard', name: 'Dashboard', icon: '📊' },
     { id: 'events', name: 'Events', icon: '📅' },
     { id: 'news', name: 'News', icon: '📰' },
-    { id: 'gallery', name: 'Gallery', icon: '🖼️' }
+    { id: 'gallery', name: 'Gallery', icon: '🖼️' },
+    { id: 'newsletter', name: 'Newsletter', icon: '📧' }
   ]
 
   const renderContent = () => {
@@ -100,6 +102,8 @@ const AdminPanel: React.FC = () => {
         return <AdminNews />
       case 'gallery':
         return <AdminGallery />
+      case 'newsletter':
+        return <AdminNewsletter />
       default:
         return <AdminDashboard />
     }

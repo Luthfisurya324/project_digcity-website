@@ -190,7 +190,7 @@ const VisiMisiPage: React.FC = () => {
                 <span className="text-white font-bold">L</span>
               </div>
               <h3 className="text-lg font-semibold text-secondary-900 mb-2">Loyalitas</h3>
-              <p className="text-sm text-secondary-600">Selalu mendahulukan kepentingan himpunan dibandingkan kepentingan pribadi</p>
+              <p className="text-sm text-secondary-600">Selalu mendahulukan kepentingan himpunan dibandingkan kepentingan pribadi, kecuali dalam kondisi darurat seperti bencana alam atau musibah keluarga</p>
             </div>
 
             <div className="text-center p-6 bg-gradient-to-br from-accent-50 to-accent-100 rounded-xl border border-accent-100 hover:shadow-md hover:-translate-y-0.5 transition-all">

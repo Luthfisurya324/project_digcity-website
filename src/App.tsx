@@ -89,9 +89,9 @@ function App() {
       case 'visi-misi':
         return <VisiMisiPage />
       case 'struktur-organisasi':
-        return <StrukturOrganisasiPage />
+        return <StrukturOrganisasiPage onPageChange={handlePageChange} />
       case 'grand-design':
-        return <GrandDesignPage />
+        return <GrandDesignPage onPageChange={handlePageChange} />
       case 'galeri':
         return <GaleriPage />
       case 'kontak':

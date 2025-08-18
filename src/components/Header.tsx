@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ChevronDown, Menu } from 'lucide-react';
 
 interface HeaderProps {
@@ -8,6 +8,16 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ currentPage, onPageChange }) => {
   const [isAboutDropdownOpen, setIsAboutDropdownOpen] = useState(false);
+  const [dropdownTimeout, setDropdownTimeout] = useState<NodeJS.Timeout | null>(null);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (dropdownTimeout) {
+        clearTimeout(dropdownTimeout);
+      }
+    };
+  }, [dropdownTimeout]);
 
   const navItems = [
     { id: 'home', label: 'Beranda' },
@@ -63,8 +73,19 @@ const Header: React.FC<HeaderProps> = ({ currentPage, onPageChange }) => {
             {/* Tentang Kami Mega Menu */}
             <div 
               className="relative"
-              onMouseEnter={() => setIsAboutDropdownOpen(true)}
-              onMouseLeave={() => setIsAboutDropdownOpen(false)}
+              onMouseEnter={() => {
+                if (dropdownTimeout) {
+                  clearTimeout(dropdownTimeout);
+                  setDropdownTimeout(null);
+                }
+                setIsAboutDropdownOpen(true);
+              }}
+              onMouseLeave={() => {
+                const timeout = setTimeout(() => {
+                  setIsAboutDropdownOpen(false);
+                }, 150);
+                setDropdownTimeout(timeout);
+              }}
             >
               <button className="px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 text-secondary-700 hover:text-primary-600 hover:bg-primary-50 flex items-center">
                Tentang Kami
@@ -73,7 +94,21 @@ const Header: React.FC<HeaderProps> = ({ currentPage, onPageChange }) => {
               
               {/* Dropdown Menu */}
               {isAboutDropdownOpen && (
-                <div className="absolute top-full left-0 mt-1 w-64 bg-white rounded-xl shadow-xl border border-secondary-200 py-2 z-50">
+                <div 
+                  className="absolute top-full left-0 mt-1 w-64 bg-white rounded-xl shadow-xl border border-secondary-200 py-2 z-50"
+                  onMouseEnter={() => {
+                    if (dropdownTimeout) {
+                      clearTimeout(dropdownTimeout);
+                      setDropdownTimeout(null);
+                    }
+                  }}
+                  onMouseLeave={() => {
+                    const timeout = setTimeout(() => {
+                      setIsAboutDropdownOpen(false);
+                    }, 150);
+                    setDropdownTimeout(timeout);
+                  }}
+                >
                   {aboutMenuItems.map((item) => (
                     <button
                       key={item.id}

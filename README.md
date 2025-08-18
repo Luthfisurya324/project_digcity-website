@@ -67,3 +67,35 @@ export default tseslint.config([
   },
 ])
 ```
+
+## Development Tools
+
+### React Developer Tools
+
+Untuk pengalaman pengembangan yang lebih baik, disarankan untuk menginstal React Developer Tools:
+
+- **Chrome**: [Install React DevTools for Chrome](https://chrome.google.com/webstore/detail/react-developer-tools/fmkadmapgofadopljbjfkapdkoienihi)
+- **Firefox**: [Install React DevTools for Firefox](https://addons.mozilla.org/en-US/firefox/addon/react-devtools/)
+- **Edge**: [Install React DevTools for Edge](https://microsoftedge.microsoft.com/addons/detail/react-developer-tools/gpphkfbcpidddadnkolkpfckpihlkkil)
+
+React DevTools memungkinkan Anda untuk:
+- Inspect komponen React dan props
+- Edit state dan props secara real-time
+- Profiling performa aplikasi
+- Debug hooks dan context
+
+### Database Setup
+
+Proyek ini menggunakan Supabase sebagai backend. Pastikan Anda telah:
+
+1. Membuat akun di [Supabase](https://supabase.com)
+2. Membuat project baru
+3. Menyalin file `.env.example` ke `.env` dan mengisi kredensial Supabase Anda
+4. Menjalankan migrasi database (tabel users, events, news, gallery, newsletter)
+
+### Admin Access
+
+Untuk mengakses panel admin:
+1. Buka `/admin` di browser
+2. Login dengan kredensial admin yang telah dibuat di database
+3. Default admin: `admin@digcity.com` (pastikan user ini ada di tabel `users` dengan role `admin`)

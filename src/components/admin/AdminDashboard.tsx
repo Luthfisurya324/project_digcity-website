@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react'
-import { eventAPI, newsAPI, galleryAPI } from '../../lib/supabase'
+import { eventAPI, newsAPI, galleryAPI, newsletterAPI } from '../../lib/supabase'
 import type { Event, News } from '../../lib/supabase'
 
 interface DashboardStats {
   totalEvents: number
   totalNews: number
   totalGallery: number
+  totalNewsletter: number
   recentEvents: Event[]
   recentNews: News[]
 }
@@ -15,6 +16,7 @@ const AdminDashboard: React.FC = () => {
     totalEvents: 0,
     totalNews: 0,
     totalGallery: 0,
+    totalNewsletter: 0,
     recentEvents: [],
     recentNews: []
   })
@@ -26,16 +28,18 @@ const AdminDashboard: React.FC = () => {
 
   const loadDashboardData = async () => {
     try {
-      const [events, news, gallery] = await Promise.all([
+      const [events, news, gallery, newsletterCount] = await Promise.all([
         eventAPI.getAll(),
         newsAPI.getAll(),
-        galleryAPI.getAll()
+        galleryAPI.getAll(),
+        newsletterAPI.getSubscriberCount()
       ])
 
       setStats({
         totalEvents: events.length,
         totalNews: news.length,
         totalGallery: gallery.length,
+        totalNewsletter: newsletterCount,
         recentEvents: events.slice(0, 5),
         recentNews: news.slice(0, 5)
       })
@@ -85,11 +89,11 @@ const AdminDashboard: React.FC = () => {
       textColor: 'text-purple-600'
     },
     {
-      title: 'Total Content',
-      value: stats.totalEvents + stats.totalNews + stats.totalGallery,
-      icon: '📊',
-      color: 'bg-orange-500',
-      textColor: 'text-orange-600'
+      title: 'Newsletter Subscribers',
+      value: stats.totalNewsletter,
+      icon: '📧',
+      color: 'bg-pink-500',
+      textColor: 'text-pink-600'
     }
   ]
 

@@ -152,7 +152,7 @@ const SejarahPage: React.FC = () => {
               Perjalanan Penuh Tantangan
             </h2>
             <p className="text-lg text-secondary-600">
-              Lika-liku yang dihadapi dalam membangun DIGCITY dari nol
+              Proses membangun DIGCITY dari nol dengan berbagai hambatan dan pembelajaran
             </p>
           </div>
 
@@ -161,12 +161,12 @@ const SejarahPage: React.FC = () => {
               <div className="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-6 text-white">
                 <AlertTriangle className="w-8 h-8" />
               </div>
-              <h3 className="text-2xl font-bold text-secondary-900 mb-4">Tantangan yang Dihadapi</h3>
+              <h3 className="text-2xl font-bold text-secondary-900 mb-4">Tantangan Utama</h3>
               <ul className="text-secondary-600 space-y-2">
-                <li>• Tidak ada mentor atau panduan dari senior</li>
-                <li>• Tekanan dari himpunan lain yang sudah mapan</li>
-                <li>• Harus mempelajari cara berorganisasi dari nol</li>
-                <li>• Merintis segala sesuatu untuk pertama kalinya</li>
+                <li>• Membangun organisasi tanpa panduan dari senior</li>
+                <li>• Mempelajari tata kelola organisasi secara mandiri</li>
+                <li>• Menciptakan identitas dan struktur organisasi baru</li>
+                <li>• Membuktikan eksistensi di lingkungan akademik</li>
               </ul>
             </div>
 
@@ -174,12 +174,12 @@ const SejarahPage: React.FC = () => {
               <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-6 text-white">
                 <BookMarked className="w-8 h-8" />
               </div>
-              <h3 className="text-2xl font-bold text-secondary-900 mb-4">Proses Pembelajaran</h3>
+              <h3 className="text-2xl font-bold text-secondary-900 mb-4">Strategi Pembelajaran</h3>
               <ul className="text-secondary-600 space-y-2">
-                <li>• Belajar dari himpunan manajemen dan akuntansi</li>
-                <li>• Mengamati organisasi yang sudah berjalan bertahun-tahun</li>
-                <li>• Membuat logo dan identitas organisasi</li>
-                <li>• Menyusun struktur dan divisi-divisi pertama</li>
+                <li>• Mengadopsi praktik terbaik dari himpunan yang sudah mapan</li>
+                <li>• Mempelajari struktur organisasi mahasiswa yang efektif</li>
+                <li>• Merancang identitas visual dan brand organisasi</li>
+                <li>• Membentuk divisi-divisi sesuai kebutuhan program studi</li>
               </ul>
             </div>
           </div>
@@ -189,9 +189,9 @@ const SejarahPage: React.FC = () => {
               <div className="w-16 h-16 bg-primary-600 rounded-full flex items-center justify-center mx-auto mb-6 text-white">
                 <Rocket className="w-8 h-8" />
               </div>
-              <h3 className="text-2xl font-bold text-secondary-900 mb-4">Semangat Pantang Menyerah</h3>
+              <h3 className="text-2xl font-bold text-secondary-900 mb-4">Komitmen Berkelanjutan</h3>
               <p className="text-secondary-600 leading-relaxed">
-                Meskipun menghadapi berbagai tantangan, para pendiri tidak menyerah untuk membuat DIGCITY semakin besar dan berkembang.
+                Para pendiri konsisten membangun fondasi organisasi yang kuat melalui dedikasi dan kerja keras yang terukur.
               </p>
             </div>
 
@@ -199,9 +199,9 @@ const SejarahPage: React.FC = () => {
               <div className="w-16 h-16 bg-secondary-600 rounded-full flex items-center justify-center mx-auto mb-6 text-white">
                 <Users className="w-8 h-8" />
               </div>
-              <h3 className="text-2xl font-bold text-secondary-900 mb-4">Pembelajaran Berkelanjutan</h3>
+              <h3 className="text-2xl font-bold text-secondary-900 mb-4">Pengembangan Kapasitas</h3>
               <p className="text-secondary-600 leading-relaxed">
-                Terus mempelajari hal-hal baru yang diperlukan untuk mengembangkan organisasi dan memberikan manfaat bagi anggota.
+                Fokus pada peningkatan kompetensi organisasi dan program yang memberikan nilai tambah konkret bagi anggota.
               </p>
             </div>
 
@@ -209,9 +209,9 @@ const SejarahPage: React.FC = () => {
               <div className="w-16 h-16 bg-accent-600 rounded-full flex items-center justify-center mx-auto mb-6 text-white">
                 <Award className="w-8 h-8" />
               </div>
-              <h3 className="text-2xl font-bold text-secondary-900 mb-4">Pencapaian Berkelanjutan</h3>
+              <h3 className="text-2xl font-bold text-secondary-900 mb-4">Hasil Nyata</h3>
               <p className="text-secondary-600 leading-relaxed">
-                Dari 11 orang pendiri hingga kini telah berkembang menjadi organisasi dengan tiga generasi yang solid dan terus bertumbuh.
+                Berkembang dari 11 pendiri menjadi organisasi tiga generasi dengan struktur yang solid dan program yang berkelanjutan.
               </p>
             </div>
           </div>

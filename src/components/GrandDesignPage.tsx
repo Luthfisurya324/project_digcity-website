@@ -1,6 +1,10 @@
 import React from 'react';
 
-const GrandDesignPage: React.FC = () => {
+interface GrandDesignPageProps {
+  onPageChange: (page: string) => void;
+}
+
+const GrandDesignPage: React.FC<GrandDesignPageProps> = ({ onPageChange }) => {
   const strategicPillars = [
     {
       title: 'Pengembangan SDM',
@@ -327,10 +331,17 @@ const GrandDesignPage: React.FC = () => {
             Grand Design ini hanya dapat terwujud dengan dukungan dan partisipasi aktif dari seluruh anggota dan stakeholder DIGCITY
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button className="bg-white text-primary-600 px-8 py-3 rounded-lg font-semibold hover:bg-primary-50 transition-colors duration-300">
+            <a 
+              href="/GRAND DESIGN DIGCITY 2024-2025_DRAFT 7.pdf" 
+              download="GRAND DESIGN DIGCITY 2024-2025_DRAFT 7.pdf"
+              className="bg-white text-primary-600 px-8 py-3 rounded-lg font-semibold hover:bg-primary-50 transition-colors duration-300 inline-block text-center"
+            >
               Download Grand Design
-            </button>
-            <button className="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-primary-600 transition-colors duration-300">
+            </a>
+            <button 
+              onClick={() => onPageChange('kontak')}
+              className="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-primary-600 transition-colors duration-300"
+            >
               Bergabung dengan Kami
             </button>
           </div>

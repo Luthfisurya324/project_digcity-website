@@ -1,10 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { newsAPI, type News } from '../lib/supabase';
+import { newsAPI, newsletterAPI, type News } from '../lib/supabase';
 
 const BlogPage: React.FC = () => {
   const [blogPosts, setBlogPosts] = useState<News[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('Semua');
+  
+  // Newsletter states
+  const [email, setEmail] = useState('');
+  const [isSubscribing, setIsSubscribing] = useState(false);
+  const [subscriptionMessage, setSubscriptionMessage] = useState('');
+  const [subscriptionStatus, setSubscriptionStatus] = useState<'success' | 'error' | null>(null);
 
   useEffect(() => {
     loadNews();
@@ -21,25 +27,8 @@ const BlogPage: React.FC = () => {
     }
   };
 
-  // Static fallback data if no data from Supabase
-  const fallbackPosts: News[] = [
-    {
-      id: '1',
-      title: "DIGCITY Raih Juara 1 Kompetisi Business Plan Nasional",
-      content: "Tim DIGCITY berhasil meraih juara pertama dalam kompetisi business plan tingkat nasional dengan inovasi platform e-commerce untuk UMKM. Pencapaian ini merupakan hasil kerja keras tim yang terdiri dari mahasiswa terbaik dari berbagai jurusan.",
-      excerpt: "Tim DIGCITY berhasil meraih juara pertama dalam kompetisi business plan tingkat nasional dengan inovasi platform e-commerce untuk UMKM.",
-      published_date: "2024-01-15",
-      author: "Admin DIGCITY",
-      category: "Prestasi",
-      tags: ['kompetisi', 'prestasi', 'business plan'],
-      image_url: "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=250&fit=crop",
-      created_at: "2024-01-15T00:00:00Z",
-      updated_at: "2024-01-15T00:00:00Z"
-    }
-  ];
-
-  // Use Supabase data if available, otherwise use fallback
-  const displayPosts = blogPosts.length > 0 ? blogPosts : fallbackPosts;
+  // Use only Supabase data - no fallback dummy data
+  const displayPosts = blogPosts;
 
   // Filter posts by category
   const filteredPosts = selectedCategory === 'Semua' 
@@ -57,6 +46,52 @@ const BlogPage: React.FC = () => {
       day: 'numeric'
     });
   };
+
+  // Newsletter subscription handler
+  const handleNewsletterSubscription = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!email.trim()) {
+      setSubscriptionMessage('Silakan masukkan email Anda');
+      setSubscriptionStatus('error');
+      return;
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setSubscriptionMessage('Format email tidak valid');
+      setSubscriptionStatus('error');
+      return;
+    }
+
+    setIsSubscribing(true);
+    setSubscriptionMessage('');
+    setSubscriptionStatus(null);
+
+    try {
+      await newsletterAPI.subscribe(email);
+      setSubscriptionMessage('Terima kasih! Anda berhasil berlangganan newsletter DIGCITY.');
+      setSubscriptionStatus('success');
+      setEmail('');
+    } catch (error: any) {
+      setSubscriptionMessage(error.message || 'Terjadi kesalahan. Silakan coba lagi.');
+      setSubscriptionStatus('error');
+    } finally {
+      setIsSubscribing(false);
+    }
+  };
+
+  // Clear subscription message after 5 seconds
+  useEffect(() => {
+    if (subscriptionMessage) {
+      const timer = setTimeout(() => {
+        setSubscriptionMessage('');
+        setSubscriptionStatus(null);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [subscriptionMessage]);
 
   if (loading) {
     return (
@@ -111,9 +146,10 @@ const BlogPage: React.FC = () => {
       {/* Blog Posts Grid */}
       <section className="pb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredPosts.map((post) => (
-              <article key={post.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200">
+          {filteredPosts.length > 0 ? (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {filteredPosts.map((post) => (
+                <article key={post.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200">
                 <div className="aspect-w-16 aspect-h-9">
                   <img
                     src={post.image_url}
@@ -143,14 +179,29 @@ const BlogPage: React.FC = () => {
                 </div>
               </article>
             ))}
-          </div>
+            </div>
+          ) : (
+            <div className="text-center py-16">
+              <div className="max-w-md mx-auto">
+                <div className="w-16 h-16 bg-secondary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-secondary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold text-secondary-900 mb-2">Belum Ada Berita</h3>
+                <p className="text-secondary-600">Saat ini belum ada berita yang tersedia. Silakan kembali lagi nanti untuk update terbaru dari DIGCITY.</p>
+              </div>
+            </div>
+          )}
 
-          {/* Load More Button */}
-          <div className="text-center mt-12">
-            <button className="bg-primary-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-primary-700 transition-colors duration-200">
-              Muat Lebih Banyak
-            </button>
-          </div>
+          {/* Load More Button - only show if there are posts */}
+          {filteredPosts.length > 0 && (
+            <div className="text-center mt-12">
+              <button className="bg-primary-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-primary-700 transition-colors duration-200">
+                Muat Lebih Banyak
+              </button>
+            </div>
+          )}
         </div>
       </section>
 
@@ -164,16 +215,36 @@ const BlogPage: React.FC = () => {
             <p className="text-primary-100 mb-8 max-w-2xl mx-auto">
               Dapatkan update terbaru tentang kegiatan DIGCITY langsung di email Anda
             </p>
-            <div className="max-w-md mx-auto flex gap-4">
-              <input
-                type="email"
-                placeholder="Masukkan email Anda"
-                className="flex-1 px-4 py-3 rounded-lg border-0 focus:ring-2 focus:ring-primary-300 focus:outline-none"
-              />
-              <button className="bg-white text-primary-600 px-6 py-3 rounded-lg font-semibold hover:bg-primary-50 transition-colors duration-200">
-                Berlangganan
-              </button>
-            </div>
+            <form onSubmit={handleNewsletterSubscription} className="max-w-md mx-auto">
+              <div className="flex gap-4 mb-4">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Masukkan email Anda"
+                  disabled={isSubscribing}
+                  className="flex-1 px-4 py-3 rounded-lg border-0 focus:ring-2 focus:ring-primary-300 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                />
+                <button 
+                  type="submit"
+                  disabled={isSubscribing}
+                  className="bg-white text-primary-600 px-6 py-3 rounded-lg font-semibold hover:bg-primary-50 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed min-w-[120px]"
+                >
+                  {isSubscribing ? 'Memproses...' : 'Berlangganan'}
+                </button>
+              </div>
+              
+              {/* Subscription message */}
+              {subscriptionMessage && (
+                <div className={`text-center text-sm p-3 rounded-lg ${
+                  subscriptionStatus === 'success' 
+                    ? 'bg-green-100 text-green-800 border border-green-200' 
+                    : 'bg-red-100 text-red-800 border border-red-200'
+                }`}>
+                  {subscriptionMessage}
+                </div>
+              )}
+            </form>
           </div>
         </div>
       </section>

@@ -23,80 +23,8 @@ const EventsPage: React.FC = () => {
     }
   };
 
-  // Static fallback data if no data from Supabase
-  const fallbackEvents: Event[] = [
-    {
-      id: '1',
-      title: "Digital Business Summit 2024",
-      description: "Summit tahunan yang membahas tren terbaru dalam bisnis digital, menghadirkan pembicara dari industri teknologi terkemuka.",
-      date: "2024-02-25",
-      location: "Aula Utama UIKA Bogor",
-      category: "Summit",
-      image_url: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400&h=250&fit=crop",
-      created_at: "2024-01-15T00:00:00Z",
-      updated_at: "2024-01-15T00:00:00Z"
-    },
-    {
-      id: '2',
-      title: "Workshop E-Commerce Strategy",
-      description: "Workshop praktis tentang strategi e-commerce untuk UMKM, mulai dari setup toko online hingga digital marketing.",
-      date: "2024-02-15",
-      location: "Lab Komputer Gedung B",
-      category: "Workshop",
-      image_url: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&h=250&fit=crop",
-      created_at: "2024-01-10T00:00:00Z",
-      updated_at: "2024-01-10T00:00:00Z"
-    },
-    {
-      id: '3',
-      title: "Startup Pitch Competition",
-      description: "Kompetisi pitch startup untuk mahasiswa dengan hadiah total 50 juta rupiah dan mentoring dari investor.",
-      date: "2024-02-10",
-      location: "Auditorium UIKA Bogor",
-      category: "Kompetisi",
-      image_url: "https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=400&h=250&fit=crop",
-      created_at: "2024-01-05T00:00:00Z",
-      updated_at: "2024-01-05T00:00:00Z"
-    },
-    {
-      id: '4',
-      title: "Networking Night: Meet the Alumni",
-      description: "Acara networking dengan alumni DIGCITY yang sukses di berbagai bidang bisnis digital dan teknologi.",
-      date: "2024-02-05",
-      location: "Hotel Santika Bogor",
-      category: "Networking",
-      image_url: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=400&h=250&fit=crop",
-      created_at: "2024-01-01T00:00:00Z",
-      updated_at: "2024-01-01T00:00:00Z"
-    },
-    {
-      id: '5',
-      title: "Digital Marketing Bootcamp",
-      description: "Bootcamp intensif 3 hari tentang digital marketing, SEO, social media marketing, dan Google Ads.",
-      date: "2024-01-28",
-      location: "Ruang Seminar Gedung C",
-      category: "Bootcamp",
-      image_url: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=250&fit=crop",
-      created_at: "2023-12-20T00:00:00Z",
-      updated_at: "2023-12-20T00:00:00Z"
-    },
-    {
-      id: '6',
-      title: "Tech Talk: AI in Business",
-      description: "Diskusi tentang implementasi artificial intelligence dalam bisnis modern dan peluang karir di bidang AI.",
-      date: "2024-01-20",
-      location: "Online via Zoom",
-      category: "Tech Talk",
-      image_url: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=400&h=250&fit=crop",
-      created_at: "2023-12-15T00:00:00Z",
-      updated_at: "2023-12-15T00:00:00Z"
-    }
-  ];
-
-
-
-  // Use fallback data if no events from API
-  const displayEvents = events.length > 0 ? events : fallbackEvents;
+  // Use only Supabase data - no fallback dummy data
+  const displayEvents = events;
   
   // Filter events based on selected category only
   const filteredEvents = displayEvents.filter(event => {
