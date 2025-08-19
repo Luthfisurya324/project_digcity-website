@@ -50,46 +50,6 @@ export default defineConfig(({ mode }) => ({
         main: './index.html'
       },
       output: {
-        manualChunks: (id) => {
-          // Critical vendor chunks - load first
-          if (id.includes('react') || id.includes('react-dom')) {
-            return 'vendor-react';
-          }
-          
-          // Essential utilities for initial render
-          if (id.includes('lucide-react')) {
-            return 'vendor-icons';
-          }
-          
-          // Non-critical vendor chunks - lazy load
-          if (id.includes('@supabase')) {
-            return 'vendor-supabase';
-          }
-          
-          if (id.includes('framer-motion')) {
-            return 'vendor-animation';
-          }
-          
-          // Critical components for first paint
-          if (id.includes('Header.tsx') || id.includes('HomePage.tsx')) {
-            return 'components-critical';
-          }
-          
-          // Non-critical components
-          if (id.includes('components/') && !id.includes('Header.tsx') && !id.includes('HomePage.tsx')) {
-            return 'components-lazy';
-          }
-          
-          // Utilities
-          if (id.includes('utils/') || id.includes('hooks/')) {
-            return 'utils';
-          }
-          
-          // Default vendor chunk for other node_modules
-          if (id.includes('node_modules')) {
-            return 'vendor';
-          }
-        },
         assetFileNames: (assetInfo) => {
           const info = assetInfo.name?.split('.')
           if (!info) return 'assets/[name]-[hash][extname]'
