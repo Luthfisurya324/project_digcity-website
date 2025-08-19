@@ -1,10 +1,28 @@
-import { defineConfig } from 'vite'
+import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
 import { fileURLToPath } from 'node:url'
+import type { NormalizedOutputOptions, OutputBundle } from 'rollup'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
+
+// Custom plugin for image optimization with proper typing
+const imageOptimizationPlugin = (): Plugin => ({
+  name: 'image-optimization',
+  generateBundle(_options: NormalizedOutputOptions, bundle: OutputBundle) {
+    // Add image optimization hints
+    Object.keys(bundle).forEach(fileName => {
+      if (/\.(png|jpe?g|gif|svg)$/i.test(fileName)) {
+        const asset = bundle[fileName];
+        if (asset && asset.type === 'asset') {
+          // Add cache headers for images
+          asset.fileName = asset.fileName.replace(/\.(\w+)$/, '-[hash].$1');
+        }
+      }
+    });
+  }
+})
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -14,22 +32,7 @@ export default defineConfig(({ mode }) => ({
         plugins: []
       }
     }),
-    // Custom plugin for image optimization
-    {
-      name: 'image-optimization',
-      generateBundle(_options, bundle) {
-        // Add image optimization hints
-        Object.keys(bundle).forEach(fileName => {
-          if (/\.(png|jpe?g|gif|svg)$/i.test(fileName)) {
-            const asset = bundle[fileName];
-            if (asset.type === 'asset') {
-              // Add cache headers for images
-              asset.fileName = asset.fileName.replace(/\.(\w+)$/, '-[hash].$1');
-            }
-          }
-        });
-      }
-    }
+    imageOptimizationPlugin()
   ],
   base: './',
   publicDir: 'public',
@@ -44,9 +47,12 @@ export default defineConfig(({ mode }) => ({
       localsConvention: 'camelCase'
     },
     preprocessorOptions: {
-      css: {
-        charset: false
+      scss: {
+        additionalData: `@import "@/styles/variables.scss";`
       }
+    },
+    postcss: {
+      plugins: []
     }
   },
   build: {
