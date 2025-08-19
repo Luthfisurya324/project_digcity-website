@@ -34,7 +34,7 @@ export default defineConfig(({ mode }) => ({
     }),
     imageOptimizationPlugin()
   ],
-  base: './',
+  base: '/',
   publicDir: 'public',
   resolve: {
     alias: {
@@ -47,12 +47,9 @@ export default defineConfig(({ mode }) => ({
       localsConvention: 'camelCase'
     },
     preprocessorOptions: {
-      scss: {
-        additionalData: `@import "@/styles/variables.scss";`
+      css: {
+        charset: false
       }
-    },
-    postcss: {
-      plugins: []
     }
   },
   build: {

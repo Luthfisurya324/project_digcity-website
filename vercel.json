@@ -4,13 +4,7 @@
   "devCommand": "npm run dev",
   "installCommand": "npm install",
   "framework": "vite",
-  "redirects": [
-    {
-      "source": "/www.digcity.my.id/(.*)",
-      "destination": "https://digcity.my.id/$1",
-      "permanent": true
-    }
-  ],
+
   "rewrites": [
     {
       "source": "/(.*)",
