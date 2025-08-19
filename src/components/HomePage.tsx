@@ -25,23 +25,24 @@ const HomePage: React.FC<HomePageProps> = ({ onPageChange }) => {
         </div>
 
         <div className="relative">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16 md:pt-28 md:pb-24">
-            <div className="grid md:grid-cols-2 gap-10 items-center">
-              <div className="text-center md:text-left">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/70 backdrop-blur border border-secondary-200 text-secondary-700 text-sm mb-4">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-12 sm:pt-20 sm:pb-16 md:pt-28 md:pb-24">
+            <div className="grid lg:grid-cols-2 gap-8 sm:gap-10 lg:gap-12 items-center">
+              <div className="text-center lg:text-left order-2 lg:order-1">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/70 backdrop-blur border border-secondary-200 text-secondary-700 text-xs sm:text-sm mb-4 sm:mb-6">
                   <span className="w-2 h-2 rounded-full bg-primary-500 animate-pulse" />
-                  Digital Business Student Society
+                  <span className="hidden xs:inline">Digital Business Student Society</span>
+                  <span className="xs:hidden">DBSS</span>
                 </div>
-                <h1 id="hero-heading" className="text-4xl md:text-6xl font-extrabold tracking-tight text-secondary-900 mb-6">
+                <h1 id="hero-heading" className="text-3xl xs:text-4xl sm:text-5xl md:text-6xl lg:text-5xl xl:text-6xl font-extrabold tracking-tight text-secondary-900 mb-4 sm:mb-6">
                   DIGCITY
                 </h1>
-                <p className="mt-4 text-lg md:text-xl text-secondary-700">
+                <p className="mt-3 sm:mt-4 text-base sm:text-lg md:text-xl text-secondary-700 leading-relaxed">
                   Himpunan Mahasiswa Bisnis Digital — Universitas Ibn Khaldun Bogor
                 </p>
-                <p className="mt-4 text-base text-secondary-600 max-w-2xl md:max-w-none">
+                <p className="mt-3 sm:mt-4 text-sm sm:text-base text-secondary-600 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
                   Berdampak • Adaptif • Inovatif • Kompeten — Temukan berbagai acara dan kegiatan kami, sampaikan kritik & saran untuk kemajuan himpunan.
                 </p>
-                <div className="mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center md:justify-start">
+                <div className="mt-6 sm:mt-8 flex flex-col xs:flex-row gap-3 sm:gap-4 justify-center lg:justify-start max-w-md mx-auto lg:mx-0">
                   <button 
                     onClick={() => handleNavigation('events')}
                     className="group inline-flex items-center justify-center bg-primary-600 text-white px-6 py-3 rounded-lg font-semibold shadow-lg shadow-primary-600/20 hover:bg-primary-700 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 interactive-element"
@@ -62,52 +63,55 @@ const HomePage: React.FC<HomePageProps> = ({ onPageChange }) => {
                 </div>
               </div>
 
-              <OptimizedImage 
-                src={innovationPng} 
-                alt="Ilustrasi inovasi digital - representasi visi DIGCITY dalam mengembangkan bisnis digital" 
-                width={500}
-                height={500}
-                className="w-80 h-80 sm:w-96 sm:h-96 md:w-[28rem] md:h-[28rem] lg:w-[32rem] lg:h-[32rem] critical-image optimized-image object-contain transition-transform duration-300 hover:scale-105 justify-self-center md:justify-self-end mix-blend-multiply"
-                priority={true}
-                lazy={false}
-                placeholder="empty"
-                sizes="(max-width: 640px) 320px, (max-width: 768px) 384px, (max-width: 1024px) 448px, 512px"
-              />
+              <div className="order-1 lg:order-2 flex justify-center lg:justify-end">
+                <OptimizedImage 
+                  src={innovationPng} 
+                  alt="Ilustrasi inovasi digital - representasi visi DIGCITY dalam mengembangkan bisnis digital" 
+                  width={500}
+                  height={500}
+                  className="w-64 h-64 xs:w-72 xs:h-72 sm:w-80 sm:h-80 md:w-96 md:h-96 lg:w-[28rem] lg:h-[28rem] xl:w-[32rem] xl:h-[32rem] critical-image optimized-image object-contain transition-transform duration-300 hover:scale-105 mix-blend-multiply"
+                  priority={true}
+                  lazy={false}
+                  placeholder="empty"
+                  sizes="(max-width: 375px) 256px, (max-width: 640px) 288px, (max-width: 768px) 320px, (max-width: 1024px) 384px, (max-width: 1280px) 448px, 512px"
+                />
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Events Promotion Section */}
-      <section className="py-16 bg-gradient-to-r from-primary-600 to-primary-700" aria-labelledby="events-heading">
+      <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-r from-primary-600 to-primary-700" aria-labelledby="events-heading">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center text-white">
-            <Calendar className="mx-auto h-16 w-16 mb-4 opacity-90" aria-hidden="true" />
-            <h2 id="events-heading" className="text-3xl font-bold mb-4">Acara & Kegiatan Terbaru</h2>
-            <p className="text-xl mb-8 text-primary-100 max-w-3xl mx-auto">
+            <Calendar className="mx-auto h-12 w-12 sm:h-16 sm:w-16 mb-4 sm:mb-6 opacity-90" aria-hidden="true" />
+            <h2 id="events-heading" className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 sm:mb-6">Acara & Kegiatan Terbaru</h2>
+            <p className="text-base sm:text-lg lg:text-xl mb-6 sm:mb-8 text-primary-100 max-w-3xl mx-auto leading-relaxed px-2">
               Jangan lewatkan berbagai workshop, seminar, kompetisi, dan acara networking yang kami selenggarakan. Bergabunglah untuk mengembangkan skill dan memperluas jaringan Anda!
             </p>
             <button 
               onClick={() => handleNavigation('events')}
-              className="inline-flex items-center justify-center bg-white text-primary-600 px-8 py-4 rounded-lg font-semibold hover:bg-primary-50 transition-colors shadow-lg focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-primary-600 interactive-element"
+              className="inline-flex items-center justify-center bg-white text-primary-600 px-6 py-3 sm:px-8 sm:py-4 rounded-lg font-semibold hover:bg-primary-50 transition-colors shadow-lg focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-primary-600 interactive-element text-sm sm:text-base"
               aria-label="Lihat semua acara dan kegiatan DIGCITY"
             >
-              Lihat Semua Acara
-              <ArrowRight className="ml-2 h-5 w-5" aria-hidden="true" />
+              <span className="hidden xs:inline">Lihat Semua Acara</span>
+              <span className="xs:hidden">Lihat Acara</span>
+              <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
             </button>
           </div>
         </div>
       </section>
 
       {/* About Section */}
-      <section id="tentang" className="py-20 bg-white" aria-labelledby="about-heading">
+      <section id="tentang" className="py-16 sm:py-20 lg:py-24 bg-white" aria-labelledby="about-heading">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-14">
-            <h2 id="about-heading" className="text-3xl md:text-4xl font-bold text-secondary-900 mb-3">Tentang DIGCITY</h2>
-            <p className="text-lg text-secondary-600 max-w-3xl mx-auto">Wadah pengembangan potensi mahasiswa Bisnis Digital yang menekankan nilai Berdampak, Adaptif, Inovatif, dan Kompeten.</p>
+          <div className="text-center mb-10 sm:mb-14">
+            <h2 id="about-heading" className="text-2xl sm:text-3xl lg:text-4xl font-bold text-secondary-900 mb-3 sm:mb-4">Tentang DIGCITY</h2>
+            <p className="text-base sm:text-lg text-secondary-600 max-w-3xl mx-auto leading-relaxed px-2">Wadah pengembangan potensi mahasiswa Bisnis Digital yang menekankan nilai Berdampak, Adaptif, Inovatif, dan Kompeten.</p>
           </div>
 
-          <div className="grid md:grid-cols-4 gap-6 md:gap-8" role="list">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8" role="list">
             <article className="group relative p-6 rounded-2xl border border-secondary-200 bg-white/70 backdrop-blur hover:shadow-xl hover:-translate-y-0.5 transition-all" role="listitem">
               <div className="w-14 h-14 bg-primary-100 rounded-xl flex items-center justify-center mb-4 text-primary-600" aria-hidden="true">
                 <CheckCircle2 size={28} />
@@ -148,20 +152,20 @@ const HomePage: React.FC<HomePageProps> = ({ onPageChange }) => {
       </section>
 
       {/* Vision Mission Section */}
-      <section className="py-20 bg-secondary-50/60" aria-labelledby="vision-mission-heading">
+      <section className="py-16 sm:py-20 lg:py-24 bg-secondary-50/60" aria-labelledby="vision-mission-heading">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-2 gap-12">
+          <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16">
             <div className="relative">
-              <Target className="absolute -top-6 -left-6 w-16 h-16 text-primary-200/30" aria-hidden="true" />
-              <h2 id="vision-mission-heading" className="text-3xl font-bold text-secondary-900 mb-6">Visi</h2>
-              <p className="text-lg text-secondary-700 leading-relaxed">
+              <Target className="absolute -top-4 -left-4 sm:-top-6 sm:-left-6 w-12 h-12 sm:w-16 sm:h-16 text-primary-200/30" aria-hidden="true" />
+              <h2 id="vision-mission-heading" className="text-2xl sm:text-3xl lg:text-4xl font-bold text-secondary-900 mb-4 sm:mb-6">Visi</h2>
+              <p className="text-base sm:text-lg text-secondary-700 leading-relaxed">
                 Mewujudkan DIGCITY sebagai organisasi yang Berdampak, Adaptif, Inovatif, Kompeten, yang menjadi wadah bagi mahasiswa Bisnis Digital untuk mengembangkan potensi diri, berprestasi, serta berkontribusi nyata bagi kemajuan program studi, fakultas, universitas, dan masyarakat.
               </p>
             </div>
             
             <div>
-              <h2 className="text-3xl font-bold text-secondary-900 mb-6">Misi</h2>
-              <ul className="space-y-4 text-lg text-secondary-700" role="list">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-secondary-900 mb-4 sm:mb-6">Misi</h2>
+              <ul className="space-y-3 sm:space-y-4 text-base sm:text-lg text-secondary-700" role="list">
                 <li className="flex items-start" role="listitem">
                   <span className="w-2.5 h-2.5 bg-primary-600 rounded-full mt-3 mr-3 flex-shrink-0" aria-hidden="true"></span>
                   Memperkuat budaya kolaborasi dan sinergi antar anggota DIGCITY serta dengan seluruh mahasiswa Bisnis Digital, Himpunan lain, dan seluruh civitas akademik di Universitas Ibn Khaldun Bogor.
@@ -185,36 +189,40 @@ const HomePage: React.FC<HomePageProps> = ({ onPageChange }) => {
       </section>
 
       {/* Membership Registration Info */}
-      <section className="py-20 bg-white" aria-labelledby="membership-heading">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-gradient-to-r from-secondary-50 to-primary-50 rounded-3xl p-8 md:p-12 text-center">
-            <Users className="mx-auto h-16 w-16 text-primary-600 mb-6" aria-hidden="true" />
-            <h2 id="membership-heading" className="text-3xl font-bold text-secondary-900 mb-4">Bergabung dengan DIGCITY</h2>
-            <p className="text-lg text-secondary-700 mb-6 max-w-3xl mx-auto">
+      <section className="py-16 sm:py-20 lg:py-24 bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 text-white relative overflow-hidden" aria-labelledby="membership-heading">
+        <div className="absolute inset-0 bg-black/10"></div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="text-center mb-8 sm:mb-12">
+            <Users className="mx-auto h-12 w-12 sm:h-16 sm:w-16 text-white mb-4 sm:mb-6 opacity-90" aria-hidden="true" />
+            <h2 id="membership-heading" className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4">Bergabung dengan DIGCITY</h2>
+            <p className="text-base sm:text-lg lg:text-xl text-primary-100 mb-4 sm:mb-6 max-w-3xl mx-auto leading-relaxed px-2">
               Pendaftaran keanggotaan DIGCITY dibuka pada periode tertentu, yakni di awal setiap kepengurusan atau pada kesempatan khusus yang akan diumumkan melalui platform resmi kami.
             </p>
-            <div className="bg-primary-100 rounded-2xl p-6 mb-8 border border-primary-200">
-              <p className="text-primary-800 font-medium">
+            <div className="bg-white/10 backdrop-blur rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8 border border-white/20">
+              <p className="text-white font-medium text-sm sm:text-base">
                 <strong>Catatan Penting:</strong> Ikuti media sosial dan pengumuman resmi kami untuk mendapatkan informasi terkini mengenai jadwal pendaftaran anggota baru.
               </p>
             </div>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button 
-                onClick={() => handleNavigation('kontak')}
-                className="inline-flex items-center justify-center bg-primary-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-primary-700 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 interactive-element"
-                aria-label="Tanyakan informasi lebih lanjut tentang keanggotaan DIGCITY"
-              >
-                <MessageSquare className="mr-2 h-5 w-5" aria-hidden="true" />
-                Tanyakan Informasi Lebih Lanjut
-              </button>
-              <button 
-                onClick={() => handleNavigation('events')}
-                className="inline-flex items-center justify-center bg-white text-primary-600 px-8 py-3 rounded-lg font-semibold border border-primary-200 hover:bg-primary-50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 interactive-element"
-                aria-label="Lihat acara mendatang DIGCITY"
-              >
-                Lihat Acara Mendatang
-              </button>
-            </div>
+          </div>
+          
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center max-w-md sm:max-w-none mx-auto">
+            <button 
+              onClick={() => handleNavigation('kontak')}
+              className="w-full sm:w-auto inline-flex items-center justify-center bg-white text-primary-700 px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-semibold hover:bg-primary-50 transition-colors shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 focus:outline-none focus:ring-4 focus:ring-white/30 text-sm sm:text-base"
+              aria-label="Tanyakan informasi lebih lanjut tentang keanggotaan DIGCITY"
+            >
+              <MessageSquare className="mr-2 h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
+              <span className="hidden xs:inline">Tanyakan Informasi Lebih Lanjut</span>
+              <span className="xs:hidden">Info Keanggotaan</span>
+            </button>
+            <button 
+              onClick={() => handleNavigation('events')}
+              className="w-full sm:w-auto inline-flex items-center justify-center border-2 border-white text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-semibold hover:bg-white hover:text-primary-700 transition-colors focus:outline-none focus:ring-4 focus:ring-white/30 text-sm sm:text-base"
+              aria-label="Lihat acara mendatang DIGCITY"
+            >
+              <span className="hidden xs:inline">Lihat Acara Mendatang</span>
+              <span className="xs:hidden">Lihat Acara</span>
+            </button>
           </div>
         </div>
       </section>
@@ -256,29 +264,29 @@ const HomePage: React.FC<HomePageProps> = ({ onPageChange }) => {
       </section>
 
       {/* Stats Section */}
-      <section className="py-20 bg-white" aria-labelledby="stats-heading">
+      <section className="py-16 sm:py-20 lg:py-24 bg-secondary-900 text-white" aria-labelledby="stats-heading">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 id="stats-heading" className="text-3xl font-bold text-secondary-900 mb-3">Pencapaian Kami</h2>
-            <p className="text-secondary-600">Angka-angka yang mencerminkan dedikasi dan kolaborasi kami.</p>
+          <div className="text-center mb-8 sm:mb-12">
+            <h2 id="stats-heading" className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4">DIGCITY dalam Angka</h2>
+            <p className="text-lg sm:text-xl text-secondary-300 leading-relaxed px-2">Pencapaian dan kontribusi nyata untuk komunitas</p>
           </div>
           
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8" role="list">
-            <article className="group text-center p-6 rounded-2xl border border-secondary-200 bg-white hover:shadow-lg transition-shadow" role="listitem">
-              <div className="text-4xl font-extrabold text-primary-600 mb-1">98</div>
-              <div className="text-secondary-600">Anggota Aktif</div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8" role="list">
+            <article className="group text-center p-4 sm:p-6 rounded-2xl border border-white/20 bg-white/10 backdrop-blur hover:bg-white/20 transition-all" role="listitem">
+              <div className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white mb-1 sm:mb-2">98</div>
+              <div className="text-xs sm:text-sm font-medium text-secondary-200 uppercase tracking-wide">Anggota Aktif</div>
             </article>
-            <article className="group text-center p-6 rounded-2xl border border-secondary-200 bg-white hover:shadow-lg transition-shadow" role="listitem">
-              <div className="text-4xl font-extrabold text-primary-600 mb-1">15+</div>
-              <div className="text-secondary-600">Event</div>
+            <article className="group text-center p-4 sm:p-6 rounded-2xl border border-white/20 bg-white/10 backdrop-blur hover:bg-white/20 transition-all" role="listitem">
+              <div className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white mb-1 sm:mb-2">25+</div>
+              <div className="text-xs sm:text-sm font-medium text-secondary-200 uppercase tracking-wide">Event Terlaksana</div>
             </article>
-            <article className="group text-center p-6 rounded-2xl border border-secondary-200 bg-white hover:shadow-lg transition-shadow" role="listitem">
-              <div className="text-4xl font-extrabold text-primary-600 mb-1">5+</div>
-              <div className="text-secondary-600">Kolaborasi</div>
+            <article className="group text-center p-4 sm:p-6 rounded-2xl border border-white/20 bg-white/10 backdrop-blur hover:bg-white/20 transition-all" role="listitem">
+              <div className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white mb-1 sm:mb-2">15+</div>
+              <div className="text-xs sm:text-sm font-medium text-secondary-200 uppercase tracking-wide">Kemitraan</div>
             </article>
-            <article className="group text-center p-6 rounded-2xl border border-secondary-200 bg-white hover:shadow-lg transition-shadow" role="listitem">
-              <div className="text-4xl font-extrabold text-primary-600 mb-1">3</div>
-              <div className="text-secondary-600">Tahun Berdiri</div>
+            <article className="group text-center p-4 sm:p-6 rounded-2xl border border-white/20 bg-white/10 backdrop-blur hover:bg-white/20 transition-all" role="listitem">
+              <div className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white mb-1 sm:mb-2">3</div>
+              <div className="text-xs sm:text-sm font-medium text-secondary-200 uppercase tracking-wide">Tahun Berdiri</div>
             </article>
           </div>
         </div>
