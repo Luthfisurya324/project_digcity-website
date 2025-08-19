@@ -31,7 +31,7 @@ export default defineConfig(({ mode }) => ({
       }
     }
   ],
-  base: '/',
+  base: './',
   publicDir: 'public',
   resolve: {
     alias: {
