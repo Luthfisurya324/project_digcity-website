@@ -2,6 +2,8 @@
 
 Website resmi untuk DigCity yang dibangun dengan React + TypeScript + Vite.
 
+> Last updated: 2025-01-19 - Force deployment trigger
+
 ## Deployment ke Vercel
 
 ### Direktori Root untuk Deployment
