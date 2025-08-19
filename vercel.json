@@ -23,7 +23,7 @@
       "headers": [
         {
           "key": "Permissions-Policy",
-          "value": "browsing-topics=()"
+          "value": ""
         },
         {
           "key": "X-Content-Type-Options",
