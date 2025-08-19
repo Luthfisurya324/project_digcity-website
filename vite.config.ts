@@ -1,9 +1,13 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
+import { fileURLToPath } from 'node:url'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   root: './',
   plugins: [
     react({
@@ -38,7 +42,7 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: process.env.NODE_ENV === 'development',
+    sourcemap: mode === 'development',
     minify: 'terser',
     target: 'es2020',
     cssCodeSplit: true,
@@ -143,7 +147,7 @@ export default defineConfig({
   // Enable esbuild optimizations
   esbuild: {
     // Remove console logs in production
-    drop: process.env.NODE_ENV === 'production' ? ['console', 'debugger'] : [],
+    drop: mode === 'production' ? ['console', 'debugger'] : [],
     // Optimize for modern browsers
     target: 'es2020',
     // Enable tree shaking
@@ -155,6 +159,7 @@ export default defineConfig({
     format: 'esm'
   },
   define: {
-    __APP_VERSION__: JSON.stringify(process.env.npm_package_version)
+    __APP_VERSION__: JSON.stringify(process.env.npm_package_version || 'unknown'),
+    'process.env.NODE_ENV': JSON.stringify(mode)
   }
-})
+}))

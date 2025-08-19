@@ -14,7 +14,7 @@ interface PerformanceMonitorProps {
 }
 
 const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({
-  enabled = process.env.NODE_ENV === 'development',
+  enabled = import.meta.env.DEV,
   position = 'bottom-right',
   minimized: initialMinimized = false
 }) => {
@@ -291,7 +291,7 @@ export const PerformanceAlert: React.FC<{ threshold?: number }> = ({ threshold =
   const { performanceScore } = usePerformance();
   const [dismissed, setDismissed] = useState(false);
 
-  if (dismissed || performanceScore >= threshold || process.env.NODE_ENV !== 'development') {
+  if (dismissed || performanceScore >= threshold || !import.meta.env.DEV) {
     return null;
   }
 

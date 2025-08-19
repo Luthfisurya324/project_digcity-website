@@ -369,7 +369,7 @@ export const initBundleOptimization = () => {
   const tracker = new BundleSizeTracker();
   
   // Monitor performance budget in development
-  if (process.env.NODE_ENV === 'development') {
+  if (import.meta.env.DEV) {
     setTimeout(() => {
       const budgetCheck = checkPerformanceBudget();
       if (!budgetCheck.passed) {

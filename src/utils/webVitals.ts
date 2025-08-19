@@ -395,7 +395,7 @@ export function sendWebVitalsToAnalytics(metric: PerformanceMetric): void {
   }
   
   // Console logging for development
-  if (process.env.NODE_ENV === 'development') {
+  if (import.meta.env.DEV) {
     console.log(`[Web Vitals] ${metric.name}:`, {
       value: metric.value,
       rating: metric.rating,

@@ -160,7 +160,7 @@ function App() {
     <div className="min-h-screen bg-white">
       {/* Performance Monitoring (Development Only) */}
       <PerformanceAlert threshold={60} />
-      <PerformanceMonitor enabled={process.env.NODE_ENV === 'development'} />
+      <PerformanceMonitor enabled={import.meta.env.DEV} />
       
       {currentPage !== 'admin' && (
         <Header currentPage={currentPage} onPageChange={handlePageChange} />
