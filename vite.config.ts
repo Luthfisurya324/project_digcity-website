@@ -8,7 +8,6 @@ const __dirname = path.dirname(__filename)
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => ({
-  root: './',
   plugins: [
     react({
       babel: {
@@ -48,7 +47,7 @@ export default defineConfig(({ mode }) => ({
     cssCodeSplit: true,
     rollupOptions: {
       input: {
-        main: path.resolve(__dirname, 'index.html')
+        main: './index.html'
       },
       output: {
         manualChunks: (id) => {
