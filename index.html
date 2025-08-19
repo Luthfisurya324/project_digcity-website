@@ -57,10 +57,9 @@
     <link rel="preload" href="/logo_digcity.png" as="image" type="image/png" fetchpriority="high" />
     <link rel="preload" href="/assets/images/digital-innovation-BrGR4o7e.png" as="image" type="image/png" fetchpriority="high" />
     
-    <!-- Optimized Google Fonts -->
-    <style>
-      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-    </style>
+    <!-- Preconnect for better performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     
     <!-- Inline Critical CSS -->
     <style>
@@ -73,16 +72,13 @@
       @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
       .optimized-image{image-rendering:-webkit-optimize-contrast;contain:layout style;transform:translateZ(0)}
     </style>
-    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     
     <!-- Additional performance optimizations -->
-    <link rel="modulepreload" href="/src/main.tsx" />
     <link rel="prefetch" href="/manifest.json" />
     <link rel="prefetch" href="/robots.txt" />
     
     <!-- Optimized Google Fonts -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" media="print" onload="this.media='all'; this.onload=null;" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" media="print" onload="this.media='all'; this.onload=null;" crossorigin />
     <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" /></noscript>
     
     <!-- Fallback font loading -->
@@ -93,8 +89,7 @@
       }
     </style>
     
-    <!-- Performance CSS -->
-    <link rel="stylesheet" href="/assets/css/main-CK2oOOKo.css">
+
   </head>
   <body>
     <!-- Loading Screen for Better UX -->

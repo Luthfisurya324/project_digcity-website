@@ -144,9 +144,9 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
     <img
       ref={imgRef}
       {...imageProps}
+      src={priority || !lazy ? optimizedSrc : (blurDataUrl || optimizedSrc)}
       {...(lazy && !priority && {
-        'data-src': optimizedSrc,
-        src: blurDataUrl || undefined
+        'data-src': optimizedSrc
       })}
       {...(srcSet && { srcSet })}
       {...(sizes && { sizes })}

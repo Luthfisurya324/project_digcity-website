@@ -39,6 +39,16 @@ export default defineConfig(({ mode }) => ({
       '~': path.resolve(__dirname, './src')
     }
   },
+  css: {
+    modules: {
+      localsConvention: 'camelCase'
+    },
+    preprocessorOptions: {
+      css: {
+        charset: false
+      }
+    }
+  },
   build: {
     outDir: 'dist',
     sourcemap: mode === 'development',
@@ -89,18 +99,27 @@ export default defineConfig(({ mode }) => ({
     cors: true,
     hmr: {
       overlay: true,
-      port: 24678
+      port: 24678,
+      clientPort: 24678
     },
     fs: {
       strict: true
+    },
+    middlewareMode: false,
+    headers: {
+      'Cross-Origin-Embedder-Policy': 'credentialless',
+      'Cross-Origin-Opener-Policy': 'same-origin'
     }
   },
   preview: {
     port: 4173,
     host: true,
-    // Enable compression
+    cors: true,
     headers: {
-      'Cache-Control': 'public, max-age=31536000'
+      'Cache-Control': 'public, max-age=31536000',
+      'Cross-Origin-Embedder-Policy': 'credentialless',
+      'Cross-Origin-Opener-Policy': 'same-origin',
+      'Content-Type': 'text/html; charset=utf-8'
     }
   },
   // Enable esbuild optimizations

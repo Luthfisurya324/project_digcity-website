@@ -11,9 +11,7 @@ const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/logo_digcity.png',
-  '/assets/digital-innovation.png',
-  '/assets/react.svg'
+  '/logo_digcity.png'
 ];
 
 // Cache strategies
@@ -83,6 +81,14 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== location.origin && 
       !isFont(request) && 
       !isImage(request)) {
+    return;
+  }
+  
+  // Skip development-only resources
+  if (url.pathname.includes('/src/') || 
+      url.pathname.includes('/@vite/') ||
+      url.pathname.includes('.tsx') ||
+      url.pathname.includes('.ts')) {
     return;
   }
   
