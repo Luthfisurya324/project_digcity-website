@@ -4,7 +4,16 @@
   "devCommand": "npm run dev",
   "installCommand": "npm install",
   "framework": "vite",
+  "cleanUrls": true,
+  "trailingSlash": false,
 
+  "redirects": [
+    {
+      "source": "/www.digcity.my.id/(.*)",
+      "destination": "https://digcity.my.id/$1",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     {
       "source": "/(.*)",
@@ -15,6 +24,10 @@
     {
       "source": "/(.*)",
       "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        },
         {
           "key": "Permissions-Policy",
           "value": ""
