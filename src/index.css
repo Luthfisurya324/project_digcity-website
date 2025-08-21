@@ -55,6 +55,51 @@
     background: white !important;
     background-image: none !important;
   }
+
+  /* Hero section responsive fixes for production */
+  @media (max-width: 767px) {
+    .hero-section {
+      min-height: 60vh !important;
+    }
+    .hero-grid {
+      grid-template-columns: 1fr !important;
+      gap: 2rem !important;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .hero-section {
+      min-height: 70vh !important;
+    }
+    .hero-grid {
+      grid-template-columns: 1fr 1fr !important;
+      gap: 3rem !important;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .hero-section {
+      min-height: 80vh !important;
+    }
+    .hero-grid {
+      gap: 4rem !important;
+    }
+  }
+
+  /* Image container responsive fixes */
+  .hero-image-container {
+    width: 100% !important;
+    max-width: 28rem !important;
+    aspect-ratio: 1 / 1 !important;
+    margin: 0 auto !important;
+  }
+
+  @media (min-width: 768px) {
+    .hero-image-container {
+      margin: 0 !important;
+      justify-self: end !important;
+    }
+  }
   
   .critical-image {
     image-rendering: -webkit-optimize-contrast;

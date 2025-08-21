@@ -1,5 +1,4 @@
 import React, { useCallback } from 'react';
-import innovationPng from '../assets/digital-innovation.png';
 import { ArrowRight, Lightbulb, RefreshCw, Award, CheckCircle2, Target, Calendar, MessageSquare, Users } from 'lucide-react';
 import OptimizedImage from './OptimizedImage';
 
@@ -17,7 +16,7 @@ const HomePage: React.FC<HomePageProps> = ({ onPageChange }) => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-secondary-50 via-white to-white">
       {/* Hero Section */}
-      <section className="relative overflow-hidden" aria-labelledby="hero-heading">
+      <section className="hero-section relative overflow-hidden" aria-labelledby="hero-heading">
         <div className="absolute inset-0 pointer-events-none">
           {/* Decorative gradient blobs */}
           <div className="absolute -top-24 -left-24 w-72 h-72 rounded-full blur-3xl opacity-30 bg-gradient-to-br from-primary-400 to-secondary-400" />
@@ -26,7 +25,7 @@ const HomePage: React.FC<HomePageProps> = ({ onPageChange }) => {
 
         <div className="relative">
           <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 pt-16 pb-12 sm:pt-20 sm:pb-16 md:pt-28 md:pb-24">
-            <div className="grid md:grid-cols-2 gap-8 sm:gap-10 items-center">
+            <div className="hero-grid grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 lg:gap-16 items-center w-full">
               <div className="text-center md:text-left">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/70 backdrop-blur border border-secondary-200 text-secondary-700 text-xs sm:text-sm mb-3 sm:mb-4">
                   <span className="w-2 h-2 rounded-full bg-primary-500 animate-pulse" />
@@ -40,7 +39,7 @@ const HomePage: React.FC<HomePageProps> = ({ onPageChange }) => {
                   Himpunan Mahasiswa Bisnis Digital — Universitas Ibn Khaldun Bogor
                 </p>
                 <p className="mt-3 sm:mt-4 text-sm sm:text-base text-secondary-600 max-w-2xl md:max-w-none leading-relaxed">
-                  Berdampak • Adaptif • Inovatif • Kompeten — Cari berbagai acara dan kegiatan kami, sampaikan kritik & saran untuk kemajuan himpunan.
+                  Berdampak • Adaptif • Inovatif • Kompeten — Temukan berbagai acara dan kegiatan kami, sampaikan kritik & saran untuk kemajuan himpunan.
                 </p>
                 <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center md:justify-start">
                   <button 
@@ -64,17 +63,16 @@ const HomePage: React.FC<HomePageProps> = ({ onPageChange }) => {
                 </div>
               </div>
 
-              <OptimizedImage 
-                src={innovationPng} 
-                alt="Ilustrasi inovasi digital - representasi visi DIGCITY dalam mengembangkan bisnis digital" 
-                width={500}
-                height={500}
-                className="w-64 h-64 xs:w-72 xs:h-72 sm:w-80 sm:h-80 md:w-96 md:h-96 lg:w-[28rem] lg:h-[28rem] xl:w-[32rem] xl:h-[32rem] critical-image optimized-image object-contain transition-transform duration-300 hover:scale-105 justify-self-center md:justify-self-end mix-blend-multiply"
-                priority={true}
-                lazy={false}
-                placeholder="empty"
-                sizes="(max-width: 375px) 256px, (max-width: 480px) 288px, (max-width: 640px) 320px, (max-width: 768px) 384px, (max-width: 1024px) 448px, 512px"
-              />
+              <div className="hero-image-container relative flex items-center justify-center justify-self-center md:justify-self-end">
+                <img 
+                  src="/digital-innovation.png" 
+                  alt="Ilustrasi inovasi digital - representasi visi DIGCITY dalam mengembangkan bisnis digital" 
+                  className="w-full h-full object-contain transition-transform duration-300 hover:scale-105 mix-blend-multiply"
+                  loading="eager"
+                  decoding="sync"
+                  style={{ imageRendering: 'crisp-edges' }}
+                />
+              </div>
             </div>
           </div>
         </div>
