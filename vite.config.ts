@@ -1,31 +1,12 @@
-import { defineConfig, type Plugin } from 'vite'
+import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
 import { fileURLToPath } from 'node:url'
-import type { NormalizedOutputOptions, OutputBundle } from 'rollup'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-// Custom plugin for image optimization with proper typing
-// Note: Only hash images imported in code, not public folder assets
-const imageOptimizationPlugin = (): Plugin => ({
-  name: 'image-optimization',
-  generateBundle(_options: NormalizedOutputOptions, bundle: OutputBundle) {
-    // Add image optimization hints only for imported assets, not public folder
-    Object.keys(bundle).forEach(fileName => {
-      if (/\.(png|jpe?g|gif|svg)$/i.test(fileName)) {
-        const asset = bundle[fileName];
-        if (asset && asset.type === 'asset') {
-          // Only hash if it's an imported asset (has source), not public folder asset
-          if (asset.source) {
-            asset.fileName = asset.fileName.replace(/\.(\w+)$/, '-[hash].$1');
-          }
-        }
-      }
-    });
-  }
-})
+// Note: Image handling is now managed through assetFileNames configuration
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -34,8 +15,7 @@ export default defineConfig(({ mode }) => ({
       babel: {
         plugins: []
       }
-    }),
-    imageOptimizationPlugin()
+    })
   ],
   base: '/',
   publicDir: 'public',
@@ -63,10 +43,11 @@ export default defineConfig(({ mode }) => ({
       output: {
         assetFileNames: (assetInfo) => {
           const info = assetInfo.name?.split('.')
-          if (!info) return 'assets/[name]-[hash][extname]'
+          if (!info) return 'assets/[name][extname]'
           const extType = info[info.length - 1]
           if (/png|jpe?g|svg|gif|tiff|bmp|ico/i.test(extType)) {
-            return `assets/images/[name]-[hash][extname]`
+            // Don't hash images from public folder
+            return `[name][extname]`
           }
           if (/css/i.test(extType)) {
             return `assets/css/[name]-[hash][extname]`

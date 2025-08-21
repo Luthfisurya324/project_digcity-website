@@ -120,8 +120,8 @@ export const usePerformance = () => {
     if (typeof window === 'undefined') return;
 
     const criticalResources = [
-      { href: '/logo_digcity.png', as: 'image', type: 'image/png', priority: 'high' },
-      { href: '/vite.svg', as: 'image', type: 'image/svg+xml', priority: 'low' }
+      { href: '/logo_digcity.png', as: 'image', type: 'image/png', priority: 'high' }
+      // Note: Removed vite.svg preload to prevent unused preload warnings
     ];
 
     criticalResources.forEach(resource => {
