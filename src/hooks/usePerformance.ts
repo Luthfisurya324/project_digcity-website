@@ -121,12 +121,7 @@ export const usePerformance = () => {
 
     const criticalResources = [
       { href: '/logo_digcity.png', as: 'image', type: 'image/png', priority: 'high' },
-      { href: '/src/assets/digital-innovation.png', as: 'image', type: 'image/png', priority: 'high' },
-      { href: '/src/assets/react.svg', as: 'image', type: 'image/svg+xml', priority: 'low' },
-      { href: '/vite.svg', as: 'image', type: 'image/svg+xml', priority: 'low' },
-      { href: '/src/index.css', as: 'style', priority: 'high' },
-      { href: '/src/styles/performance.css', as: 'style', priority: 'high' },
-      { href: '/src/main.tsx', as: 'script', priority: 'high' }
+      { href: '/vite.svg', as: 'image', type: 'image/svg+xml', priority: 'low' }
     ];
 
     criticalResources.forEach(resource => {
