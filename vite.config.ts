@@ -8,16 +8,19 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 // Custom plugin for image optimization with proper typing
+// Note: Only hash images imported in code, not public folder assets
 const imageOptimizationPlugin = (): Plugin => ({
   name: 'image-optimization',
   generateBundle(_options: NormalizedOutputOptions, bundle: OutputBundle) {
-    // Add image optimization hints
+    // Add image optimization hints only for imported assets, not public folder
     Object.keys(bundle).forEach(fileName => {
       if (/\.(png|jpe?g|gif|svg)$/i.test(fileName)) {
         const asset = bundle[fileName];
         if (asset && asset.type === 'asset') {
-          // Add cache headers for images
-          asset.fileName = asset.fileName.replace(/\.(\w+)$/, '-[hash].$1');
+          // Only hash if it's an imported asset (has source), not public folder asset
+          if (asset.source) {
+            asset.fileName = asset.fileName.replace(/\.(\w+)$/, '-[hash].$1');
+          }
         }
       }
     });

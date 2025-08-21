@@ -148,34 +148,9 @@ export const usePerformance = () => {
   const optimizeFontLoading = useCallback(() => {
     if (typeof window === 'undefined') return;
 
-    // Preload critical fonts
-    const fontPreloads = [
-      {
-        href: 'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiJ-Ek-_EeA.woff2',
-        weight: '400'
-      },
-      {
-        href: 'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyeAZ9hiJ-Ek-_EeAmA.woff2',
-        weight: '500'
-      },
-      {
-        href: 'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiJ-Ek-_EeA.woff2',
-        weight: '600'
-      }
-    ];
-
-    fontPreloads.forEach(font => {
-      const existing = document.querySelector(`link[href="${font.href}"]`);
-      if (existing) return;
-
-      const link = document.createElement('link');
-      link.rel = 'preload';
-      link.as = 'font';
-      link.type = 'font/woff2';
-      link.crossOrigin = 'anonymous';
-      link.href = font.href;
-      document.head.appendChild(link);
-    });
+    // Note: Font preloading removed to prevent 404 errors
+    // Google Fonts will be loaded via CSS link in index.html
+    // This prevents preload of potentially invalid font URLs
 
     // Add font-display: swap to existing font faces
     const style = document.createElement('style');
