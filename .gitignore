@@ -1,4 +1,6 @@
+# ===================================
 # Dependencies
+# ===================================
 node_modules/
 npm-debug.log*
 yarn-debug.log*
@@ -6,33 +8,194 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# Build outputs
+# ===================================
+# Build Outputs
+# ===================================
 dist/
 dist-ssr/
 build/
 out/
 
-# Vite specific
+# ===================================
+# Vite Specific
+# ===================================
 .vite/
 vite.config.*.timestamp-*
 
-# Environment files
+# ===================================
+# Environment Variables
+# ===================================
 .env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 .env.*
 !.env.example
 
-# Local development
+# ===================================
+# Development Files
+# ===================================
 *.local
 .cache/
 .temp/
 .tmp/
 
+# ===================================
 # Logs
+# ===================================
 logs/
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
 
-# Runtime data
+# ===================================
+# Runtime Data
+# ===================================
 pids/
+*.pid
+*.seed
+*.pid.lock
+
+# ===================================
+# TypeScript
+# ===================================
+tsconfig.tsbuildinfo
+*.tsbuildinfo
+
+# ===================================
+# ESLint
+# ===================================
+.eslintcache
+
+# ===================================
+# Testing
+# ===================================
+coverage/
+.nyc_output/
+.jest/
+__tests__/__snapshots__/
+test-results/
+playwright-report/
+playwright/.cache/
+
+# ===================================
+# Editor & IDE
+# ===================================
+# VSCode
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# ===================================
+# OS Generated Files
+# ===================================
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+
+# ===================================
+# Package Managers
+# ===================================
+# npm
+.npm
+
+# Yarn
+.yarn/
+!.yarn/releases
+!.yarn/plugins
+!.yarn/sdks
+!.yarn/versions
+.pnp.*
+yarn-error.log
+
+# pnpm
+.pnpm-store/
+pnpm-debug.log*
+
+# ===================================
+# Deployment Platforms
+# ===================================
+.vercel/
+.netlify/
+.firebase/
+.surge/
+
+# ===================================
+# Database & Backend Services
+# ===================================
+# Supabase
+.supabase/
+
+# Local databases
+*.db
+*.sqlite
+*.sqlite3
+database/
+
+# ===================================
+# Miscellaneous
+# ===================================
+# Archives
+*.tgz
+*.tar.gz
+*.zip
+*.rar
+*.7z
+
+# Backup files
+*.bak
+*.backup
+*.old
+*.orig
+
+# Temporary files
+*.tmp
+*.temp
+
+# System files
 *.pid
 *.seed
 *.pid.lock
@@ -40,80 +203,37 @@ pids/
 # Diagnostic reports
 report.*.json
 
-# TypeScript
-tsconfig.tsbuildinfo
-*.tsbuildinfo
-
-# ESLint
-.eslintcache
-
-# Testing
-coverage/
-.nyc_output/
-.jest/
-__tests__/__snapshots__/
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-.idea/
-*.swp
-*.swo
-*~
-
-# OS generated files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-Desktop.ini
-
-# Platform/IDE specific
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-
-# Package managers
-.pnpm-store/
-.yarn/
-!.yarn/releases
-!.yarn/plugins
-!.yarn/sdks
-!.yarn/versions
-.pnp.*
-
-# Deployment platforms
-.vercel/
-.netlify/
-.firebase/
-.surge/
-
-# Supabase
-.supabase/
-
-# Misc
-*.tgz
-*.tar.gz
-.turbo/
+# ===================================
+# Framework Specific
+# ===================================
+# Next.js
 .next/
+
+# Nuxt.js
 .nuxt/
 .output/
+
+# SvelteKit
 .svelte-kit/
 
-# Local database
-*.db
-*.sqlite
-*.sqlite3
+# Turbo
+.turbo/
 
-# Backup files
-*.bak
-*.backup
-*.old
+# ===================================
+# Performance Monitoring
+# ===================================
+# Bundle analyzer
+bundle-analyzer-report.html
+
+# Lighthouse reports
+lighthouse-report.html
+
+# ===================================
+# Security
+# ===================================
+# API keys and secrets
+*.key
+*.pem
+*.p12
+*.pfx
+secrets.json

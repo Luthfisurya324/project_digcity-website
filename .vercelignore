@@ -1,42 +1,99 @@
-# Dependencies
+# ===================================
+# Vercel Deployment Ignore
+# ===================================
+# This file specifies which files and directories
+# should be excluded from Vercel deployments
+
+# ===================================
+# Dependencies (already handled by Vercel)
+# ===================================
 node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
 
-# Development files that should be ignored
-*.md
-!README.md
+# ===================================
+# Development & Build Files
+# ===================================
+# Source files (only dist is needed)
+src/
 
-# Configuration files that should be ignored
-.env*
-!.env.example
+# Development configuration
+.env.development
+.env.local
+.env.test
+vite.config.ts
+tsconfig*.json
 eslint.config.js
+postcss.config.js
+tailwind.config.js
 
-# Build artifacts
+# Build artifacts (Vercel handles building)
 dist/
 build/
 .vite/
 
-# IDE and editor files
+# ===================================
+# Documentation & Markdown
+# ===================================
+*.md
+!README.md
+docs/
+
+# ===================================
+# Development Tools
+# ===================================
+# Testing
+__tests__/
+test/
+tests/
+coverage/
+.jest/
+.nyc_output/
+test-results/
+playwright-report/
+playwright/.cache/
+
+# Linting & Formatting
+.eslintcache
+.prettierrc*
+.editorconfig
+
+# ===================================
+# IDE & Editor Files
+# ===================================
 .vscode/
 .idea/
+*.sublime-project
+*.sublime-workspace
 *.swp
 *.swo
 *~
 
-# OS generated files
+# ===================================
+# OS Generated Files
+# ===================================
+# macOS
 .DS_Store
 .DS_Store?
 ._*
 .Spotlight-V100
 .Trashes
+
+# Windows
 ehthumbs.db
 Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
 
-# Logs
+# Linux
+*~
+
+# ===================================
+# Logs & Runtime Data
+# ===================================
 logs/
 *.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
 
 # Runtime data
 pids/
@@ -44,19 +101,115 @@ pids/
 *.seed
 *.pid.lock
 
-# Coverage directory used by tools like istanbul
-coverage/
-
-# Temporary folders
+# ===================================
+# Temporary Files
+# ===================================
 tmp/
 temp/
+.tmp/
+.temp/
+*.tmp
+*.temp
 
-# Database files
+# ===================================
+# Database Files
+# ===================================
 *.sqlite
+*.sqlite3
 *.db
 database/
+.supabase/
 
-# Documentation
-docs/
-*.pdf
-!public/*.pdf
+# ===================================
+# Package Manager Files
+# ===================================
+# npm
+.npm
+npm-debug.log*
+
+# Yarn
+.yarn/
+!.yarn/releases
+!.yarn/plugins
+!.yarn/sdks
+!.yarn/versions
+.pnp.*
+yarn-error.log
+
+# pnpm
+.pnpm-store/
+pnpm-debug.log*
+
+# ===================================
+# Git & Version Control
+# ===================================
+.git/
+.gitignore
+.gitattributes
+
+# ===================================
+# Environment & Secrets
+# ===================================
+.env*
+!.env.example
+secrets.json
+*.key
+*.pem
+*.p12
+*.pfx
+
+# ===================================
+# Performance & Analysis
+# ===================================
+bundle-analyzer-report.html
+lighthouse-report.html
+
+# ===================================
+# Backup & Archive Files
+# ===================================
+*.bak
+*.backup
+*.old
+*.orig
+*.tgz
+*.tar.gz
+*.zip
+*.rar
+*.7z
+
+# ===================================
+# Framework Specific
+# ===================================
+# Next.js (if migrating)
+.next/
+
+# Nuxt.js (if migrating)
+.nuxt/
+.output/
+
+# SvelteKit (if migrating)
+.svelte-kit/
+
+# ===================================
+# Deployment Platforms
+# ===================================
+.vercel/
+.netlify/
+.firebase/
+.surge/
+
+# ===================================
+# Miscellaneous
+# ===================================
+# TypeScript build info
+tsconfig.tsbuildinfo
+*.tsbuildinfo
+
+# Diagnostic reports
+report.*.json
+
+# Cache directories
+.cache/
+
+# Turbo
+.turbo/
