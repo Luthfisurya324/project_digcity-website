@@ -45,11 +45,6 @@ export default defineConfig(({ mode }) => ({
   css: {
     modules: {
       localsConvention: 'camelCase'
-    },
-    preprocessorOptions: {
-      css: {
-        charset: false
-      }
     }
   },
   build: {
