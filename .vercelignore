@@ -12,18 +12,10 @@ node_modules/
 # ===================================
 # Development & Build Files
 # ===================================
-# Source files (only dist is needed)
-src/
-
 # Development configuration
 .env.development
 .env.local
 .env.test
-vite.config.ts
-tsconfig*.json
-eslint.config.js
-postcss.config.js
-tailwind.config.js
 
 # Build artifacts (Vercel handles building)
 dist/
