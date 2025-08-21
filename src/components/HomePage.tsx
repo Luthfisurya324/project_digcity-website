@@ -40,7 +40,7 @@ const HomePage: React.FC<HomePageProps> = ({ onPageChange }) => {
                   Himpunan Mahasiswa Bisnis Digital — Universitas Ibn Khaldun Bogor
                 </p>
                 <p className="mt-3 sm:mt-4 text-sm sm:text-base text-secondary-600 max-w-2xl md:max-w-none leading-relaxed">
-                  Berdampak • Adaptif • Inovatif • Kompeten — Temukan berbagai acara dan kegiatan kami, sampaikan kritik & saran untuk kemajuan himpunan.
+                  Berdampak • Adaptif • Inovatif • Kompeten — Cari berbagai acara dan kegiatan kami, sampaikan kritik & saran untuk kemajuan himpunan.
                 </p>
                 <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center md:justify-start">
                   <button 
