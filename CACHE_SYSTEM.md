@@ -23,9 +23,8 @@ Sistem cache management yang canggih untuk memastikan website DIGCITY selalu men
 - **Offline fallback** untuk pengalaman yang konsisten
 
 ### 4. User Experience
-- **Notifikasi update** ketika ada konten baru
+- **Auto-update otomatis** tanpa notifikasi user
 - **Force refresh** dengan clear cache otomatis
-- **Cache status indicator** di header website
 - **Admin control panel** untuk mengelola cache
 
 ## Komponen Utama
@@ -46,12 +45,6 @@ cacheManager.setupAutoClear();
 const hasUpdate = await cacheManager.checkForUpdates();
 ```
 
-### UpdateNotification (`src/components/UpdateNotification.tsx`)
-Komponen yang memberitahu user ketika ada update:
-- Muncul otomatis setiap 5 menit
-- Memberikan opsi update atau tunda
-- Auto-refresh setelah update
-
 ### CacheControl (`src/components/CacheControl.tsx`)
 Panel admin untuk mengontrol cache:
 - Clear all cache
@@ -59,13 +52,6 @@ Panel admin untuk mengontrol cache:
 - Clear expired cache only
 - Update cache configuration
 - Monitor cache status
-
-### CacheStatus (`src/components/CacheStatus.tsx`)
-Indicator status cache di header:
-- Version info
-- Last update time
-- Update availability
-- Auto-clear status
 
 ## Service Worker (`public/sw.js`)
 
@@ -119,7 +105,15 @@ useEffect(() => {
 }, []);
 ```
 
-### 2. Manual Cache Control
+### 2. Auto-Update
+Sistem akan otomatis:
+- Check update setiap 30 menit
+- Clear expired cache setiap jam
+- Clear semua cache setiap 12 jam
+- Auto-update saat ada perubahan
+- Reload halaman otomatis
+
+### 3. Manual Cache Control
 ```typescript
 import { clearWebsiteCache, forceRefreshWebsite } from './utils/cacheManager';
 
@@ -130,7 +124,7 @@ await clearWebsiteCache();
 await forceRefreshWebsite();
 ```
 
-### 3. Admin Panel
+### 4. Admin Panel
 Admin bisa akses cache control melalui:
 - Login ke admin panel
 - Pilih tab "Cache Control"
@@ -165,7 +159,7 @@ console.log('Auto Clear:', info.autoClear);
 - Regular cleanup untuk menghemat storage
 
 ### 2. User Experience
-- Notifikasi update yang tidak mengganggu
+- Auto-update tanpa intervensi user
 - Fallback untuk offline mode
 - Smooth transitions saat update
 

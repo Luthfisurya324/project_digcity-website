@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { ChevronDown, Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { OptimizedLogo } from './OptimizedImage';
-import CacheStatus from './CacheStatus';
 
 
 interface HeaderProps {
@@ -183,11 +182,6 @@ const Header: React.FC<HeaderProps> = ({ currentPage, onPageChange }) => {
               )}
             </div>
           </nav>
-
-          {/* Cache Status */}
-          <div className="hidden lg:flex items-center">
-            <CacheStatus showDetails={false} className="text-xs" />
-          </div>
 
           {/* Mobile menu button */}
           <div className="md:hidden">

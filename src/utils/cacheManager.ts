@@ -150,10 +150,12 @@ export class CacheManager {
   }
 
   /**
-   * Check apakah ada update baru
+   * Check dan auto-update jika ada update baru
    */
   public async checkForUpdates(): Promise<boolean> {
     try {
+      let hasUpdate = false;
+      
       // Check service worker update
       if ('serviceWorker' in navigator) {
         const registration = await navigator.serviceWorker.getRegistration();
@@ -162,7 +164,9 @@ export class CacheManager {
           
           // Check jika ada service worker baru
           if (registration.waiting) {
-            return true;
+            hasUpdate = true;
+            // Auto-activate new service worker
+            registration.waiting.postMessage({ type: 'SKIP_WAITING' });
           }
         }
       }
@@ -172,11 +176,17 @@ export class CacheManager {
       const storedVersion = localStorage.getItem('digcity_cache_version');
       
       if (storedVersion !== currentVersion) {
+        hasUpdate = true;
         localStorage.setItem('digcity_cache_version', currentVersion);
-        return true;
       }
       
-      return false;
+      // Auto-update jika ada perubahan
+      if (hasUpdate) {
+        console.log('Cache Manager: Update terdeteksi, melakukan auto-update...');
+        await this.autoUpdate();
+      }
+      
+      return hasUpdate;
     } catch (error) {
       console.error('Cache Manager: Gagal check update:', error);
       return false;
@@ -184,34 +194,63 @@ export class CacheManager {
   }
 
   /**
-   * Setup auto-clear cache
+   * Auto-update tanpa user interaction
+   */
+  private async autoUpdate(): Promise<void> {
+    try {
+      // Clear expired cache
+      await this.clearExpiredCaches();
+      
+      // Update timestamp
+      this.lastUpdate = Date.now();
+      
+      console.log('Cache Manager: Auto-update berhasil');
+      
+      // Reload halaman untuk memastikan konten terbaru
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } catch (error) {
+      console.error('Cache Manager: Gagal auto-update:', error);
+    }
+  }
+
+  /**
+   * Setup auto-clear dan auto-update cache
    */
   public setupAutoClear(): void {
     if (!this.config.autoClear) return;
+    
+    // Check update setiap 30 menit
+    setInterval(() => {
+      this.checkForUpdates();
+    }, 30 * 60 * 1000);
     
     // Clear expired cache setiap jam
     setInterval(() => {
       this.clearExpiredCaches();
     }, 60 * 60 * 1000);
     
-    // Clear semua cache setiap 24 jam
+    // Clear semua cache setiap 12 jam (lebih agresif)
     setInterval(() => {
       this.clearAllCaches();
-    }, 24 * 60 * 60 * 1000);
+    }, 12 * 60 * 60 * 1000);
     
-    // Clear cache saat user kembali ke website
+    // Clear cache dan check update saat user kembali ke website
     document.addEventListener('visibilitychange', () => {
       if (!document.hidden) {
         this.clearExpiredCaches();
+        this.checkForUpdates();
       }
     });
     
     // Clear cache saat online/offline status berubah
     window.addEventListener('online', () => {
       this.clearExpiredCaches();
+      this.checkForUpdates();
     });
     
-    console.log('Cache Manager: Auto-clear setup berhasil');
+    console.log('Cache Manager: Auto-clear dan auto-update setup berhasil');
   }
 
   /**

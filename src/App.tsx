@@ -12,7 +12,6 @@ import HomePage from './components/HomePage'
 import PerformanceAlert from './components/PerformanceMonitor'
 import PerformanceMonitor from './components/PerformanceMonitor'
 import ImageTest from './components/ImageTest'
-import UpdateNotification from './components/UpdateNotification'
 
 // Lazy load components for better performance
 const LazyBlogPage = React.lazy(() => import('./components/BlogPage'))
@@ -143,11 +142,6 @@ function App() {
       {/* Performance Monitoring (Development Only) */}
       <PerformanceAlert threshold={60} />
       <PerformanceMonitor enabled={import.meta.env.DEV} />
-      
-      {/* Update Notification */}
-      <UpdateNotification onUpdate={() => {
-        console.log('Website updated successfully');
-      }} />
       
       {currentPage !== 'admin' && (
         <Header currentPage={currentPage} onPageChange={handlePageChange} />
