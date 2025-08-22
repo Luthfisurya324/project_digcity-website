@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { OptimizedImage } from './OptimizedImage';
+import OptimizedImage from './OptimizedImage';
 
 const ImageTest: React.FC = () => {
   const [isLoaded, setIsLoaded] = useState(false);

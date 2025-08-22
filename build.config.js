@@ -34,102 +34,24 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: false, // Disable sourcemap in production
+    sourcemap: false,
     minify: 'terser',
     target: 'es2020',
-    cssCodeSplit: false, // Disable CSS code splitting to avoid MIME type issues
+    cssCodeSplit: false,
     rollupOptions: {
       input: {
         main: './index.html'
       },
       output: {
-        assetFileNames: (assetInfo) => {
-          const info = assetInfo.name?.split('.');
-          if (!info) return 'assets/[name][extname]';
-          const extType = info[info.length - 1];
-          
-          // Handle images from public folder - keep them in root
-          if (/png|jpe?g|svg|gif|tiff|bmp|ico/i.test(extType)) {
-            return `[name][extname]`;
-          }
-          
-          // Handle CSS files
-          if (/css/i.test(extType)) {
-            return `assets/css/[name][extname]`;
-          }
-          
-          // Handle font files
-          if (/woff2?|eot|ttf|otf/i.test(extType)) {
-            return `assets/fonts/[name][extname]`;
-          }
-          
-          // Handle JS files
-          if (/js|tsx?/i.test(extType)) {
-            return `assets/js/[name][extname]`;
-          }
-          
-          return `assets/[name][extname]`;
-        },
+        assetFileNames: 'assets/[name][extname]',
         chunkFileNames: 'assets/js/[name].js',
         entryFileNames: 'assets/js/[name].js'
-      },
-      // Enable tree shaking
-      treeshake: {
-        moduleSideEffects: false,
-        propertyReadSideEffects: false,
-        tryCatchDeoptimization: false
       }
     },
     chunkSizeWarningLimit: 1000
   },
-  // Optimize dependencies
   optimizeDeps: {
-    include: ['react', 'react-dom', 'lucide-react'],
-    exclude: ['@vite/client', '@vite/env']
-  },
-  server: {
-    port: 3000,
-    host: true,
-    open: false,
-    cors: true,
-    hmr: {
-      overlay: true,
-      port: 24678,
-      clientPort: 24678
-    },
-    fs: {
-      strict: true
-    },
-    middlewareMode: false,
-    headers: {
-      'Cross-Origin-Embedder-Policy': 'credentialless',
-      'Cross-Origin-Opener-Policy': 'same-origin'
-    }
-  },
-  preview: {
-    port: 4173,
-    host: true,
-    cors: true,
-    headers: {
-      'Cache-Control': 'public, max-age=31536000',
-      'Cross-Origin-Embedder-Policy': 'credentialless',
-      'Cross-Origin-Opener-Policy': 'same-origin',
-      'Content-Type': 'text/html; charset=utf-8'
-    }
-  },
-  // Enable esbuild optimizations
-  esbuild: {
-    // Remove console logs in production
-    drop: ['console', 'debugger'],
-    // Optimize for modern browsers
-    target: 'es2020',
-    // Enable tree shaking
-    treeShaking: true,
-    minifyIdentifiers: true,
-    minifySyntax: true,
-    minifyWhitespace: true,
-    legalComments: 'none',
-    format: 'esm'
+    include: ['react', 'react-dom', 'lucide-react']
   },
   define: {
     __APP_VERSION__: JSON.stringify(process.env.npm_package_version || 'unknown'),
