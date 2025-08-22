@@ -32,6 +32,21 @@ function App() {
   // Initialize performance monitoring
   const { initializeOptimizations } = usePerformance()
 
+  // Parse current URL to determine initial page
+  const parseInitialPage = useCallback(() => {
+    const path = window.location.pathname
+    if (path === '/' || path === '') return 'home'
+    
+    // Remove leading slash and get page name
+    const page = path.substring(1)
+    const validPages = [
+      'home', 'blog', 'events', 'sejarah', 'logo', 'visi-misi',
+      'struktur-organisasi', 'grand-design', 'galeri', 'kontak', 'admin'
+    ]
+    
+    return validPages.includes(page) ? page : 'home'
+  }, [])
+
   // Navigation handler
   const navigateToPage = useCallback((page: string) => {
     const validPages = [
@@ -42,7 +57,8 @@ function App() {
     if (validPages.includes(page)) {
       setCurrentPage(page)
       // Update URL without page reload
-      window.history.pushState({ page }, '', `/${page === 'home' ? '' : page}`)
+      const url = page === 'home' ? '/' : `/${page}`
+      window.history.pushState({ page }, '', url)
     }
   }, [])
 
@@ -51,12 +67,20 @@ function App() {
     const handlePopState = (event: PopStateEvent) => {
       if (event.state?.page) {
         setCurrentPage(event.state.page)
+      } else {
+        // Handle direct URL access or refresh
+        setCurrentPage(parseInitialPage())
       }
     }
 
     window.addEventListener('popstate', handlePopState)
     return () => window.removeEventListener('popstate', handlePopState)
-  }, [])
+  }, [parseInitialPage])
+
+  // Initialize page based on current URL
+  useEffect(() => {
+    setCurrentPage(parseInitialPage())
+  }, [parseInitialPage])
 
   // Initialize service worker and performance optimizations
   useEffect(() => {
@@ -140,7 +164,7 @@ function App() {
   return (
     <div className="min-h-screen bg-white">
       {/* Performance Monitoring (Development Only) */}
-      <PerformanceAlert threshold={60} />
+      <PerformanceAlert />
       <PerformanceMonitor enabled={import.meta.env.DEV} />
       
       {currentPage !== 'admin' && (
