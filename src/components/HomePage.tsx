@@ -1,7 +1,6 @@
 import React, { useCallback } from 'react';
-import { ArrowRight, Lightbulb, RefreshCw, Award, CheckCircle2, Target, Calendar, MessageSquare, Users } from 'lucide-react';
-import OptimizedImage from './OptimizedImage';
-import { getPublicAssetUrl } from '../config/assetConfig';
+import { ArrowRight, Lightbulb, RefreshCw, Award, CheckCircle2, Target, Calendar, MessageSquare, Users, Building2, Sparkles, Zap, Globe, TrendingUp } from 'lucide-react';
+
 
 interface HomePageProps {
   onPageChange?: (page: string) => void;
@@ -17,62 +16,121 @@ const HomePage: React.FC<HomePageProps> = ({ onPageChange }) => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-secondary-50 via-white to-white">
       {/* Hero Section */}
-      <section className="hero-section relative overflow-hidden" aria-labelledby="hero-heading">
+      <section className="relative overflow-hidden" aria-labelledby="hero-heading">
         <div className="absolute inset-0 pointer-events-none">
-          {/* Decorative gradient blobs */}
-          <div className="absolute -top-24 -left-24 w-72 h-72 rounded-full blur-3xl opacity-30 bg-gradient-to-br from-primary-400 to-secondary-400" />
-          <div className="absolute -bottom-16 -right-16 w-72 h-72 rounded-full blur-3xl opacity-20 bg-gradient-to-br from-secondary-300 to-primary-300" />
+          {/* Enhanced gradient blobs with better positioning - mobile optimized */}
+          <div className="absolute -top-16 -left-16 sm:-top-32 sm:-left-32 w-48 h-48 sm:w-80 sm:h-80 rounded-full blur-3xl opacity-20 bg-gradient-to-br from-primary-400 via-secondary-400 to-primary-600" />
+          <div className="absolute -bottom-10 -right-10 sm:-bottom-20 sm:-right-20 w-48 h-48 sm:w-80 sm:h-80 rounded-full blur-3xl opacity-15 bg-gradient-to-br from-secondary-300 via-primary-300 to-secondary-500" />
+          <div className="absolute top-1/3 -right-8 sm:-right-16 w-32 h-32 sm:w-64 sm:h-64 rounded-full blur-3xl opacity-10 bg-gradient-to-br from-primary-200 to-secondary-300" />
+          
+          {/* Enhanced grid pattern - mobile optimized */}
+          <svg className="absolute inset-0 w-full h-full opacity-5" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse" className="sm:w-40 sm:h-40">
+                <path d="M 20 0 L 0 0 0 20" fill="none" stroke="currentColor" strokeWidth="0.5" />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#grid)" className="text-secondary-400" />
+          </svg>
+          
+          {/* Floating geometric shapes - mobile optimized */}
+          <div className="absolute top-10 right-10 sm:top-20 sm:right-20 w-8 h-8 sm:w-16 sm:h-16 border-2 border-primary-200/30 rounded-lg rotate-12 animate-pulse" />
+          <div className="absolute bottom-16 left-16 sm:bottom-32 sm:left-32 w-6 h-6 sm:w-12 sm:h-12 bg-secondary-200/20 rounded-full animate-pulse delay-1000" />
+          <div className="absolute top-1/2 left-10 sm:left-20 w-4 h-4 sm:w-8 sm:h-8 bg-primary-300/20 rounded-lg rotate-45 animate-pulse delay-500" />
+          
+          {/* Additional floating elements for more visual interest - mobile optimized */}
+          <div className="absolute top-8 left-1/4 sm:top-16 sm:left-1/4 w-3 h-3 sm:w-6 sm:h-6 bg-gradient-to-br from-primary-300/40 to-secondary-300/40 rounded-full animate-bounce delay-700" />
+          <div className="absolute bottom-8 right-1/4 sm:bottom-16 sm:right-1/4 w-2 h-2 sm:w-4 sm:h-4 bg-gradient-to-br from-secondary-400/30 to-primary-400/30 rounded-full animate-bounce delay-300" />
         </div>
 
         <div className="relative">
-          <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 pt-16 pb-12 sm:pt-20 sm:pb-16 md:pt-28 md:pb-24">
-            <div className="hero-grid grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 lg:gap-16 items-center w-full">
-              <div className="text-center md:text-left">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/70 backdrop-blur border border-secondary-200 text-secondary-700 text-xs sm:text-sm mb-3 sm:mb-4">
-                  <span className="w-2 h-2 rounded-full bg-primary-500 animate-pulse" />
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-12 sm:pt-20 sm:pb-16 md:pt-28 md:pb-24">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-16 items-center">
+              <div className="text-center lg:text-left order-2 lg:order-1">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-white/80 backdrop-blur border border-secondary-200 text-secondary-700 text-xs sm:text-sm mb-4 sm:mb-6 shadow-sm hover:shadow-md transition-shadow duration-200">
+                  <Building2 className="w-3 h-3 sm:w-4 sm:h-4 text-primary-500" />
                   <span className="hidden xs:inline">Digital Business Student Society</span>
-                  <span className="xs:hidden">DBSS</span>
+                  <span className="xs:hidden">DIGCITY Society</span>
                 </div>
-                <h1 id="hero-heading" className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-secondary-900 mb-4 sm:mb-6 leading-tight">
+                <h1 id="hero-heading" className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-secondary-900 mb-4 sm:mb-6">
                   DIGCITY
                 </h1>
-                <p className="mt-3 sm:mt-4 text-base sm:text-lg md:text-xl text-secondary-700 leading-relaxed">
+                <p className="text-base sm:text-lg md:text-xl text-secondary-700 mb-3 sm:mb-4 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
                   Himpunan Mahasiswa Bisnis Digital — Universitas Ibn Khaldun Bogor
                 </p>
-                <p className="mt-3 sm:mt-4 text-sm sm:text-base text-secondary-600 max-w-2xl md:max-w-none leading-relaxed">
+                <p className="text-sm sm:text-base md:text-lg text-secondary-600 mb-6 sm:mb-8 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
                   Berdampak • Adaptif • Inovatif • Kompeten — Temukan berbagai acara dan kegiatan kami, sampaikan kritik & saran untuk kemajuan himpunan.
                 </p>
-                <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center md:justify-start">
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start">
                   <button 
                     onClick={() => handleNavigation('events')}
-                    className="group inline-flex items-center justify-center bg-primary-600 text-white px-4 sm:px-6 py-3 sm:py-3 rounded-lg font-semibold shadow-lg shadow-primary-600/20 hover:bg-primary-700 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 interactive-element min-h-[44px] text-sm sm:text-base"
+                    className="group inline-flex items-center justify-center bg-primary-600 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg font-semibold shadow-lg shadow-primary-600/20 hover:bg-primary-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 interactive-element min-h-[40px] sm:min-h-[44px] text-sm sm:text-base hover:shadow-xl hover:-translate-y-0.5"
                     aria-label="Jelajahi acara dan kegiatan DIGCITY"
                   >
                     <Calendar className="mr-2 h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
                     <span className="hidden xs:inline">Jelajahi Acara Kami</span>
-                    <span className="xs:hidden">Acara Kami</span>
+                    <span className="xs:hidden">Lihat Acara</span>
                     <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
                   </button>
                   <button 
                     onClick={() => handleNavigation('kontak')}
-                    className="inline-flex items-center justify-center bg-white text-secondary-800 px-4 sm:px-6 py-3 sm:py-3 rounded-lg font-semibold border border-secondary-200 hover:bg-secondary-50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 interactive-element min-h-[44px] text-sm sm:text-base"
+                    className="inline-flex items-center justify-center bg-white text-secondary-800 px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg font-semibold border border-secondary-200 hover:bg-secondary-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 interactive-element min-h-[40px] sm:min-h-[44px] text-sm sm:text-base hover:shadow-lg hover:-translate-y-0.5"
                     aria-label="Kirim kritik dan saran untuk DIGCITY"
                   >
                     <MessageSquare className="mr-2 h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
-                    Kritik & Saran
+                    <span className="hidden xs:inline">Kritik & Saran</span>
+                    <span className="xs:hidden">Kontak</span>
                   </button>
                 </div>
               </div>
 
-              <div className="hero-image-container relative flex items-center justify-center justify-self-center md:justify-self-end">
-                <img 
-                  src={getPublicAssetUrl('digital-innovation.png')}
-                  alt="Ilustrasi inovasi digital - representasi visi DIGCITY dalam mengembangkan bisnis digital" 
-                  className="w-full h-full object-contain transition-transform duration-300 hover:scale-105 mix-blend-multiply"
-                  loading="eager"
-                  decoding="sync"
-                  style={{ imageRendering: 'crisp-edges' }}
-                />
+              <div className="relative flex items-center justify-center order-1 lg:order-2 mb-6 lg:mb-0">
+                {/* Hidden on mobile, visible on sm and up */}
+                <div className="hidden sm:block relative w-full max-w-sm sm:max-w-md lg:max-w-lg">
+                  {/* Modern visual elements instead of image - mobile optimized */}
+                  <div className="relative w-full aspect-square max-w-sm sm:max-w-md lg:max-w-lg">
+                    {/* Main circular container */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary-100 via-secondary-100 to-primary-200 rounded-full shadow-xl sm:shadow-2xl flex items-center justify-center hover:shadow-3xl transition-shadow duration-300">
+                      {/* Inner content - simplified and eye-catching */}
+                      <div className="text-center p-4 sm:p-6 lg:p-8">
+                        <div className="w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 bg-gradient-to-br from-primary-500 to-secondary-600 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-5 shadow-lg hover:scale-105 transition-transform duration-200">
+                          <Building2 className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 text-white" />
+                        </div>
+                        <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-secondary-800 mb-2">DIGCITY</h3>
+                        <div className="w-16 h-1 bg-gradient-to-r from-primary-400 to-secondary-500 rounded-full mx-auto"></div>
+                      </div>
+                    </div>
+                    
+                    {/* Floating icons around the circle - mobile optimized */}
+                    <div className="absolute -top-2 -right-2 sm:-top-4 sm:-right-4 w-8 h-8 sm:w-12 sm:h-12 lg:w-16 lg:h-16 bg-white rounded-full shadow-lg flex items-center justify-center border-2 border-primary-100 hover:scale-110 transition-transform duration-200">
+                      <Sparkles className="w-4 h-4 sm:w-6 sm:h-6 lg:w-8 lg:h-8 text-primary-500" />
+                    </div>
+                    <div className="absolute -bottom-2 -left-2 sm:-bottom-4 sm:-left-4 w-7 h-7 sm:w-10 sm:h-10 lg:w-14 lg:h-14 bg-white rounded-full shadow-lg flex items-center justify-center border-2 border-secondary-100 hover:scale-110 transition-transform duration-200">
+                      <Zap className="w-3.5 h-3.5 sm:w-5 sm:h-5 lg:w-7 lg:h-7 text-secondary-500" />
+                    </div>
+                    <div className="absolute top-1/2 -left-4 sm:-left-6 lg:-left-8 w-6 h-6 sm:w-8 sm:h-8 lg:w-12 lg:h-12 bg-white rounded-full shadow-lg flex items-center justify-center border-2 border-primary-200 hover:scale-110 transition-transform duration-200">
+                      <Globe className="w-3 h-3 sm:w-4 sm:h-4 lg:w-6 lg:h-6 text-primary-400" />
+                    </div>
+                    <div className="absolute top-1/4 -right-3 sm:-right-4 lg:-right-6 w-5 h-5 sm:w-6 sm:h-6 lg:w-10 lg:h-10 bg-white rounded-full shadow-lg flex items-center justify-center border-2 border-secondary-200 hover:scale-110 transition-transform duration-200">
+                      <TrendingUp className="w-2.5 h-2.5 sm:w-3 sm:h-3 lg:w-5 lg:h-5 text-secondary-400" />
+                    </div>
+                    
+                    {/* Decorative dots - mobile optimized */}
+                    <div className="absolute top-4 left-4 sm:top-6 sm:left-6 lg:top-8 lg:left-8 w-2 h-2 sm:w-2.5 sm:h-2.5 lg:w-3 lg:h-3 bg-primary-300 rounded-full animate-pulse" />
+                    <div className="absolute bottom-6 right-6 sm:bottom-8 sm:right-8 lg:bottom-12 lg:right-12 w-1.5 h-1.5 sm:w-2 sm:h-2 lg:w-2 lg:h-2 bg-secondary-300 rounded-full animate-pulse delay-1000" />
+                    <div className="absolute top-1/2 right-2 sm:right-3 lg:right-4 w-2 h-2 sm:w-2.5 sm:h-2.5 bg-primary-400 rounded-full animate-pulse delay-500" />
+                  </div>
+                  
+                  {/* Background decorative elements */}
+                  <div className="absolute -z-10 inset-0 bg-gradient-to-br from-primary-50/50 to-secondary-50/50 rounded-full blur-3xl scale-150" />
+                </div>
+                
+                {/* Mobile placeholder - simple and clean */}
+                <div className="sm:hidden w-full flex items-center justify-center">
+                  <div className="w-24 h-24 bg-gradient-to-br from-primary-100 to-secondary-100 rounded-full flex items-center justify-center shadow-lg">
+                    <Building2 className="w-12 h-12 text-primary-600" />
+                  </div>
+                </div>
               </div>
             </div>
           </div>

@@ -57,7 +57,7 @@ const getBaseConfig = (): AssetConfig => {
 };
 
 // Asset configuration instance
-export const assetConfig = getBaseConfig();
+export const assetConfig: AssetConfig = getBaseConfig();
 
 // Utility functions
 export const getAssetUrl = (path: string, type: 'image' | 'css' | 'js' | 'font' | 'public' = 'public'): string => {
@@ -79,7 +79,8 @@ export const getAssetUrl = (path: string, type: 'image' | 'css' | 'js' | 'font' 
 };
 
 export const getPublicAssetUrl = (filename: string): string => {
-  return assetConfig.publicPath + filename;
+  // Untuk file di folder public, selalu gunakan root path
+  return `/${filename}`;
 };
 
 export const getImageUrl = (filename: string): string => {
@@ -102,7 +103,6 @@ export const getFontUrl = (filename: string): string => {
 export const preloadConfig = {
   critical: [
     { path: 'logo_digcity.png', type: 'image' as const },
-    { path: 'digital-innovation.png', type: 'image' as const }
   ],
   fonts: [
     'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap'

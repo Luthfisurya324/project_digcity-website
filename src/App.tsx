@@ -1,84 +1,62 @@
-import { useState, useEffect } from 'react'
-import Header from './components/Header'
-import HomePage from './components/HomePage'
-import Footer from './components/Footer'
-import { useSEO } from './hooks/useSEO'
-import { getSEOConfig } from './config/seoConfig'
-import { usePerformance, useServiceWorker } from './hooks/usePerformance'
-import {
-  LazyBlogPage,
-  LazyEventsPage,
-  LazySejarahPage,
-  LazyLogoPage,
-  LazyVisiMisiPage,
-  LazyStrukturOrganisasiPage,
-  LazyGrandDesignPage,
-  LazyGaleriPage,
-  LazyKontakPage,
-  LazyAdminPage,
-  preloadCriticalPages,
-  preloadPage
-} from './components/LazyComponents'
-import PerformanceMonitor, { PerformanceAlert } from './components/PerformanceMonitor'
+import React, { useState, useEffect, useCallback } from 'react'
+import { usePerformance } from './hooks/usePerformance'
+import { preloadCriticalPages, preloadPage } from './components/LazyComponents'
+import { registerServiceWorker } from './utils/serviceWorker'
 import { initFormatDetection } from './utils/formatDetection'
+import { getSEOConfig } from './config/seoConfig'
+import { useSEO } from './hooks/useSEO'
+import Header from './components/Header'
+import Footer from './components/Footer'
+import HomePage from './components/HomePage'
+import PerformanceAlert from './components/PerformanceMonitor'
+import PerformanceMonitor from './components/PerformanceMonitor'
+import ImageTest from './components/ImageTest'
+
+// Lazy load components for better performance
+const LazyBlogPage = React.lazy(() => import('./components/BlogPage'))
+const LazyEventsPage = React.lazy(() => import('./components/EventsPage'))
+const LazySejarahPage = React.lazy(() => import('./components/SejarahPage'))
+const LazyLogoPage = React.lazy(() => import('./components/LogoPage'))
+const LazyVisiMisiPage = React.lazy(() => import('./components/VisiMisiPage'))
+const LazyStrukturOrganisasiPage = React.lazy(() => import('./components/StrukturOrganisasiPage'))
+const LazyGrandDesignPage = React.lazy(() => import('./components/GrandDesignPage'))
+const LazyGaleriPage = React.lazy(() => import('./components/GaleriPage'))
+const LazyKontakPage = React.lazy(() => import('./components/KontakPage'))
+const LazyAdminPage = React.lazy(() => import('./pages/AdminPage'))
 
 function App() {
   const [currentPage, setCurrentPage] = useState('home')
-  
-  // Initialize performance monitoring and service worker
-  const { preloadCriticalResources } = usePerformance()
-  const { registerServiceWorker } = useServiceWorker()
+  const [isLoading, setIsLoading] = useState(false)
 
-  // Helper: derive page id from current location
-  const getPageFromLocation = (): string => {
-    // Prefer pathname (e.g., /events). Fallback to hash if provided.
-    const hash = window.location.hash.replace('#', '')
-    let path = window.location.pathname || '/'
+  // Initialize performance monitoring
+  const { initializeOptimizations } = usePerformance()
 
-    // Normalize when app is served from subpath (strip trailing slash)
-    // Keep only first segment after leading slash
-    if (path !== '/') {
-      const segments = path.split('/').filter(Boolean)
-      if (segments.length > 0) {
-        return segments[0]
-      }
+  // Navigation handler
+  const navigateToPage = useCallback((page: string) => {
+    const validPages = [
+      'home', 'blog', 'events', 'sejarah', 'logo', 'visi-misi',
+      'struktur-organisasi', 'grand-design', 'galeri', 'kontak', 'admin'
+    ]
+    
+    if (validPages.includes(page)) {
+      setCurrentPage(page)
+      // Update URL without page reload
+      window.history.pushState({ page }, '', `/${page === 'home' ? '' : page}`)
     }
+  }, [])
 
-    // Fallback: support legacy hash-based admin
-    if (hash === 'admin') return 'admin'
-
-    return 'home'
-  }
-
-  // Helper: push/replace browser URL without full page reload
-  const navigateToPage = (page: string, replace = false) => {
-    const targetPath = page === 'home' ? '/' : `/${page}`
-    const state = { page }
-    if (replace) {
-      window.history.replaceState(state, '', targetPath)
-    } else {
-      window.history.pushState(state, '', targetPath)
-    }
-  }
-
-  // Initialize route and listen to back/forward navigation
+  // Handle browser back/forward buttons
   useEffect(() => {
-    const initialPage = getPageFromLocation()
-    setCurrentPage(initialPage)
-    // Normalize URL to / or /page on first load
-    navigateToPage(initialPage, true)
-
-    const handlePopState = () => {
-      const pageFromPath = getPageFromLocation()
-      setCurrentPage(pageFromPath)
-      // Reset scroll position to top when using browser back/forward
-      window.scrollTo(0, 0)
+    const handlePopState = (event: PopStateEvent) => {
+      if (event.state?.page) {
+        setCurrentPage(event.state.page)
+      }
     }
 
     window.addEventListener('popstate', handlePopState)
     return () => window.removeEventListener('popstate', handlePopState)
   }, [])
-  
+
   // Initialize service worker and performance optimizations
   useEffect(() => {
     // Register service worker for caching and offline support
@@ -88,9 +66,6 @@ function App() {
     
     // Initialize format detection for modern image formats
     initFormatDetection()
-    
-    // Preload critical resources
-    preloadCriticalResources()
     
     // Preload critical pages
     preloadCriticalPages()
@@ -110,7 +85,7 @@ function App() {
       themeColorMeta.content = '#1e40af'
       document.head.appendChild(themeColorMeta)
     }
-  }, [registerServiceWorker, preloadCriticalResources])
+  }, [])
 
   // Update page + URL when user navigates via UI
   const handlePageChange = (page: string) => {
@@ -151,6 +126,8 @@ function App() {
         return <LazyKontakPage />
       case 'admin':
         return <LazyAdminPage />
+      case 'test':
+        return <ImageTest />
       default:
         return <HomePage onPageChange={handlePageChange} />
     }

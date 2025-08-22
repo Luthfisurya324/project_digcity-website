@@ -50,16 +50,13 @@ if [ -d "dist" ]; then
     fi
     
     # Check for public assets
-    if [ -f "dist/digital-innovation.png" ]; then
-        echo "✅ digital-innovation.png ditemukan"
-    else
-        echo "❌ digital-innovation.png tidak ditemukan!"
-    fi
-    
+    echo "🔍 Checking critical assets..."
+
     if [ -f "dist/logo_digcity.png" ]; then
         echo "✅ logo_digcity.png ditemukan"
     else
         echo "❌ logo_digcity.png tidak ditemukan!"
+        exit 1
     fi
     
 else

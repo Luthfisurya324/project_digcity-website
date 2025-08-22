@@ -44,9 +44,9 @@ export default defineConfig(({ mode }) => ({
           if (!info) return 'assets/[name][extname]'
           const extType = info[info.length - 1]
           
-          // Handle images from public folder
+          // Handle images from public folder - keep them in root
           if (/png|jpe?g|svg|gif|tiff|bmp|ico/i.test(extType)) {
-            return `assets/images/[name][extname]`
+            return `[name][extname]`
           }
           
           // Handle CSS files

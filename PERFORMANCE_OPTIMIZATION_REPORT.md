@@ -26,7 +26,6 @@ Laporan ini merangkum optimasi performa yang telah diimplementasikan untuk websi
   ```typescript
   // Preload critical resources
   preloadResource('/assets/logo_digcity.png', 'image');
-  preloadResource('/assets/digital-innovation.png', 'image');
   preloadResource('/css/performance.css', 'style');
   ```
 

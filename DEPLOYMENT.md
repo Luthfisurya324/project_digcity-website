@@ -1,10 +1,21 @@
-# Deployment Guide untuk DIGCITY Website
+# DEPLOYMENT GUIDE - DIGCITY Website
+
+## Status Deployment Terkini
+
+### Issues yang Ditemukan:
+1. **File tidak ditemukan (404)**: `react.svg`, `main.tsx`
+2. **Assets yang berhasil di-deploy**: `logo_digcity.png`, `manifest.json`, `robots.txt`, `sitemap.xml`
+
+### Rekomendasi:
+- Pastikan semua file source code ter-compile dengan benar
+- Verifikasi path file assets sudah sesuai
+- Test loading time dan performance setelah deployment
 
 ## Masalah yang Ditemukan
 
 Setelah deploy ke Vercel di domain `digcity.my.id`, ditemukan beberapa error:
 
-1. **File tidak ditemukan (404)**: `digital-innovation.png`, `react.svg`, `main.tsx`
+1. **File tidak ditemukan (404)**: `react.svg`, `main.tsx`
 2. **MIME type error**: CSS file di-load sebagai `text/plain` bukan `text/css`
 3. **Font loading error**: Font Google tidak dapat di-load
 4. **Preload warning**: Resource yang di-preload tidak digunakan
@@ -63,14 +74,15 @@ Pastikan file berikut ada di folder `dist/`:
 ```
 dist/
 ├── index.html
-├── digital-innovation.png
-├── logo_digcity.png
 ├── assets/
-│   ├── css/
-│   │   └── index.css
-│   └── js/
-│       └── main.js
-└── _headers
+│   ├── index-[hash].js
+│   ├── index-[hash].css
+│   └── [hash].js
+├── logo_digcity.png
+├── manifest.json
+├── robots.txt
+├── sitemap.xml
+└── sw.js
 ```
 
 ### 3. Deploy ke Vercel
