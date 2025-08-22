@@ -1,15 +1,13 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { ChevronDown, Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { OptimizedLogo } from './OptimizedImage';
 
-
-interface HeaderProps {
-  currentPage: string;
-  onPageChange: (page: string) => void;
-}
-
-const Header: React.FC<HeaderProps> = ({ currentPage, onPageChange }) => {
+const Header: React.FC = () => {
+  const location = useLocation();
+  const currentPage = location.pathname === '/' ? 'home' : location.pathname.slice(1);
+  
   const [isAboutDropdownOpen, setIsAboutDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [dropdownTimeout, setDropdownTimeout] = useState<NodeJS.Timeout | null>(null);
@@ -49,12 +47,28 @@ const Header: React.FC<HeaderProps> = ({ currentPage, onPageChange }) => {
     return () => window.removeEventListener('resize', handleResize);
   }, [isMobileMenuOpen]);
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (!target.closest('.about-dropdown')) {
+        setIsAboutDropdownOpen(false);
+      }
+    };
+
+    if (isAboutDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isAboutDropdownOpen]);
+
   const handleMobileMenuToggle = useCallback(() => {
     setIsMobileMenuOpen(prev => !prev);
     setIsAboutDropdownOpen(false); // Close desktop dropdown when opening mobile menu
   }, []);
-
-
 
   const handleDropdownMouseEnter = useCallback(() => {
     if (dropdownTimeout) {
@@ -72,22 +86,20 @@ const Header: React.FC<HeaderProps> = ({ currentPage, onPageChange }) => {
   }, []);
 
   const navItems = useMemo(() => [
-    { id: 'home', label: 'Beranda' },
-    { id: 'blog', label: 'Berita' },
-    { id: 'events', label: 'Acara' },
+    { id: 'home', label: 'Beranda', path: '/' },
+    { id: 'blog', label: 'Berita', path: '/blog' },
+    { id: 'events', label: 'Acara', path: '/events' },
   ], []);
 
   const aboutMenuItems = useMemo(() => [
-    { id: 'sejarah', label: 'Sejarah' },
-    { id: 'logo', label: 'Logo' },
-    { id: 'visi-misi', label: 'Visi Misi' },
-    { id: 'struktur-organisasi', label: 'Struktur Organisasi' },
-    { id: 'grand-design', label: 'Grand Design DIGCITY' },
-    { id: 'galeri', label: 'Galeri DIGCITY' },
-    { id: 'kontak', label: 'Kontak Kami' },
+    { id: 'sejarah', label: 'Sejarah', path: '/sejarah' },
+    { id: 'logo', label: 'Logo', path: '/logo' },
+    { id: 'visi-misi', label: 'Visi Misi', path: '/visi-misi' },
+    { id: 'struktur-organisasi', label: 'Struktur Organisasi', path: '/struktur-organisasi' },
+    { id: 'grand-design', label: 'Grand Design DIGCITY', path: '/grand-design' },
+    { id: 'galeri', label: 'Galeri DIGCITY', path: '/galeri' },
+    { id: 'kontak', label: 'Kontak Kami', path: '/kontak' },
   ], []);
-
-
 
   return (
     <header className="sticky top-0 z-40 bg-white/70 backdrop-blur border-b border-secondary-200 shadow-sm" role="banner">
@@ -95,10 +107,9 @@ const Header: React.FC<HeaderProps> = ({ currentPage, onPageChange }) => {
         <div className="flex justify-between items-center py-4">
           {/* Logo */}
           <div className="flex items-center">
-            <button 
-              onClick={() => onPageChange('home')}
+            <Link 
+              to="/"
               className="flex items-center space-x-3 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded-lg p-1"
-              aria-label="Kembali ke beranda DIGCITY"
             >
               <div className="w-12 h-12 flex items-center justify-center flex-shrink-0">
                 <OptimizedLogo 
@@ -113,16 +124,15 @@ const Header: React.FC<HeaderProps> = ({ currentPage, onPageChange }) => {
                 <h1 className="text-xl font-bold text-secondary-900 leading-tight">DIGCITY</h1>
                 <p className="text-sm text-secondary-600 leading-tight">Digital Business Student Society</p>
               </div>
-            </button>
+            </Link>
           </div>
 
           {/* Navigation */}
           <nav className="hidden md:flex space-x-8" role="navigation" aria-label="Menu utama">
             {navItems.map((item) => (
-              <button
+              <Link
                 key={item.id}
-                onClick={() => onPageChange(item.id)}
-
+                to={item.path}
                 className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${
                   currentPage === item.id
                     ? 'text-primary-600 bg-primary-50'
@@ -131,12 +141,12 @@ const Header: React.FC<HeaderProps> = ({ currentPage, onPageChange }) => {
                 aria-current={currentPage === item.id ? 'page' : undefined}
               >
                 {item.label}
-              </button>
+              </Link>
             ))}
             
             {/* Tentang Kami Mega Menu */}
             <div 
-              className="relative"
+              className="relative about-dropdown"
               onMouseEnter={handleDropdownMouseEnter}
               onMouseLeave={handleDropdownMouseLeave}
             >
@@ -147,39 +157,59 @@ const Header: React.FC<HeaderProps> = ({ currentPage, onPageChange }) => {
                 aria-label="Menu tentang kami"
               >
                Tentang Kami
-               <ChevronDown className={`w-4 h-4 ml-1 transition-transform ${isAboutDropdownOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
+               <ChevronDown className={`w-4 h-4 ml-1 transition-transform duration-200 ${isAboutDropdownOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
               </button>
               
               {/* Dropdown Menu */}
-              {isAboutDropdownOpen && (
-                <div 
-                  className="absolute top-full left-0 mt-1 w-64 bg-white rounded-xl shadow-xl border border-secondary-200 py-2 z-30 dropdown-menu"
-                  role="menu"
-                  aria-label="Submenu tentang kami"
-                  onMouseEnter={handleDropdownMouseEnter}
-                  onMouseLeave={handleDropdownMouseLeave}
-                >
-                  {aboutMenuItems.map((item) => (
-                    <button
-                      key={item.id}
-                      onClick={() => {
-                        onPageChange(item.id);
-                        setIsAboutDropdownOpen(false);
-                      }}
-
-                      className={`w-full text-left px-4 py-3 text-sm transition-colors duration-200 hover:bg-primary-50 hover:text-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-inset ${
-                        currentPage === item.id
-                          ? 'text-primary-600 bg-primary-50'
-                          : 'text-secondary-700'
-                      }`}
-                      role="menuitem"
-                      aria-current={currentPage === item.id ? 'page' : undefined}
-                    >
-                      {item.label}
-                    </button>
-                  ))}
-                </div>
-              )}
+              <AnimatePresence>
+                {isAboutDropdownOpen && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                    transition={{ duration: 0.2, ease: "easeOut" }}
+                    className="absolute top-full left-0 mt-2 w-72 bg-white rounded-xl shadow-2xl border border-secondary-200 py-3 z-50"
+                    role="menu"
+                    aria-label="Submenu tentang kami"
+                    onMouseEnter={handleDropdownMouseEnter}
+                    onMouseLeave={handleDropdownMouseLeave}
+                  >
+                    {/* Dropdown arrow */}
+                    <div className="absolute -top-2 left-6 w-4 h-4 bg-white border-l border-t border-secondary-200 transform rotate-45"></div>
+                    
+                    {aboutMenuItems.map((item, index) => (
+                      <motion.div
+                        key={item.id}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.05, duration: 0.2 }}
+                        className="px-3"
+                      >
+                        <Link
+                          to={item.path}
+                          className={`block w-full text-left px-3 py-2.5 text-sm transition-all duration-200 hover:bg-primary-50 hover:text-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-inset rounded-lg group ${
+                            currentPage === item.id
+                              ? 'text-primary-600 bg-primary-50 font-medium'
+                              : 'text-secondary-700'
+                          }`}
+                          role="menuitem"
+                          aria-current={currentPage === item.id ? 'page' : undefined}
+                          onClick={() => setIsAboutDropdownOpen(false)}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span>{item.label}</span>
+                            <div className={`w-2 h-2 rounded-full transition-all duration-200 ${
+                              currentPage === item.id 
+                                ? 'bg-primary-600' 
+                                : 'bg-transparent group-hover:bg-primary-200'
+                            }`} />
+                          </div>
+                        </Link>
+                      </motion.div>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </nav>
 
@@ -274,23 +304,29 @@ const Header: React.FC<HeaderProps> = ({ currentPage, onPageChange }) => {
             </motion.h3>
             <nav className="space-y-3">
               {navItems.map((item, index) => (
-                <motion.button
+                <motion.div
                   key={item.id}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.3 + (index * 0.1), duration: 0.3 }}
-                  onClick={() => onPageChange(item.id)}
-                  className={`w-full text-left px-4 py-3 rounded-lg text-base font-medium transition-all duration-200 flex items-center justify-between focus-ring interactive-element ${
-                    currentPage === item.id
-                      ? 'text-primary-600 bg-primary-50 shadow-sm border border-primary-100'
-                      : 'text-secondary-700 hover:text-primary-600 hover:bg-primary-50'
-                  }`}
                 >
-                  {item.label}
-                  {currentPage === item.id && (
-                    <div className="w-2.5 h-2.5 bg-primary-600 rounded-full" />
-                  )}
-                </motion.button>
+                  <Link
+                    to={item.path}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={`w-full text-left px-4 py-3 rounded-lg text-base font-medium transition-all duration-200 flex items-center justify-between focus-ring interactive-element group ${
+                      currentPage === item.id
+                        ? 'text-primary-600 bg-primary-50 shadow-sm border border-primary-100'
+                        : 'text-secondary-700 hover:text-primary-600 hover:bg-primary-50'
+                    }`}
+                  >
+                    <span>{item.label}</span>
+                    <div className={`w-2.5 h-2.5 rounded-full transition-all duration-200 ${
+                      currentPage === item.id 
+                        ? 'bg-primary-600' 
+                        : 'bg-transparent group-hover:bg-primary-200'
+                    }`} />
+                  </Link>
+                </motion.div>
               ))}
             </nav>
           </div>
@@ -307,23 +343,29 @@ const Header: React.FC<HeaderProps> = ({ currentPage, onPageChange }) => {
             </motion.h3>
             <nav className="space-y-3">
               {aboutMenuItems.map((item, index) => (
-                <motion.button
+                <motion.div
                   key={item.id}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.7 + (index * 0.1), duration: 0.3 }}
-                  onClick={() => onPageChange(item.id)}
-                  className={`w-full text-left px-4 py-3 rounded-lg text-base transition-all duration-200 flex items-center justify-between focus-ring interactive-element ${
-                    currentPage === item.id
-                      ? 'text-primary-600 bg-primary-50 shadow-sm font-medium border border-primary-100'
-                      : 'text-secondary-600 hover:text-primary-600 hover:bg-primary-50'
-                  }`}
                 >
-                  {item.label}
-                  {currentPage === item.id && (
-                    <div className="w-2.5 h-2.5 bg-primary-600 rounded-full" />
-                  )}
-                </motion.button>
+                  <Link
+                    to={item.path}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={`w-full text-left px-4 py-3 rounded-lg text-base transition-all duration-200 flex items-center justify-between focus-ring interactive-element group ${
+                      currentPage === item.id
+                        ? 'text-primary-600 bg-primary-50 shadow-sm font-medium border border-primary-100'
+                        : 'text-secondary-600 hover:text-primary-600 hover:bg-primary-50'
+                    }`}
+                  >
+                    <span>{item.label}</span>
+                    <div className={`w-2.5 h-2.5 rounded-full transition-all duration-200 ${
+                      currentPage === item.id 
+                        ? 'bg-primary-600' 
+                        : 'bg-transparent group-hover:bg-primary-200'
+                    }`} />
+                  </Link>
+                </motion.div>
               ))}
             </nav>
           </div>

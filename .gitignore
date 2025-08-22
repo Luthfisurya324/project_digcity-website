@@ -237,3 +237,5 @@ lighthouse-report.html
 *.p12
 *.pfx
 secrets.json
+
+.vercel

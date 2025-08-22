@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { authAPI } from '../lib/supabase'
+import { runSupabaseTests } from '../utils/supabaseTest'
 import AdminLogin from './admin/AdminLogin'
 import AdminDashboard from './admin/AdminDashboard'
 import AdminEvents from './admin/AdminEvents'
@@ -28,7 +29,9 @@ const AdminPanel: React.FC = () => {
     try {
       const currentUser = await authAPI.getCurrentUser()
       if (currentUser) {
+        console.log('User authenticated:', currentUser.email)
         const adminStatus = await authAPI.isAdmin()
+        console.log('Admin status:', adminStatus)
         setIsAdmin(adminStatus)
         setUser({
           id: currentUser.id,
@@ -37,12 +40,13 @@ const AdminPanel: React.FC = () => {
         })
       } else {
         // No user session, reset state
+        console.log('No user session found')
         setUser(null)
         setIsAdmin(false)
       }
     } catch (error) {
       // Handle auth session missing error gracefully
-      console.log('No active session found')
+      console.error('Error checking user:', error)
       setUser(null)
       setIsAdmin(false)
     } finally {
@@ -127,6 +131,16 @@ const AdminPanel: React.FC = () => {
             </div>
             <div className="flex items-center space-x-4">
               <span className="text-sm text-secondary-600">Welcome, {user.email}</span>
+              <button
+                onClick={async () => {
+                  console.log('🧪 Running Supabase tests...')
+                  await runSupabaseTests()
+                }}
+                className="bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                title="Test Supabase connection"
+              >
+                🧪 Test
+              </button>
               <button
                 onClick={handleLogout}
                 className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"

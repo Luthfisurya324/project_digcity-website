@@ -1,14 +1,1 @@
-# SPA Fallback - Redirect all routes to index.html
 /*    /index.html   200
-
-# Specific redirects if needed
-/kontak    /index.html   200
-/blog      /index.html   200
-/events    /index.html   200
-/sejarah   /index.html   200
-/logo      /index.html   200
-/visi-misi /index.html   200
-/struktur-organisasi /index.html   200
-/grand-design /index.html   200
-/galeri    /index.html   200
-/admin     /index.html   200

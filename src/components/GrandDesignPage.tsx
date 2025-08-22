@@ -1,11 +1,8 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Target } from 'lucide-react';
 
-interface GrandDesignPageProps {
-  onPageChange: (page: string) => void;
-}
-
-const GrandDesignPage: React.FC<GrandDesignPageProps> = ({ onPageChange }) => {
+const GrandDesignPage: React.FC = () => {
   const strategicPillars = [
     {
       title: 'Pengembangan SDM',
@@ -360,12 +357,12 @@ const GrandDesignPage: React.FC<GrandDesignPageProps> = ({ onPageChange }) => {
             >
               Download Grand Design
             </a>
-            <button 
-              onClick={() => onPageChange('kontak')}
+            <Link 
+              to="/kontak"
               className="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-primary-600 transition-colors duration-300"
             >
               Bergabung dengan Kami
-            </button>
+            </Link>
           </div>
         </div>
       </section>

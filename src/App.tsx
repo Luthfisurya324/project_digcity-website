@@ -1,19 +1,16 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useEffect } from 'react'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import { usePerformance } from './hooks/usePerformance'
-import { preloadCriticalPages, preloadPage } from './components/LazyComponents'
+import { preloadCriticalPages } from './components/LazyComponents'
 import { registerServiceWorker } from './utils/serviceWorker'
 import { initFormatDetection } from './utils/formatDetection'
-import { getSEOConfig } from './config/seoConfig'
-import { useSEO } from './hooks/useSEO'
 import { cacheManager } from './utils/cacheManager'
 import Header from './components/Header'
 import Footer from './components/Footer'
 import HomePage from './components/HomePage'
-import PerformanceAlert from './components/PerformanceMonitor'
 import PerformanceMonitor from './components/PerformanceMonitor'
-import ImageTest from './components/ImageTest'
 
-// Lazy load components for better performance
+// Lazy load components
 const LazyBlogPage = React.lazy(() => import('./components/BlogPage'))
 const LazyEventsPage = React.lazy(() => import('./components/EventsPage'))
 const LazySejarahPage = React.lazy(() => import('./components/SejarahPage'))
@@ -24,63 +21,11 @@ const LazyGrandDesignPage = React.lazy(() => import('./components/GrandDesignPag
 const LazyGaleriPage = React.lazy(() => import('./components/GaleriPage'))
 const LazyKontakPage = React.lazy(() => import('./components/KontakPage'))
 const LazyAdminPage = React.lazy(() => import('./pages/AdminPage'))
+const LazyLinktreePage = React.lazy(() => import('./pages/LinktreePage'))
 
 function App() {
-  const [currentPage, setCurrentPage] = useState('home')
-  const [isLoading, setIsLoading] = useState(false)
-
   // Initialize performance monitoring
   const { initializeOptimizations } = usePerformance()
-
-  // Parse current URL to determine initial page
-  const parseInitialPage = useCallback(() => {
-    const path = window.location.pathname
-    if (path === '/' || path === '') return 'home'
-    
-    // Remove leading slash and get page name
-    const page = path.substring(1)
-    const validPages = [
-      'home', 'blog', 'events', 'sejarah', 'logo', 'visi-misi',
-      'struktur-organisasi', 'grand-design', 'galeri', 'kontak', 'admin'
-    ]
-    
-    return validPages.includes(page) ? page : 'home'
-  }, [])
-
-  // Navigation handler
-  const navigateToPage = useCallback((page: string) => {
-    const validPages = [
-      'home', 'blog', 'events', 'sejarah', 'logo', 'visi-misi',
-      'struktur-organisasi', 'grand-design', 'galeri', 'kontak', 'admin'
-    ]
-    
-    if (validPages.includes(page)) {
-      setCurrentPage(page)
-      // Update URL without page reload
-      const url = page === 'home' ? '/' : `/${page}`
-      window.history.pushState({ page }, '', url)
-    }
-  }, [])
-
-  // Handle browser back/forward buttons
-  useEffect(() => {
-    const handlePopState = (event: PopStateEvent) => {
-      if (event.state?.page) {
-        setCurrentPage(event.state.page)
-      } else {
-        // Handle direct URL access or refresh
-        setCurrentPage(parseInitialPage())
-      }
-    }
-
-    window.addEventListener('popstate', handlePopState)
-    return () => window.removeEventListener('popstate', handlePopState)
-  }, [parseInitialPage])
-
-  // Initialize page based on current URL
-  useEffect(() => {
-    setCurrentPage(parseInitialPage())
-  }, [parseInitialPage])
 
   // Initialize service worker and performance optimizations
   useEffect(() => {
@@ -115,65 +60,42 @@ function App() {
     }
   }, [])
 
-  // Update page + URL when user navigates via UI
-  const handlePageChange = (page: string) => {
-    // Preload the target page before navigation with current page context
-    preloadPage(page, currentPage)
-    
-    setCurrentPage(page)
-    navigateToPage(page)
-    // Reset scroll position to top
-    window.scrollTo(0, 0)
-  }
-
-  // Update SEO data when page changes
-  const seoConfig = getSEOConfig(currentPage)
-  useSEO(seoConfig)
-
-  const renderPage = () => {
-    switch (currentPage) {
-      case 'home':
-        return <HomePage onPageChange={handlePageChange} />
-      case 'blog':
-        return <LazyBlogPage />
-      case 'events':
-        return <LazyEventsPage />
-      case 'sejarah':
-        return <LazySejarahPage />
-      case 'logo':
-        return <LazyLogoPage />
-      case 'visi-misi':
-        return <LazyVisiMisiPage />
-      case 'struktur-organisasi':
-        return <LazyStrukturOrganisasiPage onPageChange={handlePageChange} />
-      case 'grand-design':
-        return <LazyGrandDesignPage onPageChange={handlePageChange} />
-      case 'galeri':
-        return <LazyGaleriPage />
-      case 'kontak':
-        return <LazyKontakPage />
-      case 'admin':
-        return <LazyAdminPage />
-      case 'test':
-        return <ImageTest />
-      default:
-        return <HomePage onPageChange={handlePageChange} />
-    }
-  }
+  // Layout component untuk halaman dengan header dan footer
+  const PageLayout = ({ children }: { children: React.ReactNode }) => (
+    <>
+      <Header />
+      <main>{children}</main>
+      <Footer />
+    </>
+  )
 
   return (
     <div className="min-h-screen bg-white">
       {/* Performance Monitoring (Development Only) */}
-      <PerformanceAlert />
       <PerformanceMonitor enabled={import.meta.env.DEV} />
       
-      {currentPage !== 'admin' && (
-        <Header currentPage={currentPage} onPageChange={handlePageChange} />
-      )}
-      <main>
-        {renderPage()}
-      </main>
-      {currentPage !== 'admin' && <Footer />}
+      <Routes>
+        {/* Admin route - no header/footer */}
+        <Route path="/admin" element={<LazyAdminPage />} />
+        
+        {/* Main routes with header/footer */}
+        <Route path="/" element={<PageLayout><HomePage /></PageLayout>} />
+        <Route path="/blog" element={<PageLayout><LazyBlogPage /></PageLayout>} />
+        <Route path="/events" element={<PageLayout><LazyEventsPage /></PageLayout>} />
+        <Route path="/sejarah" element={<PageLayout><LazySejarahPage /></PageLayout>} />
+        <Route path="/logo" element={<PageLayout><LazyLogoPage /></PageLayout>} />
+        <Route path="/visi-misi" element={<PageLayout><LazyVisiMisiPage /></PageLayout>} />
+        <Route path="/struktur-organisasi" element={<PageLayout><LazyStrukturOrganisasiPage /></PageLayout>} />
+        <Route path="/grand-design" element={<PageLayout><LazyGrandDesignPage /></PageLayout>} />
+        <Route path="/galeri" element={<PageLayout><LazyGaleriPage /></PageLayout>} />
+        <Route path="/kontak" element={<PageLayout><LazyKontakPage /></PageLayout>} />
+        
+        {/* Linktree route - no header/footer for clean linktree experience */}
+        <Route path="/linktree" element={<LazyLinktreePage />} />
+        
+        {/* Catch all route - redirect to home */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </div>
   )
 }

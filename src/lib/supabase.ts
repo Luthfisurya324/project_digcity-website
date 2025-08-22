@@ -1,11 +1,13 @@
 import { createClient } from '@supabase/supabase-js'
+import { supabaseConfig, validateSupabaseConfig } from '../config/supabaseConfig'
 
-// Supabase configuration
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://yiilfxyioyzcbtxyhnvo.supabase.co'
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlpaWxmeHlpb3l6Y2J0eHlobnZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMxNTgyMTksImV4cCI6MjA2ODczNDIxOX0.GORwjux2XXLPFQMO67JKJjEVXzpXbOX8R8HL-jhou5c'
+// Validasi konfigurasi Supabase
+if (!validateSupabaseConfig()) {
+  console.error('❌ Konfigurasi Supabase tidak valid. Silakan cek environment variables.')
+}
 
 // Create Supabase client
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+export const supabase = createClient(supabaseConfig.url, supabaseConfig.anonKey)
 
 // Database types for DIGCITY website
 export interface Event {
@@ -274,19 +276,48 @@ export const authAPI = {
     return user
   },
 
-  // Check if user is admin
+  // Check if user is admin - dengan fallback untuk tabel users yang tidak ada
   async isAdmin() {
-    const user = await this.getCurrentUser()
-    if (!user) return false
-    
-    const { data, error } = await supabase
-      .from('users')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-    
-    if (error) return false
-    return data.role === 'admin'
+    try {
+      const user = await this.getCurrentUser()
+      if (!user) return false
+      
+      // Coba cek dari tabel users terlebih dahulu
+      try {
+        const { data, error } = await supabase
+          .from('users')
+          .select('role')
+          .eq('id', user.id)
+          .single()
+        
+        if (error) {
+          console.warn('Error accessing users table:', error)
+          // Fallback: cek dari user metadata
+          return this.checkAdminFromMetadata(user)
+        }
+        
+        return data.role === 'admin'
+      } catch (tableError) {
+        console.warn('Users table not accessible, using metadata fallback:', tableError)
+        // Fallback: cek dari user metadata
+        return this.checkAdminFromMetadata(user)
+      }
+    } catch (error) {
+      console.error('Error checking admin status:', error)
+      return false
+    }
+  },
+
+  // Fallback method untuk cek admin dari user metadata
+  checkAdminFromMetadata(user: any): boolean {
+    try {
+      // Cek dari user metadata atau app_metadata
+      const userRole = user.user_metadata?.role || user.app_metadata?.role
+      return userRole === 'admin'
+    } catch (error) {
+      console.warn('Error checking metadata:', error)
+      return false
+    }
   }
 }
 

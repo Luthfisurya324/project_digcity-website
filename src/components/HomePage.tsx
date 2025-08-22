@@ -1,17 +1,8 @@
-import React, { useCallback } from 'react';
+import React from 'react';
+import { Link } from 'react-router-dom';
 import { ArrowRight, Lightbulb, RefreshCw, Award, CheckCircle2, Target, Calendar, MessageSquare, Users, Building2, Sparkles, Zap, Globe, TrendingUp } from 'lucide-react';
 
-
-interface HomePageProps {
-  onPageChange?: (page: string) => void;
-}
-
-const HomePage: React.FC<HomePageProps> = ({ onPageChange }) => {
-  const handleNavigation = useCallback((page: string) => {
-    if (onPageChange) {
-      onPageChange(page);
-    }
-  }, [onPageChange]);
+const HomePage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-secondary-50 via-white to-white">
@@ -62,8 +53,8 @@ const HomePage: React.FC<HomePageProps> = ({ onPageChange }) => {
                   Berdampak • Adaptif • Inovatif • Kompeten — Temukan berbagai acara dan kegiatan kami, sampaikan kritik & saran untuk kemajuan himpunan.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start">
-                  <button 
-                    onClick={() => handleNavigation('events')}
+                  <Link 
+                    to="/events"
                     className="group inline-flex items-center justify-center bg-primary-600 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg font-semibold shadow-lg shadow-primary-600/20 hover:bg-primary-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 interactive-element min-h-[40px] sm:min-h-[44px] text-sm sm:text-base hover:shadow-xl hover:-translate-y-0.5"
                     aria-label="Jelajahi acara dan kegiatan DIGCITY"
                   >
@@ -71,16 +62,16 @@ const HomePage: React.FC<HomePageProps> = ({ onPageChange }) => {
                     <span className="hidden xs:inline">Jelajahi Acara Kami</span>
                     <span className="xs:hidden">Lihat Acara</span>
                     <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
-                  </button>
-                  <button 
-                    onClick={() => handleNavigation('kontak')}
+                  </Link>
+                  <Link 
+                    to="/kontak"
                     className="inline-flex items-center justify-center bg-white text-secondary-800 px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg font-semibold border border-secondary-200 hover:bg-secondary-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 interactive-element min-h-[40px] sm:min-h-[44px] text-sm sm:text-base hover:shadow-lg hover:-translate-y-0.5"
                     aria-label="Kirim kritik dan saran untuk DIGCITY"
                   >
                     <MessageSquare className="mr-2 h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
                     <span className="hidden xs:inline">Kritik & Saran</span>
                     <span className="xs:hidden">Kontak</span>
-                  </button>
+                  </Link>
                 </div>
               </div>
 
@@ -146,15 +137,15 @@ const HomePage: React.FC<HomePageProps> = ({ onPageChange }) => {
             <p className="text-base sm:text-lg md:text-xl mb-6 sm:mb-8 text-primary-100 max-w-3xl mx-auto leading-relaxed px-2 sm:px-0">
               Jangan lewatkan berbagai workshop, seminar, kompetisi, dan acara networking yang kami selenggarakan. Bergabunglah untuk mengembangkan skill dan memperluas jaringan Anda!
             </p>
-            <button 
-              onClick={() => handleNavigation('events')}
+            <Link 
+              to="/events"
               className="inline-flex items-center justify-center bg-white text-primary-600 px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-semibold hover:bg-primary-50 transition-colors shadow-lg focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-primary-600 interactive-element min-h-[44px] text-sm sm:text-base"
               aria-label="Lihat semua acara dan kegiatan DIGCITY"
             >
               <span className="hidden xs:inline">Lihat Semua Acara</span>
               <span className="xs:hidden">Lihat Acara</span>
               <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
-            </button>
+            </Link>
           </div>
         </div>
       </section>
@@ -259,23 +250,23 @@ const HomePage: React.FC<HomePageProps> = ({ onPageChange }) => {
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
-              <button 
-                onClick={() => handleNavigation('kontak')}
+              <Link 
+                to="/kontak"
                 className="inline-flex items-center justify-center bg-primary-600 text-white px-6 sm:px-8 py-3 rounded-lg font-semibold hover:bg-primary-700 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 interactive-element min-h-[44px] text-sm sm:text-base"
                 aria-label="Tanyakan informasi lebih lanjut tentang keanggotaan DIGCITY"
               >
                 <MessageSquare className="mr-2 h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
                 <span className="hidden xs:inline">Tanyakan Informasi Lebih Lanjut</span>
                 <span className="xs:hidden">Tanya Info</span>
-              </button>
-              <button 
-                onClick={() => handleNavigation('events')}
+              </Link>
+              <Link 
+                to="/events"
                 className="inline-flex items-center justify-center bg-white text-primary-600 px-6 sm:px-8 py-3 rounded-lg font-semibold border border-primary-200 hover:bg-primary-50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 interactive-element min-h-[44px] text-sm sm:text-base"
                 aria-label="Lihat acara mendatang DIGCITY"
               >
                 <span className="hidden xs:inline">Lihat Acara Mendatang</span>
                 <span className="xs:hidden">Lihat Acara</span>
-              </button>
+              </Link>
             </div>
           </div>
         </div>
@@ -354,8 +345,8 @@ const HomePage: React.FC<HomePageProps> = ({ onPageChange }) => {
           <p className="text-base sm:text-lg md:text-xl text-secondary-200 mb-6 sm:mb-8 max-w-3xl mx-auto leading-relaxed px-2 sm:px-0">
             Sampaikan kritik, saran, atau pertanyaan Anda kepada kami. Masukan dari mahasiswa sangat berarti untuk kemajuan DIGCITY dan program-program yang lebih baik.
           </p>
-          <button 
-            onClick={() => handleNavigation('kontak')}
+          <Link 
+            to="/kontak"
             className="inline-flex items-center justify-center bg-white text-secondary-800 px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-semibold hover:bg-secondary-50 transition-colors shadow-lg focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-secondary-700 interactive-element min-h-[44px] text-sm sm:text-base"
             aria-label="Kirim kritik dan saran untuk DIGCITY"
           >
@@ -363,7 +354,7 @@ const HomePage: React.FC<HomePageProps> = ({ onPageChange }) => {
             <span className="hidden xs:inline">Kirim Kritik & Saran</span>
             <span className="xs:hidden">Kritik & Saran</span>
             <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
-          </button>
+          </Link>
         </div>
       </section>
     </div>

@@ -39,7 +39,7 @@ const KontakPage: React.FC = () => {
     {
       icon: <MapPin className="w-6 h-6" />,
       title: 'Alamat',
-      content: 'Gedung Fakultas Teknik\nUniversitas XYZ\nJl. Teknologi No. 123\nJakarta 12345',
+      content: 'Sekretariat Organisasi Mahasiswa (Ormawa) FEB\nDIGCITY\nJl. Sholeh Iskandar No.Km.02, RT.01/RW.010\nKedungbadak, Kec. Tanah Sereal\nKota Bogor, Jawa Barat 16162',
       action: null
     },
     {
@@ -51,8 +51,8 @@ const KontakPage: React.FC = () => {
     {
       icon: <Mail className="w-6 h-6" />,
       title: 'Website',
-      content: 'digcity.id\nPortal resmi DIGCITY',
-      action: 'https://digcity.id'
+      content: 'digcity.my.id\nPortal resmi DIGCITY',
+      action: 'https://digcity.my.id'
     },
     {
       icon: <Clock className="w-6 h-6" />,
@@ -80,8 +80,8 @@ const KontakPage: React.FC = () => {
           <path d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9" />
         </svg>
       ),
-      url: 'https://digcity.id',
-      handle: 'digcity.id'
+      url: 'https://digcity.my.id',
+      handle: 'digcity.my.id'
     },
     {
       name: 'YouTube',
@@ -90,7 +90,7 @@ const KontakPage: React.FC = () => {
           <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
         </svg>
       ),
-      url: 'https://youtube.com/@digcity',
+      url: 'https://youtube.com/@digcity_uika',
       handle: 'DIGCITY Channel'
     },
     {

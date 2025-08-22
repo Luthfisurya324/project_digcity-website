@@ -59,42 +59,6 @@ if [ -d "dist" ]; then
         exit 1
     fi
     
-    # Verify SPA routing files
-    echo "🔍 Verifikasi file routing SPA..."
-    if [ -f "dist/_redirects" ]; then
-        echo "✅ _redirects ditemukan"
-    else
-        echo "⚠️  _redirects tidak ditemukan - akan dibuat otomatis"
-    fi
-    
-    if [ -f "dist/_headers" ]; then
-        echo "✅ _headers ditemukan"
-    else
-        echo "⚠️  _headers tidak ditemukan - akan dibuat otomatis"
-    fi
-    
-    # Create _redirects if not exists
-    if [ ! -f "dist/_redirects" ]; then
-        echo "📝 Membuat file _redirects..."
-        cat > dist/_redirects << 'EOF'
-# SPA Fallback - Redirect all routes to index.html
-/*    /index.html   200
-
-# Specific redirects for DIGCITY pages
-/kontak    /index.html   200
-/blog      /index.html   200
-/events    /index.html   200
-/sejarah   /index.html   200
-/logo      /index.html   200
-/visi-misi /index.html   200
-/struktur-organisasi /index.html   200
-/grand-design /index.html   200
-/galeri    /index.html   200
-/admin     /index.html   200
-EOF
-        echo "✅ _redirects berhasil dibuat"
-    fi
-    
 else
     echo "❌ Build gagal! Directory dist tidak ditemukan."
     exit 1
@@ -102,4 +66,3 @@ fi
 
 echo "🎉 Build process selesai dengan sukses!"
 echo "📤 Siap untuk deploy ke Vercel!"
-echo "🔧 Pastikan vercel.json dan _redirects sudah dikonfigurasi dengan benar!"

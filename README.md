@@ -2,6 +2,17 @@
 
 Website resmi untuk DigCity yang dibangun dengan React + TypeScript + Vite.
 
+## Fitur Linktree
+
+Proyek ini juga menyertakan fitur **Linktree** yang dapat diakses melalui:
+- **URL:** `/linktree`
+- **Subdomain:** `linktree.digcity.my.id` (perlu konfigurasi DNS)
+
+Linktree dirancang untuk digunakan sebagai bio link di Instagram dan platform social media lainnya, menyediakan satu halaman yang berisi semua link penting DigCity.
+
+### Dokumentasi Linktree
+- 📖 [Implementasi Fitur Linktree](./docs/013_implement_linktree_feature.md) - Dokumentasi lengkap fitur linktree
+
 ## Deployment ke Vercel
 
 ### Direktori Root untuk Deployment
@@ -47,7 +58,10 @@ VITE_DEV_MODE=false
 VITE_API_BASE_URL=https://your-api-domain.com/api
 ```
 
-**Catatan:** File `.env.example` berisi template untuk environment variables yang diperlukan.
+**Catatan:** 
+- File `SUPABASE_SETUP.md` berisi instruksi lengkap untuk setup Supabase
+- File `docs/012_fix_admin_authentication_error.md` berisi dokumentasi perbaikan error autentikasi admin
+- Pastikan environment variables dikonfigurasi dengan benar untuk menghindari error 500
 
 ## Development Setup
 
@@ -116,6 +130,14 @@ export default tseslint.config([
   },
 ])
 ```
+
+## Documentation
+
+- [Fix Vercel SPA Routing Issue](./docs/006_fix_vercel_spa_routing.md) - Solusi untuk masalah routing SPA di Vercel
+- [Performance Optimization Report](./docs/PERFORMANCE_OPTIMIZATION_REPORT.md) - Laporan optimasi performa website
+- [Mobile Optimization](./docs/MOBILE_OPTIMIZATION.md) - Optimasi untuk perangkat mobile
+- [Design Improvements](./docs/DESIGN_IMPROVEMENTS.md) - Perbaikan desain UI/UX
+- [Deployment Guide](./docs/DEPLOYMENT.md) - Panduan deployment dan konfigurasi
 
 ## Development Tools
 
