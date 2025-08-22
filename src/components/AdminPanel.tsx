@@ -6,6 +6,7 @@ import AdminEvents from './admin/AdminEvents'
 import AdminNews from './admin/AdminNews'
 import AdminGallery from './admin/AdminGallery'
 import AdminNewsletter from './admin/AdminNewsletter'
+import CacheControl from './CacheControl'
 
 interface User {
   id: string
@@ -89,7 +90,8 @@ const AdminPanel: React.FC = () => {
     { id: 'events', name: 'Events', icon: '📅' },
     { id: 'news', name: 'News', icon: '📰' },
     { id: 'gallery', name: 'Gallery', icon: '🖼️' },
-    { id: 'newsletter', name: 'Newsletter', icon: '📧' }
+    { id: 'newsletter', name: 'Newsletter', icon: '📧' },
+    { id: 'cache', name: 'Cache Control', icon: '🗑️' }
   ]
 
   const renderContent = () => {
@@ -104,6 +106,10 @@ const AdminPanel: React.FC = () => {
         return <AdminGallery />
       case 'newsletter':
         return <AdminNewsletter />
+      case 'cache':
+        return <CacheControl isAdmin={isAdmin} onCacheCleared={() => {
+          console.log('Cache cleared successfully');
+        }} />
       default:
         return <AdminDashboard />
     }

@@ -5,12 +5,14 @@ import { registerServiceWorker } from './utils/serviceWorker'
 import { initFormatDetection } from './utils/formatDetection'
 import { getSEOConfig } from './config/seoConfig'
 import { useSEO } from './hooks/useSEO'
+import { cacheManager } from './utils/cacheManager'
 import Header from './components/Header'
 import Footer from './components/Footer'
 import HomePage from './components/HomePage'
 import PerformanceAlert from './components/PerformanceMonitor'
 import PerformanceMonitor from './components/PerformanceMonitor'
 import ImageTest from './components/ImageTest'
+import UpdateNotification from './components/UpdateNotification'
 
 // Lazy load components for better performance
 const LazyBlogPage = React.lazy(() => import('./components/BlogPage'))
@@ -69,6 +71,9 @@ function App() {
     
     // Preload critical pages
     preloadCriticalPages()
+    
+    // Setup cache manager
+    cacheManager.setupAutoClear()
     
     // Add manifest link if not already present
     if (!document.querySelector('link[rel="manifest"]')) {
@@ -138,6 +143,11 @@ function App() {
       {/* Performance Monitoring (Development Only) */}
       <PerformanceAlert threshold={60} />
       <PerformanceMonitor enabled={import.meta.env.DEV} />
+      
+      {/* Update Notification */}
+      <UpdateNotification onUpdate={() => {
+        console.log('Website updated successfully');
+      }} />
       
       {currentPage !== 'admin' && (
         <Header currentPage={currentPage} onPageChange={handlePageChange} />

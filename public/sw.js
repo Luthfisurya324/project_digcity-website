@@ -1,10 +1,18 @@
 // Service Worker for DIGCITY Website
 // Implements caching strategies for better performance and offline experience
 
-const CACHE_NAME = 'digcity-v1';
-const STATIC_CACHE = 'digcity-static-v1';
-const DYNAMIC_CACHE = 'digcity-dynamic-v1';
-const IMAGE_CACHE = 'digcity-images-v1';
+// Dynamic cache names based on timestamp
+const getCacheNames = () => {
+  const timestamp = Date.now().toString(36);
+  return {
+    STATIC_CACHE: `digcity-static-${timestamp}`,
+    DYNAMIC_CACHE: `digcity-dynamic-${timestamp}`,
+    IMAGE_CACHE: `digcity-images-${timestamp}`,
+    VERSION: `digcity-${timestamp}`
+  };
+};
+
+let CACHE_NAMES = getCacheNames();
 
 // Assets to cache immediately
 const STATIC_ASSETS = [
@@ -27,10 +35,13 @@ const CACHE_STRATEGIES = {
 self.addEventListener('install', (event) => {
   console.log('Service Worker: Installing...');
   
+  // Generate new cache names for this installation
+  CACHE_NAMES = getCacheNames();
+  
   event.waitUntil(
     Promise.all([
       // Cache static assets
-      caches.open(STATIC_CACHE).then((cache) => {
+      caches.open(CACHE_NAMES.STATIC_CACHE).then((cache) => {
         console.log('Service Worker: Caching static assets');
         return cache.addAll(STATIC_ASSETS);
       }),
@@ -51,9 +62,9 @@ self.addEventListener('activate', (event) => {
       caches.keys().then((cacheNames) => {
         return Promise.all(
           cacheNames.map((cacheName) => {
-            if (cacheName !== STATIC_CACHE && 
-                cacheName !== DYNAMIC_CACHE && 
-                cacheName !== IMAGE_CACHE) {
+            if (cacheName !== CACHE_NAMES.STATIC_CACHE && 
+                cacheName !== CACHE_NAMES.DYNAMIC_CACHE && 
+                cacheName !== CACHE_NAMES.IMAGE_CACHE) {
               console.log('Service Worker: Deleting old cache:', cacheName);
               return caches.delete(cacheName);
             }
@@ -102,27 +113,27 @@ async function handleRequest(request) {
   try {
     // Route requests to appropriate cache strategy
     if (isStaticAsset(request)) {
-      return await cacheFirst(request, STATIC_CACHE);
+      return await cacheFirst(request, CACHE_NAMES.STATIC_CACHE);
     }
     
     if (isImage(request)) {
-      return await cacheFirst(request, IMAGE_CACHE);
+      return await cacheFirst(request, CACHE_NAMES.IMAGE_CACHE);
     }
     
     if (isFont(request)) {
-      return await cacheFirst(request, STATIC_CACHE);
+      return await cacheFirst(request, CACHE_NAMES.STATIC_CACHE);
     }
     
     if (isAPI(request)) {
-      return await networkFirst(request, DYNAMIC_CACHE);
+      return await networkFirst(request, CACHE_NAMES.DYNAMIC_CACHE);
     }
     
     if (isHTML(request)) {
-      return await staleWhileRevalidate(request, DYNAMIC_CACHE);
+      return await staleWhileRevalidate(request, CACHE_NAMES.DYNAMIC_CACHE);
     }
     
     // Default: network first for other requests
-    return await networkFirst(request, DYNAMIC_CACHE);
+    return await networkFirst(request, CACHE_NAMES.DYNAMIC_CACHE);
     
   } catch (error) {
     console.error('Service Worker: Request failed:', error);
@@ -228,14 +239,14 @@ function isHTML(request) {
 // Offline fallback
 async function getOfflineFallback(request) {
   if (isHTML(request)) {
-    const cache = await caches.open(STATIC_CACHE);
+    const cache = await caches.open(CACHE_NAMES.STATIC_CACHE);
     return await cache.match('/') || 
            await cache.match('/index.html');
   }
   
   if (isImage(request)) {
     // Return a placeholder image or cached logo
-    const cache = await caches.open(IMAGE_CACHE);
+    const cache = await caches.open(CACHE_NAMES.IMAGE_CACHE);
     return await cache.match('/logo_digcity.png');
   }
   
@@ -300,7 +311,7 @@ self.addEventListener('message', (event) => {
       break;
       
     case 'GET_VERSION':
-      event.ports[0].postMessage({ version: CACHE_NAME });
+      event.ports[0].postMessage({ version: CACHE_NAMES.VERSION });
       break;
       
     case 'CLEAR_CACHE':
@@ -324,22 +335,47 @@ async function clearAllCaches() {
 
 // Periodic cache cleanup
 setInterval(async () => {
-  const cache = await caches.open(DYNAMIC_CACHE);
-  const requests = await cache.keys();
-  
-  // Remove old entries (older than 7 days)
-  const oneWeekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
-  
-  for (const request of requests) {
-    const response = await cache.match(request);
-    const dateHeader = response?.headers.get('date');
+  try {
+    const cache = await caches.open(CACHE_NAMES.DYNAMIC_CACHE);
+    const requests = await cache.keys();
     
-    if (dateHeader) {
-      const responseDate = new Date(dateHeader).getTime();
-      if (responseDate < oneWeekAgo) {
-        await cache.delete(request);
+    // Remove old entries (older than 7 days)
+    const oneWeekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
+    
+    for (const request of requests) {
+      try {
+        const response = await cache.match(request);
+        const dateHeader = response?.headers.get('date');
+        
+        if (dateHeader) {
+          const responseDate = new Date(dateHeader).getTime();
+          if (responseDate < oneWeekAgo) {
+            await cache.delete(request);
+            console.log('Service Worker: Expired cache deleted:', request.url);
+          }
+        }
+      } catch (error) {
+        // Skip jika ada error pada request tertentu
+        continue;
       }
     }
+    
+    // Clear old cache versions
+    const allCacheNames = await caches.keys();
+    const currentCaches = [
+      CACHE_NAMES.STATIC_CACHE,
+      CACHE_NAMES.DYNAMIC_CACHE,
+      CACHE_NAMES.IMAGE_CACHE
+    ];
+    
+    for (const cacheName of allCacheNames) {
+      if (!currentCaches.includes(cacheName)) {
+        await caches.delete(cacheName);
+        console.log('Service Worker: Old cache version deleted:', cacheName);
+      }
+    }
+  } catch (error) {
+    console.error('Service Worker: Cache cleanup failed:', error);
   }
 }, 24 * 60 * 60 * 1000); // Run daily
 
