@@ -1,161 +1,140 @@
-# Panduan Deployment Vercel - DigCity Website
+# Deployment Guide untuk DIGCITY Website
 
-## Domain Production
+## Masalah yang Ditemukan
 
-**Domain Utama:** `digcity.my.id`  
-**Domain Alternatif:** `www.digcity.my.id` (redirect ke domain utama)
+Setelah deploy ke Vercel di domain `digcity.my.id`, ditemukan beberapa error:
 
-## Direktori Root untuk Deployment
+1. **File tidak ditemukan (404)**: `digital-innovation.png`, `react.svg`, `main.tsx`
+2. **MIME type error**: CSS file di-load sebagai `text/plain` bukan `text/css`
+3. **Font loading error**: Font Google tidak dapat di-load
+4. **Preload warning**: Resource yang di-preload tidak digunakan
 
-**PENTING:** Gunakan direktori root proyek sebagai direktori deployment Vercel:
+## Solusi yang Telah Diterapkan
 
-```
-c:\dev\project_digcity-website
-```
+### 1. Konfigurasi Vercel (`vercel.json`)
 
-## Struktur Proyek untuk Deployment
+- Menambahkan header MIME type yang benar untuk semua jenis file
+- Mengkonfigurasi routing yang tepat untuk SPA
+- Menambahkan cache control yang optimal
 
-```
-project_digcity-website/
-├── vercel.json              # ✅ Konfigurasi Vercel
-├── package.json             # ✅ Dependencies & scripts
-├── vite.config.ts           # ✅ Konfigurasi build optimized
-├── index.html               # ✅ Entry point
-├── src/                     # ✅ Source code
-├── public/                  # ✅ Static assets
-├── .env.example             # ✅ Template environment variables
-└── dist/                    # ⚠️  Build output (auto-generated)
-```
+### 2. Konfigurasi Build (`build.config.js`)
 
-## Konfigurasi Vercel
+- Membuat konfigurasi build khusus untuk production
+- Memastikan asset di-build dengan struktur yang benar
+- Menonaktifkan CSS code splitting untuk menghindari masalah MIME type
 
-### 1. Framework Detection
-Vercel akan otomatis mendeteksi proyek sebagai **Vite** berdasarkan:
-- File `vite.config.ts`
-- Dependencies di `package.json`
-- Konfigurasi di `vercel.json`
+### 3. Asset Configuration (`src/config/assetConfig.ts`)
 
-### 2. Build Settings
-- **Build Command:** `npm run build`
-- **Output Directory:** `dist`
-- **Install Command:** `npm install`
-- **Dev Command:** `npm run dev`
+- Membuat sistem konfigurasi asset yang dinamis
+- Memastikan path asset yang benar di development dan production
+- Menangani error asset loading dengan graceful
 
-### 3. Environment Variables (Production)
-Set di Vercel Dashboard > Settings > Environment Variables:
+### 4. Utility Asset Loader (`src/utils/assetLoader.ts`)
+
+- Membuat utility untuk memastikan asset di-load dengan benar
+- Menangani preload asset dengan tepat
+- Error handling untuk asset loading
+
+### 5. File Headers (`public/_headers`)
+
+- Konfigurasi header untuk berbagai jenis file
+- Memastikan MIME type yang benar
+- Cache control yang optimal
+
+## Langkah Deployment
+
+### 1. Build Project
 
 ```bash
-# Supabase Configuration
-VITE_SUPABASE_URL=https://your-production-project-id.supabase.co
-VITE_SUPABASE_ANON_KEY=your-production-anon-key
+# Clean previous build
+npm run clean
 
-# App Configuration
-VITE_APP_NAME=DIGCITY Website
-VITE_APP_VERSION=1.0.0
-VITE_DEV_MODE=false
+# Build untuk production
+npm run build:vercel
 
-# Domain Configuration
-VITE_DOMAIN=digcity.my.id
-VITE_APP_URL=https://digcity.my.id
-VITE_API_BASE_URL=https://digcity.my.id/api
-
-# Performance and Security
-VITE_ENABLE_ANALYTICS=true
-VITE_ENABLE_ERROR_REPORTING=true
-VITE_SECURE_MODE=true
-VITE_HTTPS_ONLY=true
+# Atau gunakan script khusus Vercel
+npm run vercel-build
 ```
 
-### 4. Domain Configuration
+### 2. Verifikasi Build Output
 
-Di Vercel Dashboard > Settings > Domains:
-1. Tambahkan domain `digcity.my.id`
-2. Tambahkan domain `www.digcity.my.id` (akan otomatis redirect)
-3. Pastikan SSL certificate aktif
+Pastikan file berikut ada di folder `dist/`:
 
-### 5. DNS Configuration
-
-Di DNS provider untuk domain `digcity.my.id`:
 ```
-Type: A
-Name: @
-Value: 76.76.19.61
-
-Type: CNAME
-Name: www
-Value: cname.vercel-dns.com
-```
-# API Configuration
-VITE_API_BASE_URL=https://your-api-domain.com/api
+dist/
+├── index.html
+├── digital-innovation.png
+├── logo_digcity.png
+├── assets/
+│   ├── css/
+│   │   └── index.css
+│   └── js/
+│       └── main.js
+└── _headers
 ```
 
-## Langkah-langkah Deployment
+### 3. Deploy ke Vercel
 
-### Opsi 1: Deploy via Vercel CLI
+```bash
+# Install Vercel CLI
+npm i -g vercel
 
-1. Install Vercel CLI:
-   ```bash
-   npm i -g vercel
-   ```
+# Deploy
+vercel --prod
+```
 
-2. Login ke Vercel:
-   ```bash
-   vercel login
-   ```
+### 4. Konfigurasi Domain
 
-3. Deploy dari direktori root:
-   ```bash
-   cd c:\dev\project_digcity-website
-   vercel
-   ```
-
-### Opsi 2: Deploy via Vercel Dashboard
-
-1. Buka [vercel.com](https://vercel.com)
-2. Connect repository GitHub/GitLab
-3. Set **Root Directory** ke `/` (root)
-4. Vercel akan otomatis detect settings dari `vercel.json`
-
-### Opsi 3: Deploy via Git Integration
-
-1. Push code ke GitHub/GitLab
-2. Import project di Vercel
-3. Set Root Directory: **Leave empty** (akan menggunakan root)
-4. Environment variables akan diambil dari Vercel Dashboard
+Pastikan domain `digcity.my.id` sudah dikonfigurasi dengan benar di Vercel dashboard.
 
 ## Troubleshooting
 
-### Build Errors
-- Pastikan semua dependencies terinstall: `npm install`
-- Test build lokal: `npm run build`
-- Check TypeScript errors: `npm run lint`
+### Jika masih ada error 404:
 
-### Routing Issues
-- SPA routing sudah dikonfigurasi di `vercel.json`
-- Semua routes akan redirect ke `index.html`
+1. Periksa apakah file ada di folder `public/`
+2. Pastikan konfigurasi `vercel.json` sudah benar
+3. Cek apakah build output sudah sesuai
 
-### Environment Variables
-- Pastikan semua `VITE_*` variables sudah diset
-- Variables harus diawali dengan `VITE_` untuk accessible di client
+### Jika masih ada MIME type error:
 
-## Optimisasi Production
+1. Pastikan file `_headers` sudah ada di folder `public/`
+2. Periksa konfigurasi header di `vercel.json`
+3. Pastikan CSS tidak di-split (cssCodeSplit: false)
 
-### Build Optimization
-- Minification: Terser
-- Code splitting: Manual chunks untuk vendor libraries
-- Source maps: Disabled untuk production
+### Jika font tidak bisa di-load:
 
-### Performance
-- Lazy loading untuk components
-- Image optimization via Vercel
-- CDN distribution otomatis
+1. Periksa apakah Google Fonts bisa diakses
+2. Pastikan preconnect sudah dikonfigurasi dengan benar
+3. Cek apakah ada CORS issue
 
 ## Monitoring
 
-- **Analytics:** Vercel Analytics (optional)
-- **Logs:** Vercel Functions logs
-- **Performance:** Web Vitals monitoring
+Setelah deploy, monitor:
 
----
+1. Console browser untuk error
+2. Network tab untuk failed requests
+3. Performance metrics
+4. Error tracking (jika ada)
 
-**Catatan:** Direktori root `c:\dev\project_digcity-website` sudah dikonfigurasi dengan semua file yang diperlukan untuk deployment Vercel yang sukses.
+## Optimasi Lanjutan
+
+1. **Image Optimization**: Gunakan format WebP dan lazy loading
+2. **Font Loading**: Implementasi font display swap
+3. **Caching**: Optimasi cache strategy
+4. **CDN**: Gunakan CDN untuk asset static
+
+## Support
+
+Jika masih ada masalah, periksa:
+
+1. Vercel deployment logs
+2. Browser developer tools
+3. Network requests
+4. Console errors
+
+## Catatan Penting
+
+- Pastikan semua asset di folder `public/` sudah benar
+- Test build locally sebelum deploy
+- Monitor performance setelah deploy
+- Backup konfigurasi sebelum melakukan perubahan besar

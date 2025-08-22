@@ -1,6 +1,7 @@
 import React, { useCallback } from 'react';
 import { ArrowRight, Lightbulb, RefreshCw, Award, CheckCircle2, Target, Calendar, MessageSquare, Users } from 'lucide-react';
 import OptimizedImage from './OptimizedImage';
+import { getPublicAssetUrl } from '../config/assetConfig';
 
 interface HomePageProps {
   onPageChange?: (page: string) => void;
@@ -65,7 +66,7 @@ const HomePage: React.FC<HomePageProps> = ({ onPageChange }) => {
 
               <div className="hero-image-container relative flex items-center justify-center justify-self-center md:justify-self-end">
                 <img 
-                  src="/digital-innovation.png" 
+                  src={getPublicAssetUrl('digital-innovation.png')}
                   alt="Ilustrasi inovasi digital - representasi visi DIGCITY dalam mengembangkan bisnis digital" 
                   className="w-full h-full object-contain transition-transform duration-300 hover:scale-105 mix-blend-multiply"
                   loading="eager"

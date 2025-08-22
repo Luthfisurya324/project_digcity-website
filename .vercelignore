@@ -1,91 +1,35 @@
-# ===================================
-# Vercel Deployment Ignore
-# ===================================
-# This file specifies which files and directories
-# should be excluded from Vercel deployments
-
-# ===================================
-# Dependencies (already handled by Vercel)
-# ===================================
+# Dependencies
 node_modules/
-
-# ===================================
-# Development & Build Files
-# ===================================
-# Development configuration
-.env.development
-.env.local
-.env.test
-
-# Build artifacts (Vercel handles building)
-dist/
-build/
-.vite/
-
-# ===================================
-# Documentation & Markdown
-# ===================================
-*.md
-!README.md
-docs/
-
-# ===================================
-# Development Tools
-# ===================================
-# Testing
-__tests__/
-test/
-tests/
-coverage/
-.jest/
-.nyc_output/
-test-results/
-playwright-report/
-playwright/.cache/
-
-# Linting & Formatting
-.eslintcache
-.prettierrc*
-.editorconfig
-
-# ===================================
-# IDE & Editor Files
-# ===================================
-.vscode/
-.idea/
-*.sublime-project
-*.sublime-workspace
-*.swp
-*.swo
-*~
-
-# ===================================
-# OS Generated Files
-# ===================================
-# macOS
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-
-# Windows
-ehthumbs.db
-Thumbs.db
-Desktop.ini
-$RECYCLE.BIN/
-
-# Linux
-*~
-
-# ===================================
-# Logs & Runtime Data
-# ===================================
-logs/
-*.log
 npm-debug.log*
 yarn-debug.log*
-pnpm-debug.log*
+yarn-error.log*
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
 
 # Runtime data
 pids/
@@ -93,115 +37,51 @@ pids/
 *.seed
 *.pid.lock
 
-# ===================================
-# Temporary Files
-# ===================================
-tmp/
-temp/
-.tmp/
-.temp/
-*.tmp
-*.temp
+# Coverage directory used by tools like istanbul
+coverage/
 
-# ===================================
-# Database Files
-# ===================================
-*.sqlite
-*.sqlite3
-*.db
-database/
-.supabase/
+# Dependency directories
+jspm_packages/
 
-# ===================================
-# Package Manager Files
-# ===================================
-# npm
+# Optional npm cache directory
 .npm
-npm-debug.log*
 
-# Yarn
-.yarn/
-!.yarn/releases
-!.yarn/plugins
-!.yarn/sdks
-!.yarn/versions
-.pnp.*
-yarn-error.log
+# Optional REPL history
+.node_repl_history
 
-# pnpm
-.pnpm-store/
-pnpm-debug.log*
-
-# ===================================
-# Git & Version Control
-# ===================================
-.git/
-.gitignore
-.gitattributes
-
-# ===================================
-# Environment & Secrets
-# ===================================
-.env*
-!.env.example
-secrets.json
-*.key
-*.pem
-*.p12
-*.pfx
-
-# ===================================
-# Performance & Analysis
-# ===================================
-bundle-analyzer-report.html
-lighthouse-report.html
-
-# ===================================
-# Backup & Archive Files
-# ===================================
-*.bak
-*.backup
-*.old
-*.orig
+# Output of 'npm pack'
 *.tgz
-*.tar.gz
-*.zip
-*.rar
-*.7z
 
-# ===================================
-# Framework Specific
-# ===================================
-# Next.js (if migrating)
-.next/
+# Yarn Integrity file
+.yarn-integrity
 
-# Nuxt.js (if migrating)
-.nuxt/
-.output/
+# dotenv environment variables file
+.env
 
-# SvelteKit (if migrating)
-.svelte-kit/
+# parcel-bundler cache (https://parceljs.org/)
+.cache
+.parcel-cache
 
-# ===================================
-# Deployment Platforms
-# ===================================
-.vercel/
-.netlify/
-.firebase/
-.surge/
+# next.js build output
+.next
 
-# ===================================
-# Miscellaneous
-# ===================================
-# TypeScript build info
-tsconfig.tsbuildinfo
-*.tsbuildinfo
+# nuxt.js build output
+.nuxt
 
-# Diagnostic reports
-report.*.json
+# vuepress build output
+.vuepress/dist
 
-# Cache directories
-.cache/
+# Serverless directories
+.serverless
 
-# Turbo
-.turbo/
+# FuseBox cache
+.fusebox/
+
+# DynamoDB Local files
+.dynamodb/
+
+# TernJS port file
+.tern-port
+
+# Stores VSCode versions used for testing VSCode extensions
+.vscode-test

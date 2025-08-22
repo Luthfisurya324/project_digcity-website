@@ -1,13 +1,17 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import path from 'path'
-import { fileURLToPath } from 'node:url'
+/**
+ * Build Configuration untuk DIGCITY Website
+ * Memastikan build process berjalan dengan benar untuk deployment
+ */
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import path from 'path';
+import { fileURLToPath } from 'node:url';
 
-// https://vite.dev/config/
-export default defineConfig(({ mode }) => ({
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+export default defineConfig({
   plugins: [
     react({
       babel: {
@@ -30,7 +34,7 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     outDir: 'dist',
-    sourcemap: mode === 'development',
+    sourcemap: false, // Disable sourcemap in production
     minify: 'terser',
     target: 'es2020',
     cssCodeSplit: false, // Disable CSS code splitting to avoid MIME type issues
@@ -40,31 +44,31 @@ export default defineConfig(({ mode }) => ({
       },
       output: {
         assetFileNames: (assetInfo) => {
-          const info = assetInfo.name?.split('.')
-          if (!info) return 'assets/[name][extname]'
-          const extType = info[info.length - 1]
+          const info = assetInfo.name?.split('.');
+          if (!info) return 'assets/[name][extname]';
+          const extType = info[info.length - 1];
           
-          // Handle images from public folder
+          // Handle images from public folder - keep them in root
           if (/png|jpe?g|svg|gif|tiff|bmp|ico/i.test(extType)) {
-            return `assets/images/[name][extname]`
+            return `[name][extname]`;
           }
           
           // Handle CSS files
           if (/css/i.test(extType)) {
-            return `assets/css/[name][extname]`
+            return `assets/css/[name][extname]`;
           }
           
           // Handle font files
           if (/woff2?|eot|ttf|otf/i.test(extType)) {
-            return `assets/fonts/[name][extname]`
+            return `assets/fonts/[name][extname]`;
           }
           
           // Handle JS files
           if (/js|tsx?/i.test(extType)) {
-            return `assets/js/[name][extname]`
+            return `assets/js/[name][extname]`;
           }
           
-          return `assets/[name][extname]`
+          return `assets/[name][extname]`;
         },
         chunkFileNames: 'assets/js/[name].js',
         entryFileNames: 'assets/js/[name].js'
@@ -116,7 +120,7 @@ export default defineConfig(({ mode }) => ({
   // Enable esbuild optimizations
   esbuild: {
     // Remove console logs in production
-    drop: mode === 'production' ? ['console', 'debugger'] : [],
+    drop: ['console', 'debugger'],
     // Optimize for modern browsers
     target: 'es2020',
     // Enable tree shaking
@@ -129,6 +133,6 @@ export default defineConfig(({ mode }) => ({
   },
   define: {
     __APP_VERSION__: JSON.stringify(process.env.npm_package_version || 'unknown'),
-    'process.env.NODE_ENV': JSON.stringify(mode)
+    'process.env.NODE_ENV': JSON.stringify('production')
   }
-}))
+});
