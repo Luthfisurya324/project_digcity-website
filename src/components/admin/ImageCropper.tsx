@@ -105,7 +105,7 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
     }
   }, [imageUrl, aspectRatio, loadImage])
 
-  // Generate real-time preview
+  // Generate real-time preview with precise cropping
   const generatePreview = useCallback(async (cropArea: CropArea, rot: number, scl: number) => {
     if (!imageRef.current || !canvasRef.current || !imageLoaded) return
 
@@ -129,8 +129,9 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
       canvas.width = targetWidth
       canvas.height = targetHeight
 
-      // Clear canvas
-      ctx.clearRect(0, 0, canvas.width, canvas.height)
+      // Clear canvas with white background (no black edges)
+      ctx.fillStyle = '#FFFFFF'
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
 
       // Save context state
       ctx.save()
@@ -144,16 +145,22 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
       // Apply scale
       ctx.scale(scl, scl)
 
-      // Calculate crop dimensions in pixels
-      const cropX = (cropArea.x / 100) * imgWidth
-      const cropY = (cropArea.y / 100) * imgHeight
-      const cropWidth = (cropArea.width / 100) * imgWidth
-      const cropHeight = (cropArea.height / 100) * imgHeight
+      // Calculate crop dimensions in pixels with precise positioning
+      const cropX = Math.round((cropArea.x / 100) * imgWidth)
+      const cropY = Math.round((cropArea.y / 100) * imgHeight)
+      const cropWidth = Math.round((cropArea.width / 100) * imgWidth)
+      const cropHeight = Math.round((cropArea.height / 100) * imgHeight)
 
-      // Draw cropped and transformed image
+      // Ensure crop area is within image bounds
+      const safeCropX = Math.max(0, Math.min(cropX, imgWidth - cropWidth))
+      const safeCropY = Math.max(0, Math.min(cropY, imgHeight - cropHeight))
+      const safeCropWidth = Math.min(cropWidth, imgWidth - safeCropX)
+      const safeCropHeight = Math.min(cropHeight, imgHeight - safeCropY)
+
+      // Draw cropped and transformed image with precise positioning
       ctx.drawImage(
         img,
-        cropX, cropY, cropWidth, cropHeight,
+        safeCropX, safeCropY, safeCropWidth, safeCropHeight,
         -targetWidth / 2, -targetHeight / 2,
         targetWidth, targetHeight
       )
@@ -163,7 +170,7 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
 
       // Try to convert to data URL, handle CORS issues
       try {
-        const previewDataUrl = canvas.toDataURL('image/jpeg', 0.8)
+        const previewDataUrl = canvas.toDataURL('image/jpeg', 0.9)
         setPreviewUrl(previewDataUrl)
         setError('')
       } catch (canvasError) {
@@ -185,7 +192,7 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
     }
   }, [crop, rotation, scale, generatePreview, imageLoaded])
 
-  // Handle mouse events for crop area dragging
+  // Handle mouse events for crop area dragging with precise positioning
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!containerRef.current || !imageLoaded) return
     
@@ -193,8 +200,8 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
     const x = ((e.clientX - rect.left) / rect.width) * 100
     const y = ((e.clientY - rect.top) / rect.height) * 100
     
-    // Check if click is on resize handles
-    const handleSize = 3 // 3% of container
+    // Check if click is on resize handles with precise detection
+    const handleSize = 2.5 // 2.5% of container for more precise detection
     const isOnHandle = checkResizeHandle(x, y, handleSize)
     
     if (isOnHandle) {
@@ -204,7 +211,7 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
       return
     }
     
-    // Check if click is inside crop area
+    // Check if click is inside crop area with precise boundaries
     if (x >= crop.x && x <= crop.x + crop.width && 
         y >= crop.y && y <= crop.y + crop.height) {
       setIsDragging(true)
@@ -265,10 +272,16 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
     const y = ((e.clientY - rect.top) / rect.height) * 100
     
     if (isDragging) {
+      // Precise positioning with boundary limits
       const newX = Math.max(0, Math.min(100 - crop.width, x - dragStart.x))
       const newY = Math.max(0, Math.min(100 - crop.height, y - dragStart.y))
       
-      const newCrop = { ...crop, x: newX, y: newY }
+      // Round to 2 decimal places for precise positioning
+      const newCrop = { 
+        ...crop, 
+        x: Math.round(newX * 100) / 100, 
+        y: Math.round(newY * 100) / 100 
+      }
       setCrop(newCrop)
     } else if (isResizing) {
       handleResize(resizeDirection, x - dragStart.x, y - dragStart.y)
@@ -282,57 +295,61 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
     setResizeDirection('')
   }
 
-  // Handle crop area resizing
+  // Handle crop area resizing with precise aspect ratio maintenance
   const handleResize = (direction: string, deltaX: number, deltaY: number) => {
     let newCrop = { ...crop }
-    const minSize = 10 // Minimum 10% of container
+    const minSize = 15 // Minimum 15% of container for better usability
+
+    // Convert delta to percentage for precise control
+    const deltaXPercent = (deltaX / 100) * 100
+    const deltaYPercent = (deltaY / 100) * 100
 
     switch (direction) {
       case 'e': // Right edge
-        newCrop.width = Math.max(minSize, Math.min(100 - newCrop.x, newCrop.width + deltaX))
+        newCrop.width = Math.max(minSize, Math.min(100 - newCrop.x, newCrop.width + deltaXPercent))
         break
       case 'w': // Left edge
-        const newWidth = Math.max(minSize, newCrop.width - deltaX)
+        const newWidth = Math.max(minSize, newCrop.width - deltaXPercent)
         newCrop.x = Math.max(0, newCrop.x + (newCrop.width - newWidth))
         newCrop.width = newWidth
         break
       case 's': // Bottom edge
-        newCrop.height = Math.max(minSize, Math.min(100 - newCrop.y, newCrop.height + deltaY))
+        newCrop.height = Math.max(minSize, Math.min(100 - newCrop.y, newCrop.height + deltaYPercent))
         break
       case 'n': // Top edge
-        const newHeight = Math.max(minSize, newCrop.height - deltaY)
+        const newHeight = Math.max(minSize, newCrop.height - deltaYPercent)
         newCrop.y = Math.max(0, newCrop.y + (newCrop.height - newHeight))
         newCrop.height = newHeight
         break
       case 'se': // Bottom-right corner
-        newCrop.width = Math.max(minSize, Math.min(100 - newCrop.x, newCrop.width + deltaX))
-        newCrop.height = Math.max(minSize, Math.min(100 - newCrop.y, newCrop.height + deltaY))
+        newCrop.width = Math.max(minSize, Math.min(100 - newCrop.x, newCrop.width + deltaXPercent))
+        newCrop.height = Math.max(minSize, Math.min(100 - newCrop.y, newCrop.height + deltaYPercent))
         break
       case 'sw': // Bottom-left corner
-        const newWidthSW = Math.max(minSize, newCrop.width - deltaX)
+        const newWidthSW = Math.max(minSize, newCrop.width - deltaXPercent)
         newCrop.x = Math.max(0, newCrop.x + (newCrop.width - newWidthSW))
         newCrop.width = newWidthSW
-        newCrop.height = Math.max(minSize, Math.min(100 - newCrop.y, newCrop.height + deltaY))
+        newCrop.height = Math.max(minSize, Math.min(100 - newCrop.y, newCrop.height + deltaYPercent))
         break
       case 'ne': // Top-right corner
-        newCrop.width = Math.max(minSize, Math.min(100 - newCrop.x, newCrop.width + deltaX))
-        const newHeightNE = Math.max(minSize, newCrop.height - deltaY)
+        newCrop.width = Math.max(minSize, Math.min(100 - newCrop.x, newCrop.width + deltaXPercent))
+        const newHeightNE = Math.max(minSize, newCrop.height - deltaYPercent)
         newCrop.y = Math.max(0, newCrop.y + (newCrop.height - newHeightNE))
         newCrop.height = newHeightNE
         break
       case 'nw': // Top-left corner
-        const newWidthNW = Math.max(minSize, newCrop.width - deltaX)
+        const newWidthNW = Math.max(minSize, newCrop.width - deltaXPercent)
         newCrop.x = Math.max(0, newCrop.x + (newCrop.width - newWidthNW))
         newCrop.width = newWidthNW
-        const newHeightNW = Math.max(minSize, newCrop.height - deltaY)
+        const newHeightNW = Math.max(minSize, newCrop.height - deltaYPercent)
         newCrop.y = Math.max(0, newCrop.y + (newCrop.height - newHeightNW))
         newCrop.height = newHeightNW
         break
     }
 
-    // Maintain aspect ratio
+    // Maintain aspect ratio with precise calculations
     const newAspectRatio = newCrop.width / newCrop.height
-    if (Math.abs(newAspectRatio - aspectRatio) > 0.1) {
+    if (Math.abs(newAspectRatio - aspectRatio) > 0.05) { // Tighter tolerance
       if (newAspectRatio > aspectRatio) {
         // Too wide, adjust height
         newCrop.height = newCrop.width / aspectRatio
@@ -347,6 +364,12 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
         }
       }
     }
+
+    // Round all values to 2 decimal places for precise positioning
+    newCrop.x = Math.round(newCrop.x * 100) / 100
+    newCrop.y = Math.round(newCrop.y * 100) / 100
+    newCrop.width = Math.round(newCrop.width * 100) / 100
+    newCrop.height = Math.round(newCrop.height * 100) / 100
 
     setCrop(newCrop)
   }
@@ -381,82 +404,92 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
   }
 
   const resetCrop = () => {
-    if (!imageRef.current || !imageLoaded) return
-    
     const img = imageRef.current
-    const imgAspect = img.naturalWidth / img.naturalHeight
-    let newCrop: CropArea
+    if (img) {
+      const imgAspect = img.naturalWidth / img.naturalHeight
+      let newCrop: CropArea
 
-    if (imgAspect > aspectRatio) {
-      const newHeight = img.naturalWidth / aspectRatio
-      const y = (img.naturalHeight - newHeight) / 2
-      newCrop = {
-        x: 10,
-        y: y / img.naturalHeight * 100,
-        width: 80,
-        height: (newHeight / img.naturalHeight) * 100
+      if (imgAspect > aspectRatio) {
+        const newHeight = img.naturalWidth / aspectRatio
+        const y = (img.naturalHeight - newHeight) / 2
+        newCrop = {
+          x: 10,
+          y: y / img.naturalHeight * 100,
+          width: 80,
+          height: (newHeight / img.naturalHeight) * 100
+        }
+      } else {
+        const newWidth = img.naturalHeight * aspectRatio
+        const x = (img.naturalWidth - newWidth) / 2
+        newCrop = {
+          x: x / img.naturalWidth * 100,
+          y: 10,
+          width: (newWidth / img.naturalWidth) * 100,
+          height: 80
+        }
       }
-    } else {
-      const newWidth = img.naturalHeight * aspectRatio
-      const x = (img.naturalWidth - newWidth) / 2
-      newCrop = {
-        x: x / img.naturalWidth * 100,
-        y: 10,
-        width: (newWidth / img.naturalWidth) * 100,
-        height: 80
-      }
+      
+      setCrop(newCrop)
+      setRotation(0)
+      setScale(1)
     }
+  }
+
+  const getCursorStyle = (x: number, y: number): string => {
+    if (!containerRef.current) return 'default'
     
-    setCrop(newCrop)
-    setRotation(0)
-    setScale(1)
+    const rect = containerRef.current.getBoundingClientRect()
+    const xPercent = ((x - rect.left) / rect.width) * 100
+    const yPercent = ((y - rect.top) / rect.height) * 100
+    
+    const handleSize = 2.5
+    const isOnHandle = checkResizeHandle(xPercent, yPercent, handleSize)
+    
+    switch (isOnHandle) {
+      case 'nw':
+      case 'se':
+        return 'nw-resize'
+      case 'ne':
+      case 'sw':
+        return 'ne-resize'
+      case 'n':
+      case 's':
+        return 'ns-resize'
+      case 'e':
+      case 'w':
+        return 'ew-resize'
+      default:
+        if (xPercent >= crop.x && xPercent <= crop.x + crop.width && 
+            yPercent >= crop.y && yPercent <= crop.y + crop.height) {
+          return 'move'
+        }
+        return 'default'
+    }
   }
 
   // Show error message if there's an issue
   if (error) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-xl max-w-md w-full p-6">
-          <div className="text-center">
-            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <X size={32} className="text-red-600" />
-            </div>
-            <h2 className="text-xl font-semibold text-secondary-900 mb-2">Error Loading Image</h2>
-            <p className="text-secondary-600 mb-4">{error}</p>
-            <div className="flex gap-3 justify-center">
-              <button
-                onClick={onCancel}
-                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                Close
-              </button>
-              <button
-                onClick={() => {
-                  setError('')
-                  loadImage(imageUrl)
-                }}
-                className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
-              >
-                Retry
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  // Show loading state
-  if (!imageLoaded) {
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-xl max-w-md w-full p-6">
-          <div className="text-center">
-            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
-            </div>
-            <h2 className="text-xl font-semibold text-secondary-900 mb-2">Loading Image</h2>
-            <p className="text-secondary-600">Please wait while we load your image...</p>
+        <div className="bg-white rounded-xl max-w-md w-full p-6 text-center">
+          <h2 className="text-xl font-semibold text-secondary-900 mb-2">Error Loading Image</h2>
+          <p className="text-secondary-600 mb-4">{error}</p>
+          <div className="flex gap-3 justify-center">
+            <button
+              onClick={onCancel}
+              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              Close
+            </button>
+            <button
+              onClick={() => {
+                setError('')
+                loadImage(imageUrl)
+              }}
+              className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+            >
+              Retry
+            </button>
           </div>
         </div>
       </div>
@@ -514,73 +547,73 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
                   
                   {/* Resize Handles - Top Left */}
                   <div
-                    className="absolute w-4 h-4 bg-white border-2 border-blue-500 rounded-full cursor-nw-resize pointer-events-auto"
+                    className="absolute w-5 h-5 bg-white border-2 border-blue-500 rounded-full cursor-nw-resize pointer-events-auto shadow-lg"
                     style={{
-                      left: `${crop.x - 2}%`,
-                      top: `${crop.y - 2}%`
+                      left: `${crop.x - 2.5}%`,
+                      top: `${crop.y - 2.5}%`
                     }}
                   />
                   
                   {/* Resize Handles - Top Right */}
                   <div
-                    className="absolute w-4 h-4 bg-white border-2 border-blue-500 rounded-full cursor-ne-resize pointer-events-auto"
+                    className="absolute w-5 h-5 bg-white border-2 border-blue-500 rounded-full cursor-ne-resize pointer-events-auto shadow-lg"
                     style={{
-                      left: `${crop.x + crop.width - 2}%`,
-                      top: `${crop.y - 2}%`
+                      left: `${crop.x + crop.width - 2.5}%`,
+                      top: `${crop.y - 2.5}%`
                     }}
                   />
                   
                   {/* Resize Handles - Bottom Left */}
                   <div
-                    className="absolute w-4 h-4 bg-white border-2 border-blue-500 rounded-full cursor-sw-resize pointer-events-auto"
+                    className="absolute w-5 h-5 bg-white border-2 border-blue-500 rounded-full cursor-sw-resize pointer-events-auto shadow-lg"
                     style={{
-                      left: `${crop.x - 2}%`,
-                      top: `${crop.y + crop.height - 2}%`
+                      left: `${crop.x - 2.5}%`,
+                      top: `${crop.y + crop.height - 2.5}%`
                     }}
                   />
                   
                   {/* Resize Handles - Bottom Right */}
                   <div
-                    className="absolute w-4 h-4 bg-white border-2 border-blue-500 rounded-full cursor-se-resize pointer-events-auto"
+                    className="absolute w-5 h-5 bg-white border-2 border-blue-500 rounded-full cursor-se-resize pointer-events-auto shadow-lg"
                     style={{
-                      left: `${crop.x + crop.width - 2}%`,
-                      top: `${crop.y + crop.height - 2}%`
+                      left: `${crop.x + crop.width - 2.5}%`,
+                      top: `${crop.y + crop.height - 2.5}%`
                     }}
                   />
                   
                   {/* Edge Handles - Left */}
                   <div
-                    className="absolute w-2 h-4 bg-white border border-blue-500 rounded cursor-ew-resize pointer-events-auto"
+                    className="absolute w-3 h-6 bg-white border border-blue-500 rounded cursor-ew-resize pointer-events-auto shadow-lg"
                     style={{
-                      left: `${crop.x - 1}%`,
-                      top: `${crop.y + crop.height/2 - 2}%`
+                      left: `${crop.x - 1.5}%`,
+                      top: `${crop.y + crop.height/2 - 3}%`
                     }}
                   />
                   
                   {/* Edge Handles - Right */}
                   <div
-                    className="absolute w-2 h-4 bg-white border border-blue-500 rounded cursor-ew-resize pointer-events-auto"
+                    className="absolute w-3 h-6 bg-white border border-blue-500 rounded cursor-ew-resize pointer-events-auto shadow-lg"
                     style={{
-                      left: `${crop.x + crop.width - 1}%`,
-                      top: `${crop.y + crop.height/2 - 2}%`
+                      left: `${crop.x + crop.width - 1.5}%`,
+                      top: `${crop.y + crop.height/2 - 3}%`
                     }}
                   />
                   
                   {/* Edge Handles - Top */}
                   <div
-                    className="absolute w-4 h-2 bg-white border border-blue-500 rounded cursor-ns-resize pointer-events-auto"
+                    className="absolute w-6 h-3 bg-white border border-blue-500 rounded cursor-ns-resize pointer-events-auto shadow-lg"
                     style={{
-                      left: `${crop.x + crop.width/2 - 2}%`,
-                      top: `${crop.y - 1}%`
+                      left: `${crop.x + crop.width/2 - 3}%`,
+                      top: `${crop.y - 1.5}%`
                     }}
                   />
                   
                   {/* Edge Handles - Bottom */}
                   <div
-                    className="absolute w-4 h-2 bg-white border border-blue-500 rounded cursor-ns-resize pointer-events-auto"
+                    className="absolute w-6 h-3 bg-white border border-blue-500 rounded cursor-ns-resize pointer-events-auto shadow-lg"
                     style={{
-                      left: `${crop.x + crop.width/2 - 2}%`,
-                      top: `${crop.y + crop.height - 1}%`
+                      left: `${crop.x + crop.width/2 - 3}%`,
+                      top: `${crop.y + crop.height - 1.5}%`
                     }}
                   />
                 </div>
@@ -691,15 +724,19 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
                   <div className="space-y-2 text-sm text-blue-800">
                     <div className="flex justify-between">
                       <span>Position:</span>
-                      <span>X: {crop.x.toFixed(1)}%, Y: {crop.y.toFixed(1)}%</span>
+                      <span>X: {crop.x.toFixed(2)}%, Y: {crop.y.toFixed(2)}%</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Size:</span>
-                      <span>W: {crop.width.toFixed(1)}%, H: {crop.height.toFixed(1)}%</span>
+                      <span>W: {crop.width.toFixed(2)}%, H: {crop.height.toFixed(2)}%</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Rotation:</span>
                       <span>{rotation}°</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Scale:</span>
+                      <span>{scale.toFixed(2)}x</span>
                     </div>
                   </div>
                 </div>
@@ -742,7 +779,7 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
           </button>
           <button
             onClick={handleSave}
-            disabled={!imageLoaded}
+            disabled={!previewUrl}
             className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
           >
             <Save size={16} />

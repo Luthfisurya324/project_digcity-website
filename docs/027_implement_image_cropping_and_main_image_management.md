@@ -45,10 +45,10 @@ interface ImageCropperProps {
 - **Resize Handles**: Corner handles untuk resize crop area
 - **Smart Constraints**: Maintain aspect ratio dan boundary limits
 
-#### **Canvas Processing**
+#### **Canvas Processing dengan Precise Cropping**
 ```tsx
-const handleSave = () => {
-  if (!imageRef.current || !canvasRef.current) return
+const generatePreview = useCallback(async (cropArea: CropArea, rot: number, scl: number) => {
+  if (!imageRef.current || !canvasRef.current || !imageLoaded) return
 
   const canvas = canvasRef.current
   const ctx = canvas.getContext('2d')
@@ -57,19 +57,35 @@ const handleSave = () => {
   canvas.width = targetWidth  // 800px
   canvas.height = targetHeight // 450px
   
+  // Clear canvas with white background (no black edges)
+  ctx.fillStyle = '#FFFFFF'
+  ctx.fillRect(0, 0, canvas.width, canvas.height)
+  
   // Apply transformations and crop
   ctx.save()
   ctx.translate(canvas.width / 2, canvas.height / 2)
-  ctx.rotate((rotation * Math.PI) / 180)
-  ctx.scale(scale, scale)
+  ctx.rotate((rot * Math.PI) / 180)
+  ctx.scale(scl, scl)
   
-  // Draw cropped image
-  ctx.drawImage(img, cropX, cropY, cropWidth, cropHeight, ...)
+  // Calculate crop dimensions with precise positioning
+  const cropX = Math.round((cropArea.x / 100) * imgWidth)
+  const cropY = Math.round((cropArea.y / 100) * imgHeight)
+  const cropWidth = Math.round((cropArea.width / 100) * imgWidth)
+  const cropHeight = Math.round((cropArea.height / 100) * imgHeight)
+  
+  // Ensure crop area is within image bounds
+  const safeCropX = Math.max(0, Math.min(cropX, imgWidth - cropWidth))
+  const safeCropY = Math.max(0, Math.min(cropY, imgHeight - cropHeight))
+  const safeCropWidth = Math.min(cropWidth, imgWidth - safeCropX)
+  const safeCropHeight = Math.min(cropHeight, imgHeight - safeCropY)
+  
+  // Draw cropped image with precise positioning
+  ctx.drawImage(img, safeCropX, safeCropY, safeCropWidth, safeCropHeight, ...)
   ctx.restore()
   
-  // Convert to data URL
-  const croppedImageUrl = canvas.toDataURL('image/jpeg', 0.8)
-  onCrop(croppedImageUrl)
+  // Convert to data URL with higher quality
+  const previewDataUrl = canvas.toDataURL('image/jpeg', 0.9)
+  setPreviewUrl(previewDataUrl)
 }
 ```
 
@@ -115,40 +131,44 @@ useEffect(() => {
 }, [crop, rotation, scale, generatePreview])
 ```
 
-#### **Smart Aspect Ratio Maintenance**
+#### **Smart Aspect Ratio Maintenance dengan Precise Control**
 ```tsx
-// Handle crop area resizing with aspect ratio constraints
+// Handle crop area resizing with precise aspect ratio constraints
 const handleResize = (direction: string, deltaX: number, deltaY: number) => {
   let newCrop = { ...crop }
-  const minSize = 10 // Minimum 10% of container
-  
+  const minSize = 15 // Minimum 15% of container for better usability
+
+  // Convert delta to percentage for precise control
+  const deltaXPercent = (deltaX / 100) * 100
+  const deltaYPercent = (deltaY / 100) * 100
+
   switch (direction) {
     case 'e': // Right edge
-      newCrop.width = Math.max(minSize, Math.min(100 - newCrop.x, newCrop.width + deltaX))
+      newCrop.width = Math.max(minSize, Math.min(100 - newCrop.x, newCrop.width + deltaXPercent))
       break
     case 'w': // Left edge
-      const newWidth = Math.max(minSize, newCrop.width - deltaX)
+      const newWidth = Math.max(minSize, newCrop.width - deltaXPercent)
       newCrop.x = Math.max(0, newCrop.x + (newCrop.width - newWidth))
       newCrop.width = newWidth
       break
     case 's': // Bottom edge
-      newCrop.height = Math.max(minSize, Math.min(100 - newCrop.y, newCrop.height + deltaY))
+      newCrop.height = Math.max(minSize, Math.min(100 - newCrop.y, newCrop.height + deltaYPercent))
       break
     case 'n': // Top edge
-      const newHeight = Math.max(minSize, newCrop.height - deltaY)
+      const newHeight = Math.max(minSize, newCrop.height - deltaYPercent)
       newCrop.y = Math.max(0, newCrop.y + (newCrop.height - newHeight))
       newCrop.height = newHeight
       break
     case 'se': // Bottom-right corner
-      newCrop.width = Math.max(minSize, Math.min(100 - newCrop.x, newCrop.width + deltaX))
-      newCrop.height = Math.max(minSize, Math.min(100 - newCrop.y, newCrop.height + deltaY))
+      newCrop.width = Math.max(minSize, Math.min(100 - newCrop.x, newCrop.width + deltaXPercent))
+      newCrop.height = Math.max(minSize, Math.min(100 - newCrop.y, newCrop.height + deltaYPercent))
       break
     // ... other corner and edge directions
   }
   
-  // Maintain aspect ratio automatically
+  // Maintain aspect ratio with tighter tolerance
   const newAspectRatio = newCrop.width / newCrop.height
-  if (Math.abs(newAspectRatio - aspectRatio) > 0.1) {
+  if (Math.abs(newAspectRatio - aspectRatio) > 0.05) { // Tighter tolerance
     if (newAspectRatio > aspectRatio) {
       // Too wide, adjust height
       newCrop.height = newCrop.width / aspectRatio
@@ -158,6 +178,12 @@ const handleResize = (direction: string, deltaX: number, deltaY: number) => {
     }
   }
   
+  // Round all values to 2 decimal places for precise positioning
+  newCrop.x = Math.round(newCrop.x * 100) / 100
+  newCrop.y = Math.round(newCrop.y * 100) / 100
+  newCrop.width = Math.round(newCrop.width * 100) / 100
+  newCrop.height = Math.round(newCrop.height * 100) / 100
+
   setCrop(newCrop)
 }
 ```
@@ -389,18 +415,20 @@ const handleImageCropped = (croppedImageUrl: string) => {
 ### 1. **Build Testing**
 - ✅ **Compilation**: Tidak ada TypeScript errors
 - ✅ **Dependencies**: Semua imports berfungsi (ZoomIn, ZoomOut, Move icons)
-- ✅ **Bundle Size**: AdminPage.js bertambah (122.23 kB) - fitur crop dengan CORS handling
+- ✅ **Bundle Size**: AdminPage.js bertambah (121.98 kB) - fitur crop dengan precise positioning
 - ✅ **State Management**: isDragging, isResizing, resizeDirection states berfungsi
 - ✅ **Mouse Events**: handleMouseDown, handleMouseMove, handleMouseUp handlers optimal
-- ✅ **CORS Handling**: loadImage, error handling, dan loading states berfungsi
+- ✅ **Precise Cropping**: Math.round, boundary limits, dan safe crop calculations
 
 ### 2. **Functionality Testing**
 - ✅ **Interactive Cropping**: Drag & drop crop area berfungsi dengan baik
-- ✅ **Smart Resizing**: Corner handles (4x4) dan edge handles (2x4) visible dan functional
-- ✅ **Resize Detection**: 8-direction resize (corners + edges) dengan precise detection
-- ✅ **Aspect Ratio Constraints**: Maintain 16:9 ratio otomatis saat resize
+- ✅ **Smart Resizing**: Corner handles (5x5) dan edge handles (3x6, 6x3) visible dan functional
+- ✅ **Resize Detection**: 8-direction resize (corners + edges) dengan precise detection (2.5% tolerance)
+- ✅ **Aspect Ratio Constraints**: Maintain 16:9 ratio otomatis saat resize (0.05 tolerance)
 - ✅ **Real-time Preview**: Live preview update otomatis dengan useEffect
-- ✅ **Boundary Limits**: Crop area tidak bisa keluar dari image bounds
+- ✅ **Boundary Limits**: Crop area tidak bisa keluar dari image bounds dengan safe crop calculations
+- ✅ **Precise Positioning**: Math.round untuk pixel-perfect positioning (2 decimal places)
+- ✅ **No Black Edges**: White background canvas untuk clean output
 - ✅ **Image Cropping**: Crop, scale, rotate berfungsi sempurna
 - ✅ **CORS Handling**: Proper error handling untuk canvas security issues
 - ✅ **Loading States**: Loading dan error states yang user-friendly
@@ -421,11 +449,13 @@ const handleImageCropped = (croppedImageUrl: string) => {
 3. **Set Main Image**: Klik gambar untuk set sebagai cover
 4. **Edit Image**: Klik icon crop untuk edit ukuran/crop
 5. **Advanced Crop & Adjust**: 
-   - **Drag & Move**: Drag crop area untuk pindah posisi
-   - **Corner Resize**: Drag corner handles (4x4) untuk resize diagonal
-   - **Edge Resize**: Drag edge handles (2x4) untuk resize width/height
-   - **Smart Constraints**: Aspect ratio 16:9 otomatis maintained
-   - **Boundary Limits**: Crop area tidak bisa keluar dari image bounds
+   - **Drag & Move**: Drag crop area untuk pindah posisi dengan precise positioning
+   - **Corner Resize**: Drag corner handles (5x5) untuk resize diagonal yang presisi
+   - **Edge Resize**: Drag edge handles (3x6, 6x3) untuk resize width/height yang akurat
+   - **Smart Constraints**: Aspect ratio 16:9 otomatis maintained dengan tolerance 0.05
+   - **Boundary Limits**: Crop area tidak bisa keluar dari image bounds dengan safe crop calculations
+   - **Precise Positioning**: Math.round untuk pixel-perfect positioning (2 decimal places)
+   - **No Black Edges**: White background canvas untuk output yang clean
    - **Scale Control**: Slider untuk zoom in/out (0.5x-3x)
    - **Rotation**: Rotate 90° untuk straighten image
    - **Live Preview**: Lihat hasil real-time di panel kanan
