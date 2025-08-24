@@ -1,11 +1,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { eventAPI, type Event } from '../lib/supabase';
 import { Calendar, MapPin } from 'lucide-react';
+import ImageCarousel from './ImageCarousel';
+import EventDetailModal from './EventDetailModal';
 
 const EventsPage: React.FC = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('Semua');
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
 
   useEffect(() => {
@@ -26,6 +30,16 @@ const EventsPage: React.FC = () => {
   const handleCategoryChange = useCallback((category: string) => {
     setSelectedCategory(category);
   }, []);
+
+  const handleEventClick = (event: Event) => {
+    setSelectedEvent(event);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedEvent(null);
+  };
 
   // Use only Supabase data - no fallback dummy data
   const displayEvents = events;
@@ -127,40 +141,94 @@ const EventsPage: React.FC = () => {
           
           {filteredEvents.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
-              {filteredEvents.map((event) => (
-                <div key={event.id} className="bg-white rounded-xl border border-gray-100 shadow-md overflow-hidden hover:shadow-lg hover:border-gray-200 transition-all duration-200">
-                  <div className="aspect-w-16 aspect-h-9">
-                    <img
-                      src={event.image_url}
-                      alt={event.title}
-                      className="w-full h-40 sm:h-48 object-cover"
-                    />
-                  </div>
-                  <div className="p-4 sm:p-6">
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="inline-block bg-primary-100 text-primary-600 text-xs px-2 sm:px-3 py-1 rounded-full font-medium">
-                        {event.category}
-                      </span>
-                    </div>
-                    <h3 className="text-lg sm:text-xl font-bold text-secondary-900 mb-2 sm:mb-3">
-                      {event.title}
-                    </h3>
-                    <p className="text-sm sm:text-base text-secondary-600 mb-3 sm:mb-4 line-clamp-3">
-                      {event.description}
-                    </p>
-                    <div className="space-y-2 mb-4">
-                      <div className="flex items-center text-xs sm:text-sm text-secondary-600">
-                        <Calendar className="w-3 sm:w-4 h-3 sm:h-4 mr-2" />
-                        {event.date}
+              {filteredEvents.map((event) => {
+                // Get all images for the event
+                const getEventImages = (event: Event): string[] => {
+                  const images: string[] = []
+                  
+                  if (event.image_url) {
+                    images.push(event.image_url)
+                  }
+                  
+                  if (event.additional_images && Array.isArray(event.additional_images)) {
+                    images.push(...event.additional_images)
+                  }
+                  
+                  return images.length > 0 ? images : ['/placeholder-event.jpg']
+                }
+
+                const images = getEventImages(event)
+                
+                return (
+                  <div 
+                    key={event.id} 
+                    className="bg-white rounded-xl border border-gray-100 shadow-md overflow-hidden hover:shadow-lg hover:border-gray-200 transition-all duration-200 cursor-pointer transform hover:scale-105"
+                    onClick={() => handleEventClick(event)}
+                  >
+                    <div className="relative h-64 overflow-hidden">
+                      {images.length > 1 ? (
+                        <ImageCarousel
+                          images={images}
+                          autoPlay={true}
+                          autoPlayInterval={3000}
+                          showControls={false}
+                          showThumbnails={false}
+                          className="w-full h-full"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gray-100">
+                          <img
+                            src={images[0]}
+                            alt={event.title}
+                            className="w-full h-full object-cover"
+                            style={{
+                              objectPosition: 'center',
+                              objectFit: 'cover'
+                            }}
+                          />
+                        </div>
+                      )}
+                      
+                      {/* Click indicator */}
+                      <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-10 transition-all duration-200 flex items-center justify-center">
+                        <div className="bg-white bg-opacity-90 text-secondary-900 px-3 py-1 rounded-full text-sm font-medium opacity-0 hover:opacity-100 transition-opacity">
+                          Click to view details
+                        </div>
                       </div>
-                      <div className="flex items-center text-xs sm:text-sm text-secondary-600">
-                        <MapPin className="w-3 sm:w-4 h-3 sm:h-4 mr-2" />
-                        {event.location}
+                    </div>
+                    
+                    <div className="p-4 sm:p-6">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="inline-block bg-primary-100 text-primary-600 text-xs px-2 sm:px-3 py-1 rounded-full font-medium">
+                          {event.category}
+                        </span>
+                        {images.length > 1 && (
+                          <span className="text-xs text-secondary-500 flex items-center">
+                            <span className="w-2 h-2 bg-primary-500 rounded-full mr-1"></span>
+                            {images.length} images
+                          </span>
+                        )}
+                      </div>
+                      <h3 className="text-lg sm:text-xl font-bold text-secondary-900 mb-2 sm:mb-3">
+                        {event.title}
+                      </h3>
+                      <p className="text-sm sm:text-base text-secondary-600 mb-3 sm:mb-4 line-clamp-3">
+                        {event.description}
+                      </p>
+                      <div className="space-y-2 mb-4">
+                        <div className="flex items-center text-xs sm:text-sm text-secondary-600">
+                          <Calendar className="w-3 sm:w-4 h-3 sm:h-4 mr-2" />
+                          {event.date}
+                        </div>
+                        <div className="flex items-center text-xs sm:text-sm text-secondary-600">
+                          <MapPin className="w-3 sm:w-4 h-3 sm:h-4 mr-2" />
+                          {event.location}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           ) : (
             <div className="text-center py-8 sm:py-12">
@@ -184,6 +252,15 @@ const EventsPage: React.FC = () => {
           </button>
         </div>
       </section>
+
+      {/* Event Detail Modal */}
+      {selectedEvent && (
+        <EventDetailModal
+          event={selectedEvent}
+          isOpen={isModalOpen}
+          onClose={closeModal}
+        />
+      )}
     </div>
   );
 };

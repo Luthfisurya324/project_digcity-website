@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Newspaper } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { newsAPI, newsletterAPI, type News } from '../lib/supabase';
 
 const BlogPage: React.FC = () => {
@@ -236,9 +237,12 @@ const BlogPage: React.FC = () => {
                   </p>
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                     <span className="text-xs sm:text-sm text-secondary-500">Oleh {post.author}</span>
-                    <button className="interactive-element text-primary-600 hover:text-primary-700 font-medium text-xs sm:text-sm text-left sm:text-right">
+                    <Link 
+                      to={`/blog/${post.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}`}
+                      className="interactive-element text-primary-600 hover:text-primary-700 font-medium text-xs sm:text-sm text-left sm:text-right"
+                    >
                       Baca Selengkapnya →
-                    </button>
+                    </Link>
                   </div>
                 </div>
               </article>

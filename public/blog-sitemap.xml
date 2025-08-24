@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:news="http://www.google.com/schemas/sitemap-news/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  
+  <!-- Blog Main Page -->
+  <url>
+    <loc>https://digcity.my.id/blog</loc>
+    <lastmod>2025-07-01</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+    <news:news>
+      <news:publication>
+        <news:name>DIGCITY Blog</news:name>
+        <news:language>id</news:language>
+      </news:publication>
+      <news:publication_date>2025-07-01T00:00:00+07:00</news:publication_date>
+      <news:title>Blog DIGCITY - Artikel dan Berita Terkini</news:title>
+      <news:keywords>blog, artikel, berita, bisnis digital, teknologi, DIGCITY</news:keywords>
+      <news:stock_tickers>DIGCITY</news:stock_tickers>
+    </news:news>
+  </url>
+
+  <!-- Sample Blog Articles (akan di-generate secara dinamis) -->
+  <url>
+    <loc>https://digcity.my.id/blog/pengenalan-bisnis-digital</loc>
+    <lastmod>2025-07-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <news:news>
+      <news:publication>
+        <news:name>DIGCITY Blog</news:name>
+        <news:language>id</news:language>
+      </news:publication>
+      <news:publication_date>2025-07-01T00:00:00+07:00</news:publication_date>
+      <news:title>Pengenalan Bisnis Digital: Memulai Perjalanan di Era Digital</news:title>
+      <news:keywords>bisnis digital, teknologi, startup, entrepreneurship</news:keywords>
+      <news:stock_tickers>DIGCITY</news:stock_tickers>
+    </news:news>
+    <image:image>
+      <image:loc>https://digcity.my.id/digital-innovation.png</image:loc>
+      <image:title>Bisnis Digital</image:title>
+      <image:caption>Ilustrasi bisnis digital modern</image:caption>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://digcity.my.id/blog/teknologi-blockchain</loc>
+    <lastmod>2025-07-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <news:news>
+      <news:publication>
+        <news:name>DIGCITY Blog</news:name>
+        <news:language>id</news:language>
+      </news:publication>
+      <news:publication_date>2025-07-01T00:00:00+07:00</news:publication_date>
+      <news:title>Teknologi Blockchain: Masa Depan Transaksi Digital</news:title>
+      <news:keywords>blockchain, cryptocurrency, teknologi, fintech</news:keywords>
+      <news:stock_tickers>DIGCITY</news:stock_tickers>
+    </news:news>
+    <image:image>
+      <image:loc>https://digcity.my.id/digital-innovation.png</image:loc>
+      <image:title>Blockchain Technology</image:title>
+      <image:caption>Konsep teknologi blockchain</image:caption>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://digcity.my.id/blog/startup-indonesia</loc>
+    <lastmod>2025-07-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <news:news>
+      <news:publication>
+        <news:name>DIGCITY Blog</news:name>
+        <news:language>id</news:language>
+      </news:publication>
+      <news:publication_date>2025-07-01T00:00:00+07:00</news:publication_date>
+      <news:title>Startup Indonesia: Potensi dan Tantangan di Era Digital</news:title>
+      <news:keywords>startup, Indonesia, bisnis digital, entrepreneurship</news:keywords>
+      <news:stock_tickers>DIGCITY</news:stock_tickers>
+    </news:news>
+    <image:image>
+      <image:loc>https://digcity.my.id/digital-innovation.png</image:loc>
+      <image:title>Startup Indonesia</image:title>
+      <image:caption>Ekosistem startup Indonesia</image:caption>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://digcity.my.id/blog/ai-machine-learning</loc>
+    <lastmod>2025-07-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <news:news>
+      <news:publication>
+        <news:name>DIGCITY Blog</news:name>
+        <news:language>id</news:language>
+      </news:publication>
+      <news:publication_date>2025-07-01T00:00:00+07:00</news:publication_date>
+      <news:title>AI dan Machine Learning: Transformasi Bisnis di Era Digital</news:title>
+      <news:keywords>AI, machine learning, artificial intelligence, teknologi</news:keywords>
+      <news:stock_tickers>DIGCITY</news:stock_tickers>
+    </news:news>
+    <image:image>
+      <image:loc>https://digcity.my.id/digital-innovation.png</image:loc>
+      <image:title>AI Machine Learning</image:title>
+      <image:caption>Konsep AI dan machine learning</image:caption>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://digcity.my.id/blog/digital-marketing</loc>
+    <lastmod>2025-07-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <news:news>
+      <news:publication>
+        <news:name>DIGCITY Blog</news:name>
+        <news:language>id</news:language>
+      </news:publication>
+      <news:publication_date>2025-07-01T00:00:00+07:00</news:publication_date>
+      <news:title>Digital Marketing: Strategi Pemasaran di Era Digital</news:title>
+      <news:keywords>digital marketing, pemasaran, social media, SEO</news:keywords>
+      <news:stock_tickers>DIGCITY</news:stock_tickers>
+    </news:news>
+    <image:image>
+      <image:loc>https://digcity.my.id/digital-innovation.png</image:loc>
+      <image:title>Digital Marketing</image:title>
+      <image:caption>Strategi digital marketing modern</image:caption>
+    </image:image>
+  </url>
+
+</urlset>

@@ -24,6 +24,12 @@
   body {
     font-family: 'Inter', system-ui, sans-serif;
   }
+  
+  /* Ensure no horizontal overflow */
+  html, body {
+    overflow-x: hidden;
+    width: 100%;
+  }
 }
 
 @layer utilities {
@@ -33,12 +39,59 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
-  
+
   .line-clamp-3 {
     display: -webkit-box;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
+  }
+  
+  /* Linktree specific utilities */
+  .linktree-container {
+    width: 100vw;
+    max-width: 100%;
+    overflow-x: hidden;
+    position: relative;
+  }
+  
+  .linktree-content {
+    width: 100%;
+    max-width: 28rem; /* max-w-md equivalent */
+    margin: 0 auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  /* Admin subdomain utilities */
+  .admin-container {
+    width: 100vw;
+    max-width: 100%;
+    overflow-x: hidden;
+    position: relative;
+    background: #f8fafc;
+  }
+  
+  .admin-content {
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 0;
+  }
+  
+  /* Responsive adjustments for linktree */
+  @media (max-width: 640px) {
+    .linktree-content {
+      max-width: 100%;
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+  }
+  
+  @media (min-width: 641px) {
+    .linktree-content {
+      max-width: 32rem; /* max-w-lg for larger screens */
+    }
   }
 
   /* Mobile menu animations */

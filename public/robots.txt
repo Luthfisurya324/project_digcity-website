@@ -37,6 +37,7 @@ Allow: /*.avif
 
 # Sitemap location
 Sitemap: https://digcity.my.id/sitemap.xml
+Sitemap: https://digcity.my.id/blog-sitemap.xml
 
 # Crawl delay (optional - be respectful to servers)
 Crawl-delay: 1

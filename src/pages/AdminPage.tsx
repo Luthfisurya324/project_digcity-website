@@ -3,8 +3,10 @@ import AdminPanel from '../components/AdminPanel'
 
 const AdminPage: React.FC = () => {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <AdminPanel />
+    <div className="admin-container min-h-screen">
+      <div className="admin-content">
+        <AdminPanel />
+      </div>
     </div>
   )
 }

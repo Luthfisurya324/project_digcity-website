@@ -2,6 +2,7 @@ import React from 'react';
 import LinktreeLayout from './LinktreeLayout';
 import LinktreeButton from './LinktreeButton';
 import LinktreeCard from './LinktreeCard';
+import { useDomainSEO } from '../../hooks/useDomainSEO';
 import { 
   Globe, 
   FileText, 
@@ -9,19 +10,16 @@ import {
   Image, 
   Newspaper, 
   Mail,
-  Instagram,
-  Facebook,
-  Twitter,
-  MapPin,
-  Phone,
-  Youtube,
-  Linkedin,
-  MessageCircle,
-  Target
+  Target,
+  Users,
+  Award
 } from 'lucide-react';
 import { defaultLinktreeConfig, getActiveLinks, getActiveSocialLinks, getActiveContactInfo } from '../../config/linktreeConfig';
 
 const LinktreePage: React.FC = () => {
+  // Initialize domain-specific SEO
+  useDomainSEO();
+
   // Icon mapping for dynamic icon rendering
   const IconMap: Record<string, React.ReactNode> = {
     Globe: <Globe size={24} />,
@@ -30,7 +28,9 @@ const LinktreePage: React.FC = () => {
     Image: <Image size={24} />,
     Newspaper: <Newspaper size={24} />,
     Mail: <Mail size={24} />,
-    Target: <Target size={24} />
+    Target: <Target size={24} />,
+    Users: <Users size={24} />,
+    Award: <Award size={24} />
   };
 
   // Get active links from config
@@ -52,29 +52,43 @@ const LinktreePage: React.FC = () => {
   }));
 
   return (
-          <LinktreeLayout
-        title={defaultLinktreeConfig.title}
-        subtitle={defaultLinktreeConfig.subtitle}
-        avatar={defaultLinktreeConfig.avatar}
-      >
-              {/* Main Links */}
-        {activeLinks.map((link, index) => (
-          <LinktreeButton
-            key={link.id}
-            href={link.href}
-            title={link.title}
-            description={link.description}
-            icon={link.icon ? IconMap[link.icon] || <Globe size={24} /> : <Globe size={24} />}
-            variant={link.variant}
-            isExternal={link.isExternal}
-          />
-        ))}
+    <LinktreeLayout
+      title={defaultLinktreeConfig.title}
+      subtitle={defaultLinktreeConfig.subtitle}
+      avatar={defaultLinktreeConfig.avatar}
+    >
+      {/* Main Links */}
+      {activeLinks.map((link) => (
+        <LinktreeButton
+          key={link.id}
+          href={link.href}
+          title={link.title}
+          description={link.description}
+          icon={link.icon ? IconMap[link.icon] || <Globe size={24} /> : <Globe size={24} />}
+          variant={link.variant}
+          isExternal={link.isExternal}
+        />
+      ))}
 
       {/* Social Media Section */}
       <LinktreeCard
         title="Follow Us"
         content="Ikuti kami di social media untuk update terbaru tentang acara, workshop, dan kegiatan DIGCITY"
         socialLinks={socialLinks}
+        variant="social"
+      />
+
+      {/* Event Instagram Section */}
+      <LinktreeCard
+        title="🎉 Instagram Acara"
+        content="Ikuti Instagram khusus acara DIGCITY untuk update event, workshop, dan kegiatan terbaru"
+        socialLinks={[
+          {
+            platform: 'instagram',
+            value: '@dbasic.official',
+            href: 'https://instagram.com/dbasic.official'
+          }
+        ]}
         variant="social"
       />
 
@@ -90,6 +104,13 @@ const LinktreePage: React.FC = () => {
       <LinktreeCard
         title="Tentang DIGCITY"
         content="DIGCITY adalah Himpunan Mahasiswa Bisnis Digital Universitas Ibn Khaldun Bogor yang menekankan nilai Berdampak, Adaptif, Inovatif, dan Kompeten dalam pengembangan potensi mahasiswa."
+        variant="info"
+      />
+
+      {/* Values Section */}
+      <LinktreeCard
+        title="Nilai-Nilai Kami"
+        content="Berdampak - Adaptif - Inovatif - Kompeten"
         variant="info"
       />
     </LinktreeLayout>

@@ -15,15 +15,15 @@ const LinktreeLayout: React.FC<LinktreeLayoutProps> = ({
   avatar
 }) => {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-secondary-50 via-white to-white">
+    <div className="linktree-container min-h-screen bg-gradient-to-b from-secondary-50 via-white to-white">
       {/* Background decorative elements similar to HomePage */}
-      <div className="absolute inset-0 pointer-events-none">
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="absolute -top-16 -left-16 w-48 h-48 rounded-full blur-3xl opacity-20 bg-gradient-to-br from-primary-400 via-secondary-400 to-primary-600" />
         <div className="absolute -bottom-10 -right-10 w-48 h-48 rounded-full blur-3xl opacity-15 bg-gradient-to-br from-secondary-300 via-primary-300 to-secondary-500" />
         <div className="absolute top-1/3 -right-8 w-32 h-32 rounded-full blur-3xl opacity-10 bg-gradient-to-br from-primary-200 to-secondary-300" />
       </div>
 
-      <div className="relative container mx-auto px-4 py-8 max-w-md">
+      <div className="relative linktree-content py-8">
         {/* Header Section */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}

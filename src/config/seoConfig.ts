@@ -59,6 +59,15 @@ export const seoConfig: Record<string, PageSEOConfig> = {
         '@type': 'Organization',
         name: 'DIGCITY',
         logo: `${baseUrl}${defaultImage}`
+      },
+      blogPost: {
+        '@type': 'BlogPosting',
+        headline: 'Artikel Terbaru DIGCITY',
+        description: 'Koleksi artikel dan berita terbaru dari DIGCITY',
+        author: {
+          '@type': 'Organization',
+          name: 'DIGCITY'
+        }
       }
     }
   },

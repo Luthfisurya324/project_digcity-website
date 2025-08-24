@@ -244,6 +244,68 @@ npm run preview
 - Check Vercel domain settings
 - Wait for DNS propagation (24-48 hours)
 
+### **5. Subdomain redirect ke homepage (SOLVED)**
+**Problem:** `linktree.digcity.my.id` mengarah ke halaman utama bukan linktree
+
+**Solution:** Conditional rendering berdasarkan subdomain di React app:
+```tsx
+// Di App.tsx
+const isLinktreeSubdomain = shouldRedirectToLinktree()
+
+return (
+  <div className="min-h-screen bg-white">
+    {/* Conditional rendering untuk subdomain linktree */}
+    {isLinktreeSubdomain ? (
+      <LazyLinktreePage />
+    ) : (
+      <Routes>
+        {/* Normal routing untuk domain utama */}
+      </Routes>
+    )}
+  </div>
+)
+```
+
+**Files yang diupdate:**
+- `src/utils/domainDetection.ts` - Utility untuk deteksi subdomain
+- `src/hooks/useDomainSEO.ts` - Hook untuk SEO dinamis  
+- `src/App.tsx` - Conditional rendering berdasarkan subdomain
+- `vercel.json` - Hapus redirect yang bermasalah, gunakan React routing saja
+
+**Cara kerja:**
+1. User akses `linktree.digcity.my.id`
+2. React app detect subdomain
+3. Langsung render `LinktreePage` tanpa routing
+4. Tidak ada redirect, langsung ke halaman linktree
+
+### **6. Layout tidak full width (SOLVED)**
+**Problem:** Halaman linktree tidak menggunakan full width, ada space di sebelah kanan
+
+**Solution:** Perbaikan CSS dan layout:
+```css
+/* CSS utilities untuk linktree */
+.linktree-container {
+  width: 100vw;
+  max-width: 100%;
+  overflow-x: hidden;
+  position: relative;
+}
+
+.linktree-content {
+  width: 100%;
+  max-width: 28rem;
+  margin: 0 auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+```
+
+**Files yang diupdate:**
+- `src/components/linktree/LinktreeLayout.tsx` - Gunakan utility class khusus
+- `src/App.tsx` - Conditional CSS class untuk linktree
+- `src/index.css` - Tambah utility CSS khusus linktree
+- Responsive design untuk mobile dan desktop
+
 ## **Future Enhancements**
 
 ### **1. Admin Panel Integration**

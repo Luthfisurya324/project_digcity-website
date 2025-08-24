@@ -96,6 +96,11 @@ export const LazyBlogPage = withLazyLoading(
   LoadingSpinner
 )
 
+export const LazyBlogDetailPage = withLazyLoading(
+  () => import('./BlogDetailPage'),
+  LoadingSpinner
+)
+
 export const LazyEventsPage = withLazyLoading(
   () => import('./EventsPage'),
   LoadingSpinner
@@ -229,6 +234,7 @@ export const preloadPage = (pageName: string, currentPage?: string) => {
   
   const pageImports: Record<string, () => Promise<any>> = {
     blog: () => import('./BlogPage'),
+    'blog-detail': () => import('./BlogDetailPage'),
     events: () => import('./EventsPage'),
     sejarah: () => import('./SejarahPage'),
     logo: () => import('./LogoPage'),

@@ -1,6 +1,16 @@
 import React, { useState, useEffect } from 'react'
 import { galleryAPI } from '../../lib/supabase'
 import type { Gallery } from '../../lib/supabase'
+import { 
+  Plus, 
+  Image, 
+  Trash2, 
+  Edit3, 
+  Calendar, 
+  Upload,
+  FolderOpen,
+  Eye
+} from 'lucide-react'
 
 interface GalleryFormData {
   title: string
@@ -81,7 +91,7 @@ const AdminGallery: React.FC = () => {
       description: item.description,
       image_url: item.image_url,
       category: item.category,
-      event_date: new Date(item.event_date).toISOString().slice(0, 10),
+      event_date: item.event_date ? new Date(item.event_date).toISOString().slice(0, 10) : '',
       tags: item.tags || []
     })
     setShowForm(true)
@@ -99,23 +109,6 @@ const AdminGallery: React.FC = () => {
     }
   }
 
-  const addTag = () => {
-    if (tagInput.trim() && !formData.tags.includes(tagInput.trim())) {
-      setFormData({
-        ...formData,
-        tags: [...formData.tags, tagInput.trim()]
-      })
-      setTagInput('')
-    }
-  }
-
-  const removeTag = (tagToRemove: string) => {
-    setFormData({
-      ...formData,
-      tags: formData.tags.filter(tag => tag !== tagToRemove)
-    })
-  }
-
   const resetForm = () => {
     setFormData({
       title: '',
@@ -130,12 +123,22 @@ const AdminGallery: React.FC = () => {
     setTagInput('')
   }
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('id-ID', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    })
+  const addTag = () => {
+    if (tagInput.trim() && !formData.tags.includes(tagInput.trim())) {
+      setFormData({ ...formData, tags: [...formData.tags, tagInput.trim()] })
+      setTagInput('')
+    }
+  }
+
+  const removeTag = (tagToRemove: string) => {
+    setFormData({ ...formData, tags: formData.tags.filter(tag => tag !== tagToRemove) })
+  }
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      addTag()
+    }
   }
 
   const filteredGallery = selectedCategory === 'all' 
@@ -152,23 +155,45 @@ const AdminGallery: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
+      {/* Simple Header */}
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-secondary-900">Gallery Management</h1>
-          <p className="text-secondary-600 mt-2">Manage DIGCITY event photos and memories</p>
+          <h1 className="text-2xl font-bold text-secondary-900">Gallery Management</h1>
+          <p className="text-secondary-600">Manage DIGCITY event photos and memories</p>
         </div>
         <button
           onClick={() => setShowForm(true)}
-          className="bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition-colors flex items-center space-x-2"
+          className="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition-all duration-200 flex items-center space-x-2"
         >
-          <span>📸</span>
+          <Plus size={20} />
           <span>Add New Photo</span>
         </button>
       </div>
 
+      {/* Stats Summary */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-white rounded-lg border border-secondary-200 p-4 text-center">
+          <p className="text-sm text-secondary-600">Total Photos</p>
+          <p className="text-2xl font-bold text-secondary-900">{gallery.length}</p>
+        </div>
+        <div className="bg-white rounded-lg border border-secondary-200 p-4 text-center">
+          <p className="text-sm text-secondary-600">Categories</p>
+          <p className="text-2xl font-bold text-green-600">{new Set(gallery.map(g => g.category)).size}</p>
+        </div>
+        <div className="bg-white rounded-lg border border-secondary-200 p-4 text-center">
+          <p className="text-sm text-secondary-600">This Month</p>
+          <p className="text-2xl font-bold text-secondary-600">
+            {gallery.filter(g => {
+              const photoDate = new Date(g.event_date)
+              const now = new Date()
+              return photoDate.getMonth() === now.getMonth() && photoDate.getFullYear() === now.getFullYear()
+            }).length}
+          </p>
+        </div>
+      </div>
+
       {/* Filter */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+      <div className="bg-white p-4 rounded-lg border border-secondary-200">
         <div className="flex flex-wrap gap-2">
           <button
             onClick={() => setSelectedCategory('all')}
@@ -276,7 +301,6 @@ const AdminGallery: React.FC = () => {
                   <label className="block text-sm font-medium text-secondary-700 mb-2">Event Date</label>
                   <input
                     type="date"
-                    required
                     value={formData.event_date}
                     onChange={(e) => setFormData({ ...formData, event_date: e.target.value })}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
@@ -286,19 +310,19 @@ const AdminGallery: React.FC = () => {
 
               <div>
                 <label className="block text-sm font-medium text-secondary-700 mb-2">Tags</label>
-                <div className="flex space-x-2 mb-2">
+                <div className="flex gap-2 mb-2">
                   <input
                     type="text"
                     value={tagInput}
                     onChange={(e) => setTagInput(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
+                    onKeyPress={handleKeyPress}
+                    placeholder="Add tag and press Enter"
                     className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                    placeholder="Add a tag"
                   />
                   <button
                     type="button"
                     onClick={addTag}
-                    className="px-4 py-2 bg-secondary-600 text-white rounded-lg hover:bg-secondary-700 transition-colors"
+                    className="px-4 py-2 bg-secondary-600 text-white rounded-lg hover:bg-secondary-700"
                   >
                     Add
                   </button>
@@ -322,20 +346,29 @@ const AdminGallery: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex justify-end space-x-4 pt-4">
+              <div className="flex justify-end space-x-3 pt-4">
                 <button
                   type="button"
                   onClick={resetForm}
-                  className="px-6 py-2 border border-gray-300 text-secondary-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="px-6 py-2 text-secondary-600 hover:text-secondary-800 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 transition-colors"
+                  className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
                 >
-                  {submitting ? 'Saving...' : (editingItem ? 'Update Photo' : 'Add Photo')}
+                  {submitting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      <span>Saving...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>{editingItem ? 'Update' : 'Save'}</span>
+                    </>
+                  )}
                 </button>
               </div>
             </form>
@@ -344,95 +377,97 @@ const AdminGallery: React.FC = () => {
       )}
 
       {/* Gallery Grid */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-        <div className="p-6 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-secondary-900">
-            {selectedCategory === 'all' ? 'All Photos' : selectedCategory} ({filteredGallery.length})
-          </h2>
+      <div className="bg-white rounded-lg border border-secondary-200 overflow-hidden">
+        <div className="px-6 py-4 border-b border-secondary-200">
+          <h3 className="text-lg font-semibold text-secondary-900">
+            Gallery Items ({filteredGallery.length})
+          </h3>
         </div>
-        
-        {filteredGallery.length > 0 ? (
+
+        {filteredGallery.length === 0 ? (
+          <div className="p-8 text-center">
+            <Image size={64} className="mx-auto mb-4 text-secondary-300" />
+            <p className="text-secondary-500">No gallery items found</p>
+            <button
+              onClick={() => setShowForm(true)}
+              className="mt-4 bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors flex items-center space-x-2 mx-auto"
+            >
+              <Plus size={20} />
+              <span>Add First Photo</span>
+            </button>
+          </div>
+        ) : (
           <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredGallery.map((item) => (
-                <div key={item.id} className="group relative bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
-                  <div className="aspect-square overflow-hidden">
+                <div key={item.id} className="bg-white border border-secondary-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                  <div className="relative">
                     <img
                       src={item.image_url}
                       alt={item.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      className="w-full h-48 object-cover"
                       onError={(e) => {
-                        e.currentTarget.src = '/api/placeholder/300/300'
+                        e.currentTarget.src = 'https://via.placeholder.com/400x300?text=Image+Not+Found'
                       }}
                     />
+                    <div className="absolute top-2 right-2">
+                      <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-primary-100 text-primary-800">
+                        {item.category}
+                      </span>
+                    </div>
                   </div>
                   
                   <div className="p-4">
-                    <div className="flex items-start justify-between mb-2">
-                      <h3 className="font-medium text-secondary-900 text-sm line-clamp-2">{item.title}</h3>
-                      <div className="flex space-x-1 ml-2">
-                        <button
-                          onClick={() => handleEdit(item)}
-                          className="text-primary-600 hover:text-primary-800 p-1"
-                          title="Edit"
-                        >
-                          ✏️
-                        </button>
-                        <button
-                          onClick={() => handleDelete(item.id)}
-                          className="text-red-600 hover:text-red-800 p-1"
-                          title="Delete"
-                        >
-                          🗑️
-                        </button>
+                    <h4 className="font-semibold text-secondary-900 mb-2 line-clamp-2">{item.title}</h4>
+                    <p className="text-sm text-secondary-600 mb-3 line-clamp-2">{item.description}</p>
+                    
+                    {item.event_date && (
+                      <div className="flex items-center text-sm text-secondary-500 mb-3">
+                        <Calendar size={14} className="mr-1" />
+                        {new Date(item.event_date).toLocaleDateString('id-ID', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric'
+                        })}
                       </div>
-                    </div>
-                    
-                    <p className="text-xs text-secondary-600 mb-2 line-clamp-2">{item.description}</p>
-                    
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="inline-flex px-2 py-1 rounded-full bg-primary-100 text-primary-800 font-medium">
-                        {item.category}
-                      </span>
-                      <span className="text-secondary-500">
-                        {formatDate(item.event_date)}
-                      </span>
-                    </div>
+                    )}
                     
                     {item.tags && item.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-2">
-                        {item.tags.slice(0, 2).map((tag, index) => (
-                          <span key={index} className="inline-flex px-2 py-1 text-xs rounded bg-gray-100 text-gray-600">
+                      <div className="flex flex-wrap gap-1 mb-3">
+                        {item.tags.slice(0, 3).map((tag, index) => (
+                          <span
+                            key={index}
+                            className="inline-flex px-2 py-1 text-xs bg-secondary-100 text-secondary-700 rounded"
+                          >
                             {tag}
                           </span>
                         ))}
-                        {item.tags.length > 2 && (
-                          <span className="text-xs text-gray-500">+{item.tags.length - 2}</span>
+                        {item.tags.length > 3 && (
+                          <span className="inline-flex px-2 py-1 text-xs bg-secondary-100 text-secondary-700 rounded">
+                            +{item.tags.length - 3}
+                          </span>
                         )}
                       </div>
                     )}
+                    
+                    <div className="flex items-center justify-between">
+                      <button
+                        onClick={() => handleEdit(item)}
+                        className="p-2 text-secondary-600 hover:text-secondary-900 hover:bg-secondary-50 rounded-lg transition-colors"
+                      >
+                        <Edit3 size={16} />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(item.id)}
+                        className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
             </div>
-          </div>
-        ) : (
-          <div className="p-12 text-center">
-            <div className="text-6xl mb-4">📸</div>
-            <h3 className="text-lg font-medium text-secondary-900 mb-2">
-              {selectedCategory === 'all' ? 'No photos yet' : `No photos in ${selectedCategory}`}
-            </h3>
-            <p className="text-secondary-500 mb-4">
-              {selectedCategory === 'all' 
-                ? 'Start building your gallery by adding the first photo.' 
-                : `Add photos to the ${selectedCategory} category.`}
-            </p>
-            <button
-              onClick={() => setShowForm(true)}
-              className="bg-primary-600 text-white px-6 py-2 rounded-lg hover:bg-primary-700 transition-colors"
-            >
-              Add First Photo
-            </button>
           </div>
         )}
       </div>

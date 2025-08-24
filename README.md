@@ -13,6 +13,69 @@ Linktree dirancang untuk digunakan sebagai bio link di Instagram dan platform so
 ### Dokumentasi Linktree
 - 📖 [Implementasi Fitur Linktree](./docs/013_implement_linktree_feature.md) - Dokumentasi lengkap fitur linktree
 
+## Fitur Events dengan Multiple Images
+
+Proyek ini menyertakan **Sistem Events yang Enhanced** dengan fitur multiple image upload dan carousel otomatis:
+
+### Fitur Events
+- 🖼️ **Multiple Image Upload** - Admin dapat upload hingga 10 gambar per event
+- 🎠 **Auto Carousel** - Transisi otomatis gambar setiap 3 detik
+- 🔍 **Click to Detail** - Klik event untuk membuka modal detail lengkap
+- 📱 **Responsive Design** - Optimal untuk mobile dan desktop
+- 🎯 **Image Management** - Pilihan antara URL atau upload langsung
+- 🚀 **Performance** - Lazy loading dan optimized image handling
+- 🏷️ **Rich Categories** - 16 kategori event yang general dan profesional
+
+### Dokumentasi Events System
+- 📖 [Multiple Image Upload Events](./docs/022_implement_multiple_image_upload_events.md) - Dokumentasi lengkap fitur events enhanced
+- 📖 [Update Event Categories](./docs/023_update_event_categories.md) - Kategori event yang lebih general dan profesional
+- 📖 [Fix Event Creation Error](./docs/024_fix_event_creation_error_and_create_events_bucket.md) - Perbaikan error dan bucket storage events
+- 📖 [Fix RLS Policy Upload](./docs/025_fix_rls_policy_events_images_upload.md) - Perbaikan Row-Level Security policy untuk upload
+- 📖 [Improve Events UI Layout](./docs/026_improve_events_ui_layout.md) - Perbaikan layout dan tampilan events page
+- 📖 [Image Cropping & Main Image Management](./docs/027_implement_image_cropping_and_main_image_management.md) - Fitur crop/edit gambar dan smart main image logic (BARU)
+
+## Fitur Blog System
+
+Proyek ini menyertakan **Sistem Blog Lengkap** yang dapat diakses melalui:
+- **URL:** `/blog` - Halaman utama blog
+- **URL:** `/blog/:slug` - Halaman detail artikel
+
+Sistem blog memberikan pengalaman membaca artikel yang optimal dengan fitur SEO yang komprehensif untuk Google Search.
+
+### Fitur Blog
+- 📰 Halaman detail artikel dengan layout yang optimal
+- 🔗 Artikel terkait berdasarkan kategori dan tags
+- 🧭 Breadcrumb navigation untuk SEO
+- 📱 Responsive design untuk mobile dan desktop
+- 🚀 Lazy loading untuk performa optimal
+- 🔍 SEO optimization dengan structured data
+
+### Dokumentasi Blog System
+- 📖 [Implementasi Sistem Blog](./docs/019_implement_blog_system.md) - Dokumentasi lengkap sistem blog
+
+## Fitur Admin Panel
+
+Proyek ini menyertakan **Admin Panel** yang dapat diakses melalui:
+- **URL:** `/admin`
+- **Subdomain:** `admin.digcity.my.id` (perlu konfigurasi DNS)
+
+Admin Panel memberikan akses ke dashboard administrasi untuk mengelola konten website DigCity.
+
+### Fitur Admin Panel
+- 📊 **Dashboard** - Overview dan statistik website dengan metrik performa
+- 📅 **Events Management** - Kelola event dengan CRUD operations dan **multiple image upload** (BARU)
+- 📰 **News Management** - Kelola berita dan artikel
+- 🖼️ **Gallery Management** - Kelola galeri foto dengan image upload
+- 🔗 **Linktree Management** - Kelola profil dan link linktree
+- 📧 **Newsletter Management** - Kelola subscriber dan campaign
+- 🗑️ **Cache Control** - Kontrol cache dan performance
+
+### Dokumentasi Admin Panel
+- 📖 [Fix Admin Authentication Error](./docs/012_fix_admin_authentication_error.md) - Dokumentasi perbaikan error autentikasi admin
+- 📖 [Implementasi Admin Subdomain](./docs/014_implement_admin_subdomain.md) - Dokumentasi lengkap admin subdomain
+- 📖 [Admin System Improvement](./docs/021_admin_system_improvement.md) - Linktree Management & Supabase Integration
+- 📖 [Multiple Image Upload Events](./docs/022_implement_multiple_image_upload_events.md) - Fitur upload multiple gambar dan carousel events (BARU)
+
 ## Deployment ke Vercel
 
 ### Direktori Root untuk Deployment
@@ -138,6 +201,9 @@ export default tseslint.config([
 - [Mobile Optimization](./docs/MOBILE_OPTIMIZATION.md) - Optimasi untuk perangkat mobile
 - [Design Improvements](./docs/DESIGN_IMPROVEMENTS.md) - Perbaikan desain UI/UX
 - [Deployment Guide](./docs/DEPLOYMENT.md) - Panduan deployment dan konfigurasi
+- [Admin Icon Improvements](./docs/018_admin_icon_improvements.md) - Mengubah icon admin dari emoji ke Tailwind CSS
+- [Fix Vercel Build Errors](./docs/020_fix_vercel_build_errors.md) - Perbaikan error build dan deployment Vercel
+- [Admin System Improvement](./docs/021_admin_system_improvement.md) - Linktree Management & Supabase Integration
 
 ## Development Tools
 

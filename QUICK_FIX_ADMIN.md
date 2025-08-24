@@ -63,3 +63,4 @@ Jika masih bermasalah, cek:
 1. File `SUPABASE_SETUP.md` untuk setup lengkap
 2. File `docs/012_fix_admin_authentication_error.md` untuk dokumentasi masalah
 3. Console browser untuk error messages
+

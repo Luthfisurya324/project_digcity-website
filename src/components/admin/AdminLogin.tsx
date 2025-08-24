@@ -32,6 +32,8 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
     setPassword(e.target.value)
   }, []);
 
+  {/* Fungsi create admin dihapus untuk keamanan */};
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-500 to-secondary-600 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
@@ -106,13 +108,11 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
                 'Sign In'
               )}
             </button>
+
+                      {/* Tombol create admin dihapus untuk keamanan */}
           </form>
 
-          <div className="mt-6 text-center">
-            <p className="text-sm text-secondary-500">
-              Demo credentials: admin@digcity.com / admin123
-            </p>
-          </div>
+          {/* Halaman login yang clean tanpa informasi tambahan */}
         </div>
 
         <div className="text-center">

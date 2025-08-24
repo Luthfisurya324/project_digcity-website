@@ -56,91 +56,47 @@ export const defaultLinktreeConfig: LinktreeConfig = {
   links: [
     {
       id: "website",
-      href: "/",
+      href: "https://digcity.my.id",
       title: "Website Utama DigCity",
       description: "Kunjungi website resmi kami",
       icon: "Globe",
       variant: "primary",
-      isExternal: false,
+      isExternal: true,
       isActive: true,
       order: 1
     },
     {
-      id: "registration",
-      href: "https://forms.google.com/your-form-id",
-      title: "Pendaftaran Member Baru",
-      description: "Bergabung dengan komunitas DigCity",
-      icon: "FileText",
-      variant: "accent",
+      id: "dbasic",
+      href: "https://instagram.com/dbasic.official",
+      title: "D'Basic - Acara Lomba Start-up & Video Kreatif",
+      description: "Lomba Start-up dan lomba video kreatif",
+      icon: "Instagram",
+      variant: "primary",
       isExternal: true,
       isActive: true,
       order: 2
     },
     {
-      id: "events",
-      href: "/events",
-      title: "Event & Workshop",
-      description: "Lihat event terbaru kami",
-      icon: "Calendar",
-      variant: "primary",
-      isExternal: false,
+      id: "sob",
+      href: "https://instagram.com/sob.corner",
+      title: "SOB - Stall Of Business",
+      description: "Container jualan dari himpunan mahasiswa bisnis digital (DIGCITY)",
+      icon: "Instagram",
+      variant: "secondary",
+      isExternal: true,
       isActive: true,
       order: 3
     },
     {
-      id: "gallery",
-      href: "/galeri",
-      title: "Galeri Foto",
-      description: "Lihat dokumentasi kegiatan",
-      icon: "Image",
-      variant: "secondary",
-      isExternal: false,
+      id: "digitalk",
+      href: "https://instagram.com/digitalk.show",
+      title: "DIGITALK - Talkshow Bisnis",
+      description: "Acara Talkshow tentang bisnis",
+      icon: "Instagram",
+      variant: "accent",
+      isExternal: true,
       isActive: true,
       order: 4
-    },
-    {
-      id: "blog",
-      href: "/blog",
-      title: "Berita & Update",
-      description: "Informasi terbaru dari DIGCITY",
-      icon: "Newspaper",
-      variant: "primary",
-      isExternal: false,
-      isActive: true,
-      order: 5
-    },
-    {
-      id: "contact",
-      href: "/kontak",
-      title: "Hubungi Kami",
-      description: "Kontak dan informasi lengkap",
-      icon: "Mail",
-      variant: "secondary",
-      isExternal: false,
-      isActive: true,
-      order: 6
-    },
-    {
-      id: "about",
-      href: "/visi-misi",
-      title: "Visi & Misi",
-      description: "Kenali visi dan misi DIGCITY",
-      icon: "Target",
-      variant: "secondary",
-      isExternal: false,
-      isActive: true,
-      order: 7
-    },
-    {
-      id: "gallery",
-      href: "/galeri",
-      title: "Galeri Foto",
-      description: "Lihat dokumentasi kegiatan",
-      icon: "Image",
-      variant: "secondary",
-      isExternal: false,
-      isActive: true,
-      order: 8
     }
   ],
   
@@ -152,34 +108,22 @@ export const defaultLinktreeConfig: LinktreeConfig = {
       isActive: true
     },
     {
-      platform: "facebook",
-      value: "DIGCITY Official",
-      href: "https://facebook.com/digcity.official",
+      platform: "instagram",
+      value: "@dbasic.official",
+      href: "https://instagram.com/dbasic.official",
       isActive: true
     },
     {
-      platform: "twitter",
-      value: "@digcity_official",
-      href: "https://twitter.com/digcity_official",
+      platform: "instagram",
+      value: "@sob.corner",
+      href: "https://instagram.com/sob.corner",
       isActive: true
     },
     {
-      platform: "youtube",
-      value: "DIGCITY Channel",
-      href: "https://youtube.com/@digcity",
-      isActive: false
-    },
-    {
-      platform: "linkedin",
-      value: "DIGCITY",
-      href: "https://linkedin.com/company/digcity",
-      isActive: false
-    },
-    {
-      platform: "tiktok",
-      value: "@digcity_official",
-      href: "https://tiktok.com/@digcity_official",
-      isActive: false
+      platform: "instagram",
+      value: "@digitalk.show",
+      href: "https://instagram.com/digitalk.show",
+      isActive: true
     }
   ],
   
@@ -197,19 +141,13 @@ export const defaultLinktreeConfig: LinktreeConfig = {
       isActive: true
     },
     {
-      platform: "telegram",
-      value: "@digcity_support",
-      href: "https://t.me/digcity_support",
-      isActive: false
-    },
-    {
       platform: "phone",
       value: "+62 812-3456-7890",
       isActive: true
     },
     {
       platform: "location",
-      value: "Jakarta, Indonesia",
+      value: "Universitas Ibn Khaldun Bogor",
       isActive: true
     }
   ],
@@ -223,8 +161,8 @@ export const defaultLinktreeConfig: LinktreeConfig = {
   
   seo: {
     title: "DIGCITY - Himpunan Mahasiswa Bisnis Digital | Linktree",
-    description: "Temukan semua link penting DIGCITY dalam satu tempat. Website, pendaftaran, event, galeri, dan informasi kontak lengkap.",
-    keywords: ["DIGCITY", "Bisnis Digital", "Himpunan Mahasiswa", "Universitas Ibn Khaldun Bogor", "Workshop", "Event", "Indonesia"],
+    description: "Temukan semua link penting DIGCITY dalam satu tempat. Website utama, D'Basic, SOB, dan DIGITALK.",
+    keywords: ["DIGCITY", "Bisnis Digital", "Himpunan Mahasiswa", "Universitas Ibn Khaldun Bogor", "D'Basic", "SOB", "DIGITALK", "Indonesia"],
     ogImage: "/logo_digcity.png"
   }
 };

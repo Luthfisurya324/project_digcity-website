@@ -20,6 +20,14 @@
     <priority>0.8</priority>
   </url>
 
+  <!-- Blog Sitemap -->
+  <url>
+    <loc>https://digcity.my.id/blog-sitemap.xml</loc>
+    <lastmod>2024-12-20</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+
   <!-- Events Page -->
   <url>
     <loc>https://digcity.my.id/events</loc>

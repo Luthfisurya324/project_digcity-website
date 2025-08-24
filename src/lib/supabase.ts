@@ -17,6 +17,7 @@ export interface Event {
   date: string
   location: string
   image_url?: string
+  additional_images?: string[]
   category: string
   created_at: string
   updated_at: string
