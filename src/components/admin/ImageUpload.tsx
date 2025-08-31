@@ -14,7 +14,7 @@ interface ImageUploadProps {
 const ImageUpload: React.FC<ImageUploadProps> = ({
   onImageUploaded,
   onCancel,
-  bucketName = 'images',
+  bucketName = 'admin-images',
   folderPath = 'admin',
   maxSize = 5, // 5MB default
   acceptedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],

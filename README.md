@@ -32,7 +32,10 @@ Proyek ini menyertakan **Sistem Events yang Enhanced** dengan fitur multiple ima
 - 📖 [Fix Event Creation Error](./docs/024_fix_event_creation_error_and_create_events_bucket.md) - Perbaikan error dan bucket storage events
 - 📖 [Fix RLS Policy Upload](./docs/025_fix_rls_policy_events_images_upload.md) - Perbaikan Row-Level Security policy untuk upload
 - 📖 [Improve Events UI Layout](./docs/026_improve_events_ui_layout.md) - Perbaikan layout dan tampilan events page
-- 📖 [Image Cropping & Main Image Management](./docs/027_implement_image_cropping_and_main_image_management.md) - Fitur crop/edit gambar dan smart main image logic (BARU)
+- 📖 [Image Cropping & Main Image Management](./docs/027_implement_image_cropping_and_main_image_management.md) - Fitur crop/edit gambar dan smart main image logic
+- 📖 [Organized Folder Structure](./docs/028_implement_organized_folder_structure.md) - Sistem folder structure yang terorganisir untuk storage
+- 📖 [Fix Admin Images Bucket Upload Error](./docs/029_fix_admin_images_bucket_upload_error.md) - Perbaikan error upload ke bucket admin-images
+- 📖 [Fix Bucket Access dengan Test Bucket](./docs/030_fix_bucket_access_with_test_bucket.md) - Solusi sementara dengan bucket test-images (BARU)
 
 ## Fitur Blog System
 
@@ -70,11 +73,34 @@ Admin Panel memberikan akses ke dashboard administrasi untuk mengelola konten we
 - 📧 **Newsletter Management** - Kelola subscriber dan campaign
 - 🗑️ **Cache Control** - Kontrol cache dan performance
 
+### Storage Bucket Requirements
+
+Admin Panel memerlukan bucket storage berikut di Supabase:
+
+1. **`admin-images`** - Bucket utama untuk semua upload admin
+   - Events images
+   - Blog images  
+   - Gallery images
+   - News images
+   - Linktree images
+
+2. **`test-images`** - Bucket backup/testing (opsional)
+   - Digunakan sebagai fallback jika admin-images tidak tersedia
+
+### Konfigurasi Bucket
+
+Pastikan bucket `admin-images` sudah dibuat dengan:
+- **Public access** untuk read operations
+- **Authenticated users** untuk write operations
+- **RLS policies** yang sesuai untuk keamanan
+
 ### Dokumentasi Admin Panel
 - 📖 [Fix Admin Authentication Error](./docs/012_fix_admin_authentication_error.md) - Dokumentasi perbaikan error autentikasi admin
 - 📖 [Implementasi Admin Subdomain](./docs/014_implement_admin_subdomain.md) - Dokumentasi lengkap admin subdomain
 - 📖 [Admin System Improvement](./docs/021_admin_system_improvement.md) - Linktree Management & Supabase Integration
-- 📖 [Multiple Image Upload Events](./docs/022_implement_multiple_image_upload_events.md) - Fitur upload multiple gambar dan carousel events (BARU)
+- 📖 [Fix Admin Refresh & Routing](./docs/034_fix_admin_refresh_and_routing.md) - Perbaikan refresh otomatis dan routing yang tidak persisten
+- 📖 [Fix Admin Subdomain Routing](./docs/035_fix_admin_subdomain_routing.md) - Perbaikan routing admin subdomain dan konflik newsletter/news
+- 📖 [Fix Events RLS Policy](./docs/036_fix_events_rls_policy.md) - Perbaikan error 403 saat menyimpan events (BARU)
 
 ## Deployment ke Vercel
 

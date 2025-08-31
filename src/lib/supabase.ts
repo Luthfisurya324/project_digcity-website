@@ -283,7 +283,13 @@ export const authAPI = {
       const user = await this.getCurrentUser()
       if (!user) return false
       
-      // Coba cek dari tabel users terlebih dahulu
+      // Primary: cek dari user metadata (lebih reliable)
+      const isAdminFromMetadata = this.checkAdminFromMetadata(user)
+      if (isAdminFromMetadata) {
+        return true
+      }
+      
+      // Fallback: coba cek dari tabel users jika ada
       try {
         const { data, error } = await supabase
           .from('users')
@@ -292,16 +298,14 @@ export const authAPI = {
           .single()
         
         if (error) {
-          console.warn('Error accessing users table:', error)
-          // Fallback: cek dari user metadata
-          return this.checkAdminFromMetadata(user)
+          console.warn('Users table not accessible, using metadata only:', error)
+          return false
         }
         
         return data.role === 'admin'
       } catch (tableError) {
-        console.warn('Users table not accessible, using metadata fallback:', tableError)
-        // Fallback: cek dari user metadata
-        return this.checkAdminFromMetadata(user)
+        console.warn('Users table not accessible, using metadata only:', tableError)
+        return false
       }
     } catch (error) {
       console.error('Error checking admin status:', error)

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { newsAPI } from '../../lib/supabase'
 import type { News } from '../../lib/supabase'
 import { 
@@ -23,21 +24,9 @@ interface NewsFormData {
 }
 
 const AdminNews: React.FC = () => {
+  const navigate = useNavigate()
   const [news, setNews] = useState<News[]>([])
   const [loading, setLoading] = useState(true)
-  const [showForm, setShowForm] = useState(false)
-  const [editingNews, setEditingNews] = useState<News | null>(null)
-  const [formData, setFormData] = useState<NewsFormData>({
-    title: '',
-    content: '',
-    excerpt: '',
-    author: '',
-    published_date: new Date().toISOString().slice(0, 10),
-    image_url: '',
-    category: 'general',
-    tags: []
-  })
-  const [submitting, setSubmitting] = useState(false)
 
   const categories = [
     { value: 'DIGIMON', label: 'DIGIMON' },
@@ -63,40 +52,38 @@ const AdminNews: React.FC = () => {
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setSubmitting(true)
-
-    try {
-      if (editingNews) {
-        await newsAPI.update(editingNews.id, formData)
-      } else {
-        await newsAPI.create(formData)
-      }
-      
-      await loadNews()
-      resetForm()
-    } catch (error) {
-      console.error('Error saving news:', error)
-      alert('Error saving news. Please try again.')
-    } finally {
-      setSubmitting(false)
+  const handleEdit = (newsItem: News) => {
+    console.log('Navigating to edit:', newsItem.id)
+    // Use absolute URL for admin subdomain
+    const currentHost = window.location.host
+    const isAdminSubdomain = currentHost.startsWith('admin.')
+    
+    if (isAdminSubdomain) {
+      // If on admin subdomain, use relative path
+      console.log('Admin subdomain detected, navigating to /news/edit/' + newsItem.id)
+      window.location.href = `/news/edit/${newsItem.id}`
+    } else {
+      // If on main domain, use full path
+      console.log('Main domain detected, navigating to /admin/news/edit/' + newsItem.id)
+      window.location.href = `/admin/news/edit/${newsItem.id}`
     }
   }
 
-  const handleEdit = (newsItem: News) => {
-    setEditingNews(newsItem)
-    setFormData({
-      title: newsItem.title,
-      content: newsItem.content,
-      excerpt: newsItem.excerpt || '',
-      author: newsItem.author,
-      published_date: new Date(newsItem.published_date).toISOString().slice(0, 10),
-      image_url: newsItem.image_url || '',
-      category: newsItem.category,
-      tags: newsItem.tags || []
-    })
-    setShowForm(true)
+  const handleAddNew = () => {
+    console.log('Navigating to /admin/news/new')
+    // Use absolute URL for admin subdomain
+    const currentHost = window.location.host
+    const isAdminSubdomain = currentHost.startsWith('admin.')
+    
+    if (isAdminSubdomain) {
+      // If on admin subdomain, use relative path
+      console.log('Admin subdomain detected, navigating to /news/new')
+      window.location.href = '/news/new'
+    } else {
+      // If on main domain, use full path
+      console.log('Main domain detected, navigating to /admin/news/new')
+      window.location.href = '/admin/news/new'
+    }
   }
 
   const handleDelete = async (id: string) => {
@@ -109,21 +96,6 @@ const AdminNews: React.FC = () => {
         alert('Error deleting news. Please try again.')
       }
     }
-  }
-
-  const resetForm = () => {
-    setFormData({
-      title: '',
-      content: '',
-      excerpt: '',
-      author: '',
-      published_date: new Date().toISOString().slice(0, 10),
-      image_url: '',
-      category: 'general',
-      tags: []
-    })
-    setEditingNews(null)
-    setShowForm(false)
   }
 
   const formatDate = (dateString: string) => {
@@ -151,7 +123,7 @@ const AdminNews: React.FC = () => {
           <p className="text-secondary-600">Manage DIGCITY news and articles</p>
         </div>
         <button
-          onClick={() => setShowForm(true)}
+          onClick={handleAddNew}
           className="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition-all duration-200 flex items-center space-x-2"
         >
           <Plus size={20} />
@@ -183,112 +155,7 @@ const AdminNews: React.FC = () => {
         </div>
       </div>
 
-      {/* Form Modal */}
-      {showForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-200">
-              <h2 className="text-xl font-semibold text-secondary-900">
-                {editingNews ? 'Edit News' : 'Write New Article'}
-              </h2>
-            </div>
-            
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-secondary-700 mb-2">Title</label>
-                <input
-                  type="text"
-                  required
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                  placeholder="News title"
-                />
-              </div>
 
-              <div>
-                <label className="block text-sm font-medium text-secondary-700 mb-2">Content</label>
-                <textarea
-                  required
-                  rows={6}
-                  value={formData.content}
-                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                  placeholder="Write your news content here..."
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-secondary-700 mb-2">Author</label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.author}
-                    onChange={(e) => setFormData({ ...formData, author: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                    placeholder="Author name"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-secondary-700 mb-2">Category</label>
-                  <select
-                    value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                  >
-                    {categories.map((cat) => (
-                      <option key={cat.value} value={cat.value}>{cat.label}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-secondary-700 mb-2">Publish Date</label>
-                  <input
-                    type="date"
-                    required
-                    value={formData.published_date}
-                    onChange={(e) => setFormData({ ...formData, published_date: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-secondary-700 mb-2">Image URL (Optional)</label>
-                  <input
-                    type="url"
-                    value={formData.image_url}
-                    onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                    placeholder="https://example.com/image.jpg"
-                  />
-                </div>
-              </div>
-
-              <div className="flex justify-end space-x-4 pt-4">
-                <button
-                  type="button"
-                  onClick={resetForm}
-                  className="px-6 py-2 border border-gray-300 text-secondary-700 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors"
-                >
-                  {submitting ? 'Saving...' : (editingNews ? 'Update News' : 'Publish News')}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
       {/* News List */}
       <div className="bg-white rounded-lg border border-secondary-200">
@@ -354,7 +221,7 @@ const AdminNews: React.FC = () => {
             <h3 className="text-xl font-bold text-secondary-900 mb-2">No news yet</h3>
             <p className="text-secondary-500 mb-6">Start writing your first article!</p>
             <button
-              onClick={() => setShowForm(true)}
+              onClick={handleAddNew}
               className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors font-medium"
             >
               <Plus size={20} className="mr-2" />

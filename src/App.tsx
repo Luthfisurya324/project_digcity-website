@@ -25,6 +25,7 @@ const LazyGaleriPage = React.lazy(() => import('./components/GaleriPage'))
 const LazyKontakPage = React.lazy(() => import('./components/KontakPage'))
 const LazyAdminPage = React.lazy(() => import('./pages/AdminPage'))
 const LazyLinktreePage = React.lazy(() => import('./pages/LinktreePage'))
+const AdminPanel = React.lazy(() => import('./components/AdminPanel'))
 
 function App() {
   // Initialize performance monitoring
@@ -32,23 +33,21 @@ function App() {
   const navigate = useNavigate()
   const location = useLocation()
 
-           // Check for subdomain redirect
+         // Check for subdomain redirect
          useEffect(() => {
            if (shouldRedirectToLinktree()) {
-             // Jika di subdomain linktree, langsung render LinktreePage
-             // Tidak perlu redirect, biarkan React Router handle
              console.log('Accessing from linktree subdomain')
            }
            
            if (shouldRedirectToAdmin()) {
-             // Jika di subdomain admin, langsung render AdminPage
              console.log('Accessing from admin subdomain')
            }
-         }, [navigate, location])
+         }, []) // Remove navigate and location dependencies to prevent re-renders
 
          // Deteksi apakah user mengakses dari subdomain linktree atau admin
-         const isLinktreeSubdomain = shouldRedirectToLinktree()
-         const isAdminSubdomain = shouldRedirectToAdmin()
+         // Gunakan useMemo untuk mencegah re-render yang tidak perlu
+         const isLinktreeSubdomain = React.useMemo(() => shouldRedirectToLinktree(), [])
+         const isAdminSubdomain = React.useMemo(() => shouldRedirectToAdmin(), [])
 
   // Initialize service worker and performance optimizations
   useEffect(() => {
@@ -108,11 +107,13 @@ function App() {
            {isLinktreeSubdomain ? (
              <LazyLinktreePage />
            ) : isAdminSubdomain ? (
-             <LazyAdminPage />
+             <Routes>
+               <Route path="/*" element={<AdminPanel />} />
+             </Routes>
            ) : (
         <Routes>
-                           {/* Admin route - no header/footer (untuk akses dari domain utama) */}
-                 <Route path="/admin" element={<LazyAdminPage />} />
+          {/* Admin route - no header/footer (untuk akses dari domain utama) */}
+          <Route path="/admin/*" element={<LazyAdminPage />} />
           
           {/* Main routes with header/footer */}
           <Route path="/" element={<PageLayout><HomePage /></PageLayout>} />

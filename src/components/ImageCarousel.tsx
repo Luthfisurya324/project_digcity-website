@@ -90,7 +90,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({
 
   if (images.length === 1) {
     return (
-      <div className={`relative ${className}`}>
+      <div className={`relative w-full h-full ${className}`}>
         <img
           src={images[0]}
           alt="Event image"
@@ -109,9 +109,9 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({
   }
 
   return (
-    <div className={`relative group ${className}`}>
-      {/* Main Image */}
-      <div className="relative overflow-hidden rounded-lg">
+    <div className={`relative group w-full h-full ${className}`}>
+      {/* Main Image Container dengan ukuran tetap */}
+      <div className="relative w-full h-full overflow-hidden rounded-lg">
         <img
           src={images[currentIndex]}
           alt={`Event image ${currentIndex + 1}`}

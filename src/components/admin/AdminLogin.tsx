@@ -1,14 +1,13 @@
 import React, { useState, useCallback } from 'react'
+import { supabase, authAPI } from '../../lib/supabase'
+import { useNavigate } from 'react-router-dom'
 
-interface AdminLoginProps {
-  onLogin: (email: string, password: string) => Promise<void>
-}
-
-const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
+const AdminLogin: React.FC = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const navigate = useNavigate()
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
@@ -16,13 +15,29 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
     setError('')
 
     try {
-      await onLogin(email, password)
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      })
+      
+      if (signInError) throw signInError
+      
+      if (data.user) {
+        // Check if user is admin
+        const isAdmin = await authAPI.isAdmin()
+        if (isAdmin) {
+          navigate('/')
+        } else {
+          setError('Access denied. Admin privileges required.')
+          await supabase.auth.signOut()
+        }
+      }
     } catch (err: any) {
       setError(err.message || 'Login failed. Please check your credentials.')
     } finally {
       setLoading(false)
     }
-  }, [email, password, onLogin]);
+  }, [email, password, navigate]);
 
   const handleEmailChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value)

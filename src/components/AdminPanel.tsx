@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react'
+import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom'
 import { authAPI } from '../lib/supabase'
 import { runSupabaseTests } from '../utils/supabaseTest'
 import AdminLogin from './admin/AdminLogin'
 import AdminDashboard from './admin/AdminDashboard'
 import AdminEvents from './admin/AdminEvents'
 import AdminNews from './admin/AdminNews'
+import BlogEditor from './admin/BlogEditor'
 import AdminGallery from './admin/AdminGallery'
 import AdminNewsletter from './admin/AdminNewsletter'
 import AdminLinktree from './admin/AdminLinktree'
@@ -31,12 +33,27 @@ interface User {
 const AdminPanel: React.FC = () => {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState('dashboard')
   const [isAdmin, setIsAdmin] = useState(false)
+  const navigate = useNavigate()
+  const location = useLocation()
 
   useEffect(() => {
     checkUser()
   }, [])
+
+  // Update active tab based on current location
+  const getActiveTab = () => {
+    const path = location.pathname
+    // Untuk admin subdomain, path akan kosong atau '/'
+    if (path === '/' || path === '' || path === '/admin' || path === '/admin/') return 'dashboard'
+    if (path.startsWith('/events')) return 'events'
+    if (path.startsWith('/news')) return 'news'
+    if (path.startsWith('/gallery')) return 'gallery'
+    if (path.startsWith('/linktree')) return 'linktree'
+    if (path.startsWith('/newsletter')) return 'newsletter'
+    if (path.startsWith('/cache')) return 'cache'
+    return 'dashboard'
+  }
 
   const checkUser = async () => {
     try {
@@ -81,9 +98,37 @@ const AdminPanel: React.FC = () => {
       await authAPI.signOut()
       setUser(null)
       setIsAdmin(false)
-      setActiveTab('dashboard')
+      navigate('/')
     } catch (error) {
       console.error('Error logging out:', error)
+    }
+  }
+
+  const handleTabClick = (tabId: string) => {
+    switch (tabId) {
+      case 'dashboard':
+        navigate('/')
+        break
+      case 'events':
+        navigate('/events')
+        break
+      case 'news':
+        navigate('/news')
+        break
+      case 'gallery':
+        navigate('/gallery')
+        break
+      case 'linktree':
+        navigate('/linktree')
+        break
+      case 'newsletter':
+        navigate('/newsletter')
+        break
+      case 'cache':
+        navigate('/cache')
+        break
+      default:
+        navigate('/')
     }
   }
 
@@ -99,7 +144,7 @@ const AdminPanel: React.FC = () => {
   }
 
   if (!user || !isAdmin) {
-    return <AdminLogin onLogin={handleLogin} />
+    return <AdminLogin />
   }
 
   const tabs = [
@@ -112,28 +157,7 @@ const AdminPanel: React.FC = () => {
     { id: 'cache', name: 'Cache', icon: <Trash2 size={18} />, color: 'text-gray-600' }
   ]
 
-  const renderContent = () => {
-    switch (activeTab) {
-      case 'dashboard':
-        return <AdminDashboard />
-      case 'events':
-        return <AdminEvents />
-      case 'news':
-        return <AdminNews />
-      case 'gallery':
-        return <AdminGallery />
-      case 'linktree':
-        return <AdminLinktree />
-      case 'newsletter':
-        return <AdminNewsletter />
-      case 'cache':
-        return <CacheControl isAdmin={isAdmin} onCacheCleared={() => {
-          console.log('Cache cleared successfully');
-        }} />
-      default:
-        return <AdminDashboard />
-    }
-  }
+  const activeTab = getActiveTab()
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-secondary-50 via-white to-white">
@@ -195,7 +219,7 @@ const AdminPanel: React.FC = () => {
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => handleTabClick(tab.id)}
                   className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 ${
                     activeTab === tab.id
                       ? 'bg-primary-50 border border-primary-200 text-primary-700 shadow-sm'
@@ -215,7 +239,22 @@ const AdminPanel: React.FC = () => {
         {/* Main Content */}
         <main className="flex-1 p-6 overflow-y-auto">
           <div className="max-w-7xl mx-auto">
-            {renderContent()}
+            <Routes>
+              <Route path="/" element={<AdminDashboard />} />
+              <Route path="/events" element={<AdminEvents />} />
+              <Route path="/news" element={<AdminNews />} />
+              <Route path="/news/new" element={<BlogEditor />} />
+              <Route path="/news/edit/:id" element={<BlogEditor />} />
+              <Route path="/gallery" element={<AdminGallery />} />
+              <Route path="/linktree" element={<AdminLinktree />} />
+              <Route path="/newsletter" element={<AdminNewsletter />} />
+              <Route path="/cache" element={
+                <CacheControl isAdmin={isAdmin} onCacheCleared={() => {
+                  console.log('Cache cleared successfully');
+                }} />
+              } />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
           </div>
         </main>
       </div>

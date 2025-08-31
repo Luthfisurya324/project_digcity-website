@@ -19,7 +19,6 @@ interface EventFormData {
   description: string
   date: string
   location: string
-  image_url: string
   additional_images: string[]
   category: string
 }
@@ -34,7 +33,6 @@ const AdminEvents: React.FC = () => {
     description: '',
     date: '',
     location: '',
-    image_url: '',
     additional_images: [],
     category: 'general'
   })
@@ -43,6 +41,82 @@ const AdminEvents: React.FC = () => {
   const [imageUploadMode, setImageUploadMode] = useState<'url' | 'upload'>('url')
   const [showImageCropper, setShowImageCropper] = useState(false)
   const [editingImage, setEditingImage] = useState<string | null>(null)
+
+  // Function to format category names from underscore to user-friendly names
+  const formatCategoryName = (category: string): string => {
+    const categoryMap: { [key: string]: string } = {
+      'business': 'Business & Entrepreneurship',
+      'technology': 'Technology & Innovation',
+      'education': 'Education & Training',
+      'workshop': 'Workshop & Skills',
+      'seminar': 'Seminar & Conference',
+      'networking': 'Networking & Community',
+      'startup': 'Startup & Innovation',
+      'digital_marketing': 'Digital Marketing',
+      'finance': 'Finance & Investment',
+      'healthcare': 'Healthcare & Wellness',
+      'creative': 'Creative & Design',
+      'sports': 'Sports & Fitness',
+      'culture': 'Culture & Arts',
+      'environment': 'Environment & Sustainability',
+      'social_impact': 'Social Impact & Charity',
+      'general': 'General'
+    };
+
+    return categoryMap[category] || category.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  };
+
+  // Function to format date and time for display
+  const formatEventDateTime = (dateString: string): string => {
+    try {
+      const date = new Date(dateString);
+      
+      // Check if date is valid
+      if (isNaN(date.getTime())) {
+        return 'Tanggal tidak valid';
+      }
+
+      // Format: "Jumat, 25 April 2025 • 09:00 WIB"
+      const options: Intl.DateTimeFormatOptions = {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: 'Asia/Jakarta'
+      };
+
+      return date.toLocaleDateString('id-ID', options);
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return 'Tanggal tidak valid';
+    }
+  };
+
+  // Function to format date only (for shorter display)
+  const formatEventDate = (dateString: string): string => {
+    try {
+      const date = new Date(dateString);
+      
+      // Check if date is valid
+      if (isNaN(date.getTime())) {
+        return 'Tanggal tidak valid';
+      }
+
+      // Format: "25 April 2025"
+      const options: Intl.DateTimeFormatOptions = {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      };
+
+      return date.toLocaleDateString('id-ID', options);
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return 'Tanggal tidak valid';
+    }
+  };
 
   const categories = [
     { value: 'business', label: 'Business & Entrepreneurship' },
@@ -79,7 +153,7 @@ const AdminEvents: React.FC = () => {
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault() // Prevent form from refreshing the page
     setSubmitting(true)
 
     try {
@@ -91,9 +165,12 @@ const AdminEvents: React.FC = () => {
       
       await loadEvents()
       resetForm()
+      // Show success message instead of alert
+      console.log('Event saved successfully!')
     } catch (error) {
       console.error('Error saving event:', error)
-      alert('Error saving event. Please try again.')
+      // Show error message instead of alert
+      console.error('Error saving event. Please try again.')
     } finally {
       setSubmitting(false)
     }
@@ -106,7 +183,6 @@ const AdminEvents: React.FC = () => {
       description: event.description,
       date: new Date(event.date).toISOString().slice(0, 16),
       location: event.location,
-      image_url: event.image_url || '',
       additional_images: event.additional_images || [],
       category: event.category
     })
@@ -118,9 +194,10 @@ const AdminEvents: React.FC = () => {
       try {
         await eventAPI.delete(id)
         await loadEvents()
+        console.log('Event deleted successfully!')
       } catch (error) {
         console.error('Error deleting event:', error)
-        alert('Error deleting event. Please try again.')
+        console.error('Error deleting event. Please try again.')
       }
     }
   }
@@ -131,7 +208,6 @@ const AdminEvents: React.FC = () => {
       description: '',
       date: '',
       location: '',
-      image_url: '',
       additional_images: [],
       category: 'general'
     })
@@ -168,16 +244,9 @@ const AdminEvents: React.FC = () => {
         img === editingImage ? croppedImageUrl : img
       )
       
-      // If this was the main image, update it too
-      let newMainImage = formData.image_url
-      if (formData.image_url === editingImage) {
-        newMainImage = croppedImageUrl
-      }
-      
       setFormData(prev => ({
         ...prev,
-        additional_images: newImages,
-        image_url: newMainImage
+        additional_images: newImages
       }))
     }
     
@@ -186,20 +255,21 @@ const AdminEvents: React.FC = () => {
   }
 
   const handleMainImageSelect = (imageUrl: string) => {
-    // Move selected image to front of array and set as main image
+    // Move selected image to front of array (first position = cover)
     const currentImages = formData.additional_images
     const selectedImageIndex = currentImages.indexOf(imageUrl)
     
     if (selectedImageIndex !== -1) {
       // Remove from current position
       const newImages = currentImages.filter((_, index) => index !== selectedImageIndex)
-      // Add to front
+      // Add to front (index 0) - this will be the cover
       newImages.unshift(imageUrl)
       
       setFormData(prev => ({
         ...prev,
-        additional_images: newImages,
-        image_url: imageUrl
+        additional_images: newImages
+        // Remove image_url since we don't need it anymore
+        // The first image in additional_images will be the cover
       }))
     }
   }
@@ -357,30 +427,21 @@ const AdminEvents: React.FC = () => {
                   </button>
                 </div>
 
-                {/* URL Input */}
-                {imageUploadMode === 'url' && (
-                  <input
-                    type="url"
-                    value={formData.image_url}
-                    onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                    placeholder="https://example.com/image.jpg"
-                  />
-                )}
+
 
                 {/* Image Upload Component */}
                 {imageUploadMode === 'upload' && (
                   <div>
                     {showImageUpload ? (
-                                              <MultipleImageUpload
-                          onImagesUploaded={handleImagesUploaded}
-                          onCancel={() => setShowImageUpload(false)}
-                          bucketName="events-images"
-                          folderPath="events"
-                          maxSize={5}
-                          maxFiles={10}
-                          initialImages={formData.additional_images}
-                        />
+                                                                       <MultipleImageUpload
+                           onImagesUploaded={handleImagesUploaded}
+                           contentType="events"
+                           contentTitle={formData.title || 'Untitled Event'}
+                           bucketName="admin-images"
+                           maxSize={5}
+                           maxFiles={10}
+                           initialImages={formData.additional_images}
+                         />
                     ) : (
                       <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
                         <p className="text-gray-600 mb-3">Click to upload event images</p>
@@ -431,13 +492,13 @@ const AdminEvents: React.FC = () => {
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm text-secondary-600 mb-2">Main Image (Cover)</label>
+                        <label className="block text-sm text-secondary-600 mb-2">Image Order (First = Cover)</label>
                         <div className="space-y-2">
                           {formData.additional_images.map((imageUrl, index) => (
                             <div 
                               key={index} 
                               className={`flex items-center space-x-2 p-2 rounded-lg border cursor-pointer transition-colors ${
-                                formData.image_url === imageUrl 
+                                index === 0
                                   ? 'border-primary-500 bg-primary-50' 
                                   : 'border-gray-200 hover:border-gray-300'
                               }`}
@@ -453,8 +514,8 @@ const AdminEvents: React.FC = () => {
                                 <span className="text-xs text-secondary-600 truncate block">
                                   {imageUrl.split('/').pop()?.substring(0, 20)}...
                                 </span>
-                                {formData.image_url === imageUrl && (
-                                  <span className="text-xs text-primary-600 font-medium">✓ Main Image</span>
+                                {index === 0 && (
+                                  <span className="text-xs text-primary-600 font-medium">✓ Cover</span>
                                 )}
                               </div>
                               <button
@@ -472,12 +533,12 @@ const AdminEvents: React.FC = () => {
                           ))}
                         </div>
                         <p className="text-xs text-secondary-500 mt-2">
-                          Klik gambar untuk set sebagai main image. Main image akan dipindah ke urutan pertama.
+                          Klik gambar untuk set sebagai cover. Gambar akan dipindah ke urutan pertama dan menjadi cover.
                         </p>
                       </div>
 
                       <div>
-                        <label className="block text-sm text-secondary-600 mb-2">Carousel Order</label>
+                        <label className="block text-sm text-secondary-600 mb-2">Display Order</label>
                         <div className="space-y-2">
                           {formData.additional_images.map((imageUrl, index) => (
                             <div key={index} className="flex items-center space-x-2 p-2 bg-white rounded border">
@@ -506,17 +567,17 @@ const AdminEvents: React.FC = () => {
                       <h5 className="text-sm font-medium text-secondary-700 mb-2">Preview Display</h5>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
-                          <p className="text-xs text-secondary-600 mb-1">Event Card (Main Image)</p>
+                          <p className="text-xs text-secondary-600 mb-1">Event Card (Cover Image)</p>
                           <div className="w-full h-24 bg-gray-100 rounded border overflow-hidden">
-                            {formData.image_url ? (
+                            {formData.additional_images.length > 0 ? (
                               <img
-                                src={formData.image_url}
-                                alt="Main image preview"
+                                src={formData.additional_images[0]}
+                                alt="Cover image preview"
                                 className="w-full h-full object-cover"
                               />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center text-xs text-gray-500">
-                                No main image
+                                No cover image
                               </div>
                             )}
                           </div>
@@ -604,14 +665,14 @@ const AdminEvents: React.FC = () => {
                           <div className="flex flex-wrap items-center gap-4 text-sm text-secondary-600">
                             <div className="flex items-center space-x-2 text-secondary-600 mb-2">
                               <Calendar size={16} />
-                              <span>{new Date(event.date).toLocaleDateString()}</span>
+                              <span>{formatEventDate(event.date)}</span>
                             </div>
                             <span className="flex items-center">
                               <MapPin size={16} />
                               {event.location}
                             </span>
                             <span className="px-2 py-1 bg-primary-100 text-primary-700 rounded text-xs font-semibold">
-                              {event.category}
+                              {formatCategoryName(event.category)}
                             </span>
                           </div>
                         </div>

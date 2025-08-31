@@ -550,7 +550,7 @@ const AdminLinktree: React.FC = () => {
             <ImageUpload
               onImageUploaded={handleImageUploaded}
               onCancel={() => setShowImageUpload(false)}
-              bucketName="images"
+              bucketName="admin-images"
               folderPath="linktree"
               maxSize={2}
             />

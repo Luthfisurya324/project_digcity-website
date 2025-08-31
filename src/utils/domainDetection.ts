@@ -32,13 +32,6 @@ export const shouldRedirectToAdmin = (): boolean => {
   
   const hostname = window.location.hostname;
   
-  // Debug logging untuk troubleshooting
-  console.log('Admin Domain Detection:', {
-    hostname,
-    isAdminSubdomain: hostname === 'admin.digcity.my.id',
-    currentUrl: window.location.href
-  });
-  
   // Jika mengakses dari subdomain admin, langsung return true
   return hostname === 'admin.digcity.my.id';
 };

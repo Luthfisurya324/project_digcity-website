@@ -11,6 +11,81 @@ const EventsPage: React.FC = () => {
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // Function to format category names from underscore to user-friendly names
+  const formatCategoryName = (category: string): string => {
+    const categoryMap: { [key: string]: string } = {
+      'business': 'Business & Entrepreneurship',
+      'technology': 'Technology & Innovation',
+      'education': 'Education & Training',
+      'workshop': 'Workshop & Skills',
+      'seminar': 'Seminar & Conference',
+      'networking': 'Networking & Community',
+      'startup': 'Startup & Innovation',
+      'digital_marketing': 'Digital Marketing',
+      'finance': 'Finance & Investment',
+      'healthcare': 'Healthcare & Wellness',
+      'creative': 'Creative & Design',
+      'sports': 'Sports & Fitness',
+      'culture': 'Culture & Arts',
+      'environment': 'Environment & Sustainability',
+      'social_impact': 'Social Impact & Charity',
+      'general': 'General'
+    };
+
+    return categoryMap[category] || category.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  };
+
+  // Function to format date and time for display
+  const formatEventDateTime = (dateString: string): string => {
+    try {
+      const date = new Date(dateString);
+      
+      // Check if date is valid
+      if (isNaN(date.getTime())) {
+        return 'Tanggal tidak valid';
+      }
+
+      // Format: "Jumat, 25 April 2025 • 09:00 WIB"
+      const options: Intl.DateTimeFormatOptions = {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: 'Asia/Jakarta'
+      };
+
+      return date.toLocaleDateString('id-ID', options);
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return 'Tanggal tidak valid';
+    }
+  };
+
+  // Function to format date only (for shorter display)
+  const formatEventDate = (dateString: string): string => {
+    try {
+      const date = new Date(dateString);
+      
+      // Check if date is valid
+      if (isNaN(date.getTime())) {
+        return 'Tanggal tidak valid';
+      }
+
+      // Format: "25 April 2025"
+      const options: Intl.DateTimeFormatOptions = {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      };
+
+      return date.toLocaleDateString('id-ID', options);
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return 'Tanggal tidak valid';
+    }
+  };
 
   useEffect(() => {
     loadEvents();
@@ -55,10 +130,12 @@ const EventsPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-secondary-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
-          <p className="text-secondary-600">Memuat events...</p>
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 md:py-16">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
+            <p className="mt-4 text-secondary-600">Loading events...</p>
+          </div>
         </div>
       </div>
     );
@@ -124,7 +201,7 @@ const EventsPage: React.FC = () => {
                           : 'bg-white text-secondary-700 border-secondary-200 hover:bg-primary-600 hover:text-white hover:border-primary-600'
                       }`}
                     >
-                      {category}
+                      {category === 'Semua' ? 'Semua' : formatCategoryName(category)}
                     </button>
                   ))}
                 </div>
@@ -142,19 +219,20 @@ const EventsPage: React.FC = () => {
           {filteredEvents.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
               {filteredEvents.map((event) => {
-                // Get all images for the event
+                // Get all images for the event (no duplication)
                 const getEventImages = (event: Event): string[] => {
-                  const images: string[] = []
+                  // Use only additional_images array, first image is the cover
+                  if (event.additional_images && Array.isArray(event.additional_images) && event.additional_images.length > 0) {
+                    return event.additional_images
+                  }
                   
+                  // Fallback to image_url if no additional_images (for backward compatibility)
                   if (event.image_url) {
-                    images.push(event.image_url)
+                    return [event.image_url]
                   }
                   
-                  if (event.additional_images && Array.isArray(event.additional_images)) {
-                    images.push(...event.additional_images)
-                  }
-                  
-                  return images.length > 0 ? images : ['/placeholder-event.jpg']
+                  // Default placeholder
+                  return ['/placeholder-event.jpg']
                 }
 
                 const images = getEventImages(event)
@@ -200,7 +278,7 @@ const EventsPage: React.FC = () => {
                     <div className="p-4 sm:p-6">
                       <div className="flex items-center justify-between mb-3">
                         <span className="inline-block bg-primary-100 text-primary-600 text-xs px-2 sm:px-3 py-1 rounded-full font-medium">
-                          {event.category}
+                          {formatCategoryName(event.category)}
                         </span>
                         {images.length > 1 && (
                           <span className="text-xs text-secondary-500 flex items-center">
@@ -218,7 +296,7 @@ const EventsPage: React.FC = () => {
                       <div className="space-y-2 mb-4">
                         <div className="flex items-center text-xs sm:text-sm text-secondary-600">
                           <Calendar className="w-3 sm:w-4 h-3 sm:h-4 mr-2" />
-                          {event.date}
+                          {formatEventDate(event.date)}
                         </div>
                         <div className="flex items-center text-xs sm:text-sm text-secondary-600">
                           <MapPin className="w-3 sm:w-4 h-3 sm:h-4 mr-2" />

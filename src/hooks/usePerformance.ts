@@ -17,50 +17,69 @@ export const usePerformance = () => {
     TTFB: null
   })
 
+  const observersRef = useRef<PerformanceObserver[]>([])
+  const loggedMetrics = useRef<Set<string>>(new Set())
+
   // Measure Core Web Vitals
   useEffect(() => {
     if (typeof window === 'undefined') return
 
+    // Helper function untuk log metrics dengan debouncing
+    const logMetric = (metricName: string, value: number) => {
+      const key = `${metricName}-${Math.round(value)}`
+      if (!loggedMetrics.current.has(key)) {
+        console.log(`${metricName}:`, value)
+        loggedMetrics.current.add(key)
+      }
+    }
+
     // First Contentful Paint (FCP)
     const measureFCP = () => {
-      new PerformanceObserver((entryList) => {
+      const observer = new PerformanceObserver((entryList) => {
         const entries = entryList.getEntries()
         entries.forEach((entry: any) => {
           if (entry.name === 'first-contentful-paint') {
             metricsRef.current.FCP = entry.startTime
-            console.log('FCP:', entry.startTime)
+            logMetric('FCP', entry.startTime)
           }
         })
-      }).observe({ entryTypes: ['paint'] })
+      })
+      observer.observe({ entryTypes: ['paint'] })
+      observersRef.current.push(observer)
     }
 
     // Largest Contentful Paint (LCP)
     const measureLCP = () => {
-      new PerformanceObserver((entryList) => {
+      const observer = new PerformanceObserver((entryList) => {
         const entries = entryList.getEntries()
         const lastEntry = entries[entries.length - 1]
         if (lastEntry) {
           metricsRef.current.LCP = lastEntry.startTime
-          console.log('LCP:', lastEntry.startTime)
+          logMetric('LCP', lastEntry.startTime)
         }
-      }).observe({ entryTypes: ['largest-contentful-paint'] })
+      })
+      observer.observe({ entryTypes: ['largest-contentful-paint'] })
+      observersRef.current.push(observer)
     }
 
     // First Input Delay (FID)
     const measureFID = () => {
-      new PerformanceObserver((entryList) => {
+      const observer = new PerformanceObserver((entryList) => {
         const entries = entryList.getEntries()
         entries.forEach((entry: any) => {
-          metricsRef.current.FID = entry.processingStart - entry.startTime
-          console.log('FID:', entry.processingStart - entry.startTime)
+          const fidValue = entry.processingStart - entry.startTime
+          metricsRef.current.FID = fidValue
+          logMetric('FID', fidValue)
         })
-      }).observe({ entryTypes: ['first-input'] })
+      })
+      observer.observe({ entryTypes: ['first-input'] })
+      observersRef.current.push(observer)
     }
 
     // Cumulative Layout Shift (CLS)
     const measureCLS = () => {
       let clsValue = 0
-      const clsObserver = new PerformanceObserver((entryList) => {
+      const observer = new PerformanceObserver((entryList) => {
         const entries = entryList.getEntries()
         entries.forEach((entry: any) => {
           if (!entry.hadRecentInput) {
@@ -68,11 +87,12 @@ export const usePerformance = () => {
           }
         })
         metricsRef.current.CLS = clsValue
-        console.log('CLS:', clsValue)
+        logMetric('CLS', clsValue)
       })
       
       try {
-        clsObserver.observe({ entryTypes: ['layout-shift'] })
+        observer.observe({ entryTypes: ['layout-shift'] })
+        observersRef.current.push(observer)
       } catch (e) {
         console.warn('CLS observation not supported')
       }
@@ -82,8 +102,9 @@ export const usePerformance = () => {
     const measureTTFB = () => {
       const navigationEntry = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming
       if (navigationEntry) {
-        metricsRef.current.TTFB = navigationEntry.responseStart - navigationEntry.requestStart
-        console.log('TTFB:', navigationEntry.responseStart - navigationEntry.requestStart)
+        const ttfbValue = navigationEntry.responseStart - navigationEntry.requestStart
+        metricsRef.current.TTFB = ttfbValue
+        logMetric('TTFB', ttfbValue)
       }
     }
 
@@ -92,6 +113,19 @@ export const usePerformance = () => {
     measureFID()
     measureCLS()
     measureTTFB()
+
+    // Cleanup function
+    return () => {
+      observersRef.current.forEach(observer => {
+        try {
+          observer.disconnect()
+        } catch (e) {
+          console.warn('Error disconnecting observer:', e)
+        }
+      })
+      observersRef.current = []
+      loggedMetrics.current.clear()
+    }
   }, [])
 
   // Optimize font loading

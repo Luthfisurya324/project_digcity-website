@@ -16,34 +16,72 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
 }) => {
   if (!isOpen) return null
 
-  // Parse images from event
+  // Function to format category names from underscore to user-friendly names
+  const formatCategoryName = (category: string): string => {
+    const categoryMap: { [key: string]: string } = {
+      'business': 'Business & Entrepreneurship',
+      'technology': 'Technology & Innovation',
+      'education': 'Education & Training',
+      'workshop': 'Workshop & Skills',
+      'seminar': 'Seminar & Conference',
+      'networking': 'Networking & Community',
+      'startup': 'Startup & Innovation',
+      'digital_marketing': 'Digital Marketing',
+      'finance': 'Finance & Investment',
+      'healthcare': 'Healthcare & Wellness',
+      'creative': 'Creative & Design',
+      'sports': 'Sports & Fitness',
+      'culture': 'Culture & Arts',
+      'environment': 'Environment & Sustainability',
+      'social_impact': 'Social Impact & Charity',
+      'general': 'General'
+    };
+
+    return categoryMap[category] || category.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  };
+
+  // Parse images from event (no duplication)
   const getEventImages = (event: Event): string[] => {
-    const images: string[] = []
+    // Use only additional_images array, first image is the cover
+    if (event.additional_images && Array.isArray(event.additional_images) && event.additional_images.length > 0) {
+      return event.additional_images
+    }
     
-    // Add main image if exists
+    // Fallback to image_url if no additional_images (for backward compatibility)
     if (event.image_url) {
-      images.push(event.image_url)
+      return [event.image_url]
     }
     
-    // Add additional images if they exist in the event data
-    // This will be populated when we update the database schema
-    if (event.additional_images && Array.isArray(event.additional_images)) {
-      images.push(...event.additional_images)
-    }
-    
-    return images.length > 0 ? images : ['/placeholder-event.jpg']
+    // Default placeholder
+    return ['/placeholder-event.jpg']
   }
 
   const images = getEventImages(event)
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('id-ID', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
+    try {
+      const date = new Date(dateString);
+      
+      // Check if date is valid
+      if (isNaN(date.getTime())) {
+        return 'Tanggal tidak valid';
+      }
+
+      // Format: "Jumat, 25 April 2025 • 09:00 WIB"
+      const options: Intl.DateTimeFormatOptions = {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: 'Asia/Jakarta'
+      };
+
+      return date.toLocaleDateString('id-ID', options);
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return 'Tanggal tidak valid';
+    }
   }
 
   const isUpcoming = new Date(event.date) > new Date()
@@ -72,7 +110,7 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
                 {isUpcoming ? 'Upcoming' : 'Past Event'}
               </span>
               <span className="px-3 py-1 bg-primary-100 text-primary-700 rounded-full text-sm font-semibold">
-                {event.category}
+                {formatCategoryName(event.category)}
               </span>
             </div>
           </div>
@@ -80,16 +118,18 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
 
         {/* Content */}
         <div className="p-6">
-          {/* Image Carousel */}
+          {/* Image Carousel dengan ukuran tetap */}
           <div className="mb-6">
-            <ImageCarousel
-              images={images}
-              autoPlay={true}
-              autoPlayInterval={4000}
-              showControls={true}
-              showThumbnails={true}
-              className="w-full h-80"
-            />
+            <div className="w-full aspect-[16/9] bg-gray-100 rounded-lg overflow-hidden">
+              <ImageCarousel
+                images={images}
+                autoPlay={true}
+                autoPlayInterval={4000}
+                showControls={true}
+                showThumbnails={true}
+                className="w-full h-full"
+              />
+            </div>
           </div>
 
           {/* Event Details - Simplified Layout */}
@@ -135,8 +175,6 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
             </div>
           </div>
         </div>
-
-
       </div>
     </div>
   )
