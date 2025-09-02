@@ -152,6 +152,8 @@ const AdminEvents: React.FC = () => {
     }
   }
 
+
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault() // Prevent form from refreshing the page
     setSubmitting(true)
@@ -164,9 +166,11 @@ const AdminEvents: React.FC = () => {
       }
       
       await loadEvents()
-      resetForm()
       // Show success message instead of alert
       console.log('Event saved successfully!')
+      
+      // Close modal and reset form
+      resetForm()
     } catch (error) {
       console.error('Error saving event:', error)
       // Show error message instead of alert
@@ -329,10 +333,18 @@ const AdminEvents: React.FC = () => {
       {showForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-200">
+            <div className="p-6 border-b border-gray-200 flex justify-between items-center">
               <h2 className="text-xl font-semibold text-secondary-900">
                 {editingEvent ? 'Edit Event' : 'Add New Event'}
               </h2>
+              <button
+                type="button"
+                onClick={resetForm}
+                className="text-gray-600 hover:text-gray-900 transition-colors flex items-center space-x-2"
+              >
+                <span>←</span>
+                <span>Kembali ke Events</span>
+              </button>
             </div>
             
             <form onSubmit={handleSubmit} className="p-6 space-y-4">

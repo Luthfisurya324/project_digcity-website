@@ -23,9 +23,8 @@ const LazyStrukturOrganisasiPage = React.lazy(() => import('./components/Struktu
 const LazyGrandDesignPage = React.lazy(() => import('./components/GrandDesignPage'))
 const LazyGaleriPage = React.lazy(() => import('./components/GaleriPage'))
 const LazyKontakPage = React.lazy(() => import('./components/KontakPage'))
-const LazyAdminPage = React.lazy(() => import('./pages/AdminPage'))
+const LazyAdminPanel = React.lazy(() => import('./pages/AdminPanel'))
 const LazyLinktreePage = React.lazy(() => import('./pages/LinktreePage'))
-const AdminPanel = React.lazy(() => import('./components/AdminPanel'))
 
 function App() {
   // Initialize performance monitoring
@@ -108,12 +107,12 @@ function App() {
              <LazyLinktreePage />
            ) : isAdminSubdomain ? (
              <Routes>
-               <Route path="/*" element={<AdminPanel />} />
+               <Route path="/*" element={<LazyAdminPanel />} />
              </Routes>
            ) : (
         <Routes>
           {/* Admin route - no header/footer (untuk akses dari domain utama) */}
-          <Route path="/admin/*" element={<LazyAdminPage />} />
+          <Route path="/admin/*" element={<LazyAdminPanel />} />
           
           {/* Main routes with header/footer */}
           <Route path="/" element={<PageLayout><HomePage /></PageLayout>} />

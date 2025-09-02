@@ -14,6 +14,24 @@
     }
   ],
 
+  "redirects": [
+    {
+      "source": "/admin",
+      "destination": "/admin/",
+      "permanent": false
+    },
+    {
+      "source": "/news",
+      "destination": "/news/",
+      "permanent": false
+    },
+    {
+      "source": "/events",
+      "destination": "/events/",
+      "permanent": false
+    }
+  ],
+
   "headers": [
     {
       "source": "/linktree",
@@ -46,6 +64,19 @@
         {
           "key": "Referrer-Policy",
           "value": "strict-origin-when-cross-origin"
+        }
+      ]
+    },
+    {
+      "source": "/news",
+      "headers": [
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
         }
       ]
     },

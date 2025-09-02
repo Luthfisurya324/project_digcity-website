@@ -2,15 +2,16 @@ import React, { useState, useEffect } from 'react'
 import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom'
 import { authAPI } from '../lib/supabase'
 import { runSupabaseTests } from '../utils/supabaseTest'
-import AdminLogin from './admin/AdminLogin'
-import AdminDashboard from './admin/AdminDashboard'
-import AdminEvents from './admin/AdminEvents'
-import AdminNews from './admin/AdminNews'
-import BlogEditor from './admin/BlogEditor'
-import AdminGallery from './admin/AdminGallery'
-import AdminNewsletter from './admin/AdminNewsletter'
-import AdminLinktree from './admin/AdminLinktree'
-import CacheControl from './CacheControl'
+import { getAdminBasePath } from '../utils/domainDetection'
+import AdminLogin from '../components/admin/AdminLogin'
+import AdminDashboard from '../components/admin/AdminDashboard'
+import AdminEvents from '../components/admin/AdminEvents'
+import AdminNews from '../components/admin/AdminNews'
+import BlogEditor from '../components/admin/BlogEditor'
+import AdminGallery from '../components/admin/AdminGallery'
+import AdminNewsletter from '../components/admin/AdminNewsletter'
+import AdminLinktree from '../components/admin/AdminLinktree'
+import CacheControl from '../components/CacheControl'
 import { 
   BarChart3, 
   Calendar, 
@@ -44,14 +45,21 @@ const AdminPanel: React.FC = () => {
   // Update active tab based on current location
   const getActiveTab = () => {
     const path = location.pathname
-    // Untuk admin subdomain, path akan kosong atau '/'
-    if (path === '/' || path === '' || path === '/admin' || path === '/admin/') return 'dashboard'
-    if (path.startsWith('/events')) return 'events'
-    if (path.startsWith('/news')) return 'news'
-    if (path.startsWith('/gallery')) return 'gallery'
-    if (path.startsWith('/linktree')) return 'linktree'
-    if (path.startsWith('/newsletter')) return 'newsletter'
-    if (path.startsWith('/cache')) return 'cache'
+    const adminBasePath = getAdminBasePath()
+    
+    // Handle dashboard path
+    if (path === adminBasePath || path === `${adminBasePath}/` || path === '/' || path === '') {
+      return 'dashboard'
+    }
+    
+    // Handle other paths
+    if (path.startsWith(`${adminBasePath}/events`)) return 'events'
+    if (path.startsWith(`${adminBasePath}/news`)) return 'news'
+    if (path.startsWith(`${adminBasePath}/gallery`)) return 'gallery'
+    if (path.startsWith(`${adminBasePath}/linktree`)) return 'linktree'
+    if (path.startsWith(`${adminBasePath}/newsletter`)) return 'newsletter'
+    if (path.startsWith(`${adminBasePath}/cache`)) return 'cache'
+    
     return 'dashboard'
   }
 
@@ -105,30 +113,32 @@ const AdminPanel: React.FC = () => {
   }
 
   const handleTabClick = (tabId: string) => {
+    const adminBasePath = getAdminBasePath()
+    
     switch (tabId) {
       case 'dashboard':
-        navigate('/')
+        navigate(`${adminBasePath}`)
         break
       case 'events':
-        navigate('/events')
+        navigate(`${adminBasePath}/events`)
         break
       case 'news':
-        navigate('/news')
+        navigate(`${adminBasePath}/news`)
         break
       case 'gallery':
-        navigate('/gallery')
+        navigate(`${adminBasePath}/gallery`)
         break
       case 'linktree':
-        navigate('/linktree')
+        navigate(`${adminBasePath}/linktree`)
         break
       case 'newsletter':
-        navigate('/newsletter')
+        navigate(`${adminBasePath}/newsletter`)
         break
       case 'cache':
-        navigate('/cache')
+        navigate(`${adminBasePath}/cache`)
         break
       default:
-        navigate('/')
+        navigate(`${adminBasePath}`)
     }
   }
 
@@ -242,6 +252,8 @@ const AdminPanel: React.FC = () => {
             <Routes>
               <Route path="/" element={<AdminDashboard />} />
               <Route path="/events" element={<AdminEvents />} />
+              <Route path="/events/new" element={<AdminEvents />} />
+              <Route path="/events/edit/:id" element={<AdminEvents />} />
               <Route path="/news" element={<AdminNews />} />
               <Route path="/news/new" element={<BlogEditor />} />
               <Route path="/news/edit/:id" element={<BlogEditor />} />

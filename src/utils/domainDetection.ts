@@ -14,6 +14,12 @@ export const isAdminSubdomain = (): boolean => {
   if (typeof window === 'undefined') return false;
   
   const hostname = window.location.hostname;
+  
+  // Development environment: localhost, 127.0.0.1, etc.
+  if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname.includes('localhost')) {
+    return false; // Treat as domain utama for consistency
+  }
+  
   return hostname === 'admin.digcity.my.id';
 };
 
@@ -74,4 +80,38 @@ export const getDomainInfo = () => {
     hostname,
     shouldRedirect
   };
+};
+
+/**
+ * Get admin base path based on current environment
+ * Development: /admin (consistent with production domain utama)
+ * Admin subdomain: / (no prefix needed)
+ */
+export const getAdminBasePath = (): string => {
+  if (typeof window === 'undefined') return '/admin';
+  
+  const hostname = window.location.hostname;
+  
+  // Development environment: treat as domain utama
+  if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname.includes('localhost')) {
+    return '/admin';
+  }
+  
+  // Admin subdomain: no prefix needed
+  if (hostname === 'admin.digcity.my.id') {
+    return '';
+  }
+  
+  // Production domain utama: use /admin prefix
+  return '/admin';
+};
+
+/**
+ * Check if current environment is development
+ */
+export const isDevelopment = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  
+  const hostname = window.location.hostname;
+  return hostname === 'localhost' || hostname === '127.0.0.1' || hostname.includes('localhost');
 };
