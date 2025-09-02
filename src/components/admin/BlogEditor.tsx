@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { newsAPI } from '../../lib/supabase'
-import { getAdminBasePath } from '../../utils/domainDetection'
 import type { News } from '../../lib/supabase'
 import { 
   ArrowLeft, 
@@ -42,7 +41,6 @@ const BlogEditor: React.FC = () => {
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
   console.log('BlogEditor id:', id)
-  const adminBasePath = getAdminBasePath()
   
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -61,7 +59,6 @@ const BlogEditor: React.FC = () => {
     tags: []
   })
   const [tagInput, setTagInput] = useState('')
-  const [sidebarOpen, setSidebarOpen] = useState(true)
 
   const categories = [
     { value: 'DIGIMON', label: 'DIGIMON' },
@@ -160,13 +157,13 @@ const BlogEditor: React.FC = () => {
         await newsAPI.update(id, formData)
         setShowSuccess(true)
         setTimeout(() => {
-          navigate(`${adminBasePath}/news`)
+          navigate('/news')
         }, 1500)
       } else {
         await newsAPI.create(formData)
         setShowSuccess(true)
         setTimeout(() => {
-          navigate(`${adminBasePath}/news`)
+          navigate('/news')
         }, 1500)
       }
     } catch (error) {
@@ -215,7 +212,7 @@ const BlogEditor: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading...</p>
@@ -225,7 +222,7 @@ const BlogEditor: React.FC = () => {
   }
 
   return (
-    <div className="h-screen bg-white flex flex-col overflow-hidden">
+    <div className="min-h-screen bg-gray-50">
       {/* Success Message */}
       {showSuccess && (
         <div className="fixed top-4 right-4 z-50 bg-green-50 border border-green-200 text-green-800 px-6 py-4 rounded-lg shadow-lg flex items-center space-x-2">
@@ -235,12 +232,12 @@ const BlogEditor: React.FC = () => {
       )}
 
       {/* Header */}
-      <div className="bg-white/95 backdrop-blur border-b sticky top-0 z-20">
-        <div className="px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-14">
+      <div className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-4">
               <button
-                onClick={() => navigate(`${adminBasePath}/news`)}
+                onClick={() => navigate('/news')}
                 className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
               >
                 <ArrowLeft className="w-4 h-4" />
@@ -251,17 +248,6 @@ const BlogEditor: React.FC = () => {
               </h1>
             </div>
             <div className="flex items-center space-x-3">
-              <button
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors ${
-                  sidebarOpen 
-                    ? 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50' 
-                    : 'bg-blue-50 border-blue-200 text-blue-700'
-                }`}
-                title="Toggle panel samping"
-              >
-                {sidebarOpen ? 'Sembunyikan Panel' : 'Tampilkan Panel'}
-              </button>
               <button
                 onClick={() => setPreviewMode(!previewMode)}
                 className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
@@ -286,11 +272,11 @@ const BlogEditor: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex-1 overflow-hidden">
-        <div className="h-full grid grid-cols-1 lg:grid-cols-3 gap-6 px-4 sm:px-6 lg:px-8 py-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Editor */}
-          <div className={`${sidebarOpen ? 'lg:col-span-2' : 'lg:col-span-3'} min-h-0`}> 
-            <div className="bg-white rounded-lg shadow-sm border h-full overflow-auto">
+          <div className="lg:col-span-2">
+            <div className="bg-white rounded-lg shadow-sm border">
               {previewMode ? (
                 /* Preview Mode */
                 <div className="p-8">
@@ -424,8 +410,7 @@ const BlogEditor: React.FC = () => {
           </div>
 
           {/* Sidebar */}
-          {sidebarOpen && (
-          <div className="space-y-6 min-h-0 h-full overflow-y-auto pr-1">
+          <div className="space-y-6">
             {/* Basic Info */}
             <div className="bg-white rounded-lg shadow-sm border p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Informasi Dasar</h3>
@@ -594,7 +579,6 @@ const BlogEditor: React.FC = () => {
               </div>
             </div>
           </div>
-          )}
         </div>
       </div>
     </div>
