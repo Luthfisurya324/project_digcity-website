@@ -42,6 +42,12 @@ const AdminPanel: React.FC = () => {
     checkUser()
   }, [])
 
+  // Debug routing changes
+  useEffect(() => {
+    console.log('🔍 AdminPanel: Location changed:', location.pathname)
+    console.log('🔍 AdminPanel: Current location object:', location)
+  }, [location])
+
   // Update active tab based on current location
   const getActiveTab = () => {
     const path = location.pathname
@@ -169,6 +175,42 @@ const AdminPanel: React.FC = () => {
 
   const activeTab = getActiveTab()
 
+  // Detect if current route is the full-screen BlogEditor (no admin header/sidebar)
+  const adminBasePath = getAdminBasePath()
+  const path = location.pathname
+  const isEditorRoute = path === `${adminBasePath}/news/new` || path.startsWith(`${adminBasePath}/news/edit`)
+
+  // Define routes once so we can reuse in both layouts
+  const routes = (
+    <Routes>
+      <Route path="/" element={<AdminDashboard />} />
+      <Route path="/events" element={<AdminEvents />} />
+      <Route path="/events/new" element={<AdminEvents />} />
+      <Route path="/events/edit/:id" element={<AdminEvents />} />
+      <Route path="/news" element={<AdminNews />} />
+      <Route path="/news/new" element={<BlogEditor />} />
+      <Route path="/news/edit/:id" element={<BlogEditor />} />
+      <Route path="/gallery" element={<AdminGallery />} />
+      <Route path="/linktree" element={<AdminLinktree />} />
+      <Route path="/newsletter" element={<AdminNewsletter />} />
+      <Route path="/cache" element={
+        <CacheControl isAdmin={isAdmin} onCacheCleared={() => {
+          console.log('Cache cleared successfully');
+        }} />
+      } />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  )
+
+  if (isEditorRoute) {
+    // Full-screen editor layout without admin header and sidebar
+    return (
+      <div className="min-h-screen bg-white">
+        {routes}
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-secondary-50 via-white to-white">
       {/* Clean Header */}
@@ -249,24 +291,7 @@ const AdminPanel: React.FC = () => {
         {/* Main Content */}
         <main className="flex-1 p-6 overflow-y-auto">
           <div className="max-w-7xl mx-auto">
-            <Routes>
-              <Route path="/" element={<AdminDashboard />} />
-              <Route path="/events" element={<AdminEvents />} />
-              <Route path="/events/new" element={<AdminEvents />} />
-              <Route path="/events/edit/:id" element={<AdminEvents />} />
-              <Route path="/news" element={<AdminNews />} />
-              <Route path="/news/new" element={<BlogEditor />} />
-              <Route path="/news/edit/:id" element={<BlogEditor />} />
-              <Route path="/gallery" element={<AdminGallery />} />
-              <Route path="/linktree" element={<AdminLinktree />} />
-              <Route path="/newsletter" element={<AdminNewsletter />} />
-              <Route path="/cache" element={
-                <CacheControl isAdmin={isAdmin} onCacheCleared={() => {
-                  console.log('Cache cleared successfully');
-                }} />
-              } />
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
+            {routes}
           </div>
         </main>
       </div>

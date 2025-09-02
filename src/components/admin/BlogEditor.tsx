@@ -13,8 +13,8 @@ import {
   List,
   Quote,
   Code,
-  Undo,
-  Redo
+  AlertCircle,
+  CheckCircle
 } from 'lucide-react'
 
 interface BlogFormData {
@@ -28,14 +28,26 @@ interface BlogFormData {
   tags: string[]
 }
 
+interface FormErrors {
+  title?: string
+  content?: string
+  excerpt?: string
+  author?: string
+  image_url?: string
+}
+
 const BlogEditor: React.FC = () => {
   console.log('BlogEditor component loaded')
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
   console.log('BlogEditor id:', id)
+  
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [previewMode, setPreviewMode] = useState(false)
+  const [showSuccess, setShowSuccess] = useState(false)
+  const [errors, setErrors] = useState<FormErrors>({})
+  
   const [formData, setFormData] = useState<BlogFormData>({
     title: '',
     content: '',
@@ -58,15 +70,21 @@ const BlogEditor: React.FC = () => {
   ]
 
   useEffect(() => {
+    console.log('🔍 BlogEditor: useEffect triggered, id:', id)
     if (id && id !== 'new') {
+      console.log('🔍 BlogEditor: Loading existing news with id:', id)
       loadNews()
+    } else {
+      console.log('🔍 BlogEditor: Creating new news, id:', id)
     }
   }, [id])
 
   const loadNews = async () => {
+    console.log('🔍 BlogEditor: loadNews called for id:', id)
     setLoading(true)
     try {
       const news = await newsAPI.getById(id!)
+      console.log('🔍 BlogEditor: News loaded:', news)
       if (news) {
         setFormData({
           title: news.title || '',
@@ -78,36 +96,79 @@ const BlogEditor: React.FC = () => {
           category: news.category || 'general',
           tags: news.tags || []
         })
+        console.log('🔍 BlogEditor: Form data updated')
       }
     } catch (error) {
-      console.error('Error loading news:', error)
+      console.error('🔍 BlogEditor: Error loading news:', error)
+      alert('Gagal memuat artikel. Silakan coba lagi.')
     } finally {
       setLoading(false)
     }
   }
 
+  const validateForm = (): boolean => {
+    const newErrors: FormErrors = {}
+    
+    if (!formData.title.trim()) {
+      newErrors.title = 'Judul artikel wajib diisi'
+    }
+    
+    if (!formData.content.trim()) {
+      newErrors.content = 'Konten artikel wajib diisi'
+    }
+    
+    if (!formData.excerpt.trim()) {
+      newErrors.excerpt = 'Excerpt wajib diisi'
+    }
+    
+    if (!formData.author.trim()) {
+      newErrors.author = 'Nama penulis wajib diisi'
+    }
+    
+    if (formData.image_url && !isValidUrl(formData.image_url)) {
+      newErrors.image_url = 'URL gambar tidak valid'
+    }
+    
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
+  const isValidUrl = (string: string): boolean => {
+    try {
+      new URL(string)
+      return true
+    } catch (_) {
+      return false
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (!validateForm()) {
+      return
+    }
+    
     setSaving(true)
+    setErrors({})
 
     try {
       if (id && id !== 'new') {
         await newsAPI.update(id, formData)
+        setShowSuccess(true)
+        setTimeout(() => {
+          navigate('/news')
+        }, 1500)
       } else {
         await newsAPI.create(formData)
-      }
-      
-      const currentHost = window.location.host
-      const isAdminSubdomain = currentHost.startsWith('admin.')
-      
-      if (isAdminSubdomain) {
-        navigate('/news')
-      } else {
-        navigate('/admin/news')
+        setShowSuccess(true)
+        setTimeout(() => {
+          navigate('/news')
+        }, 1500)
       }
     } catch (error) {
       console.error('Error saving news:', error)
-      alert('Error saving news. Please try again.')
+      alert('Gagal menyimpan artikel. Silakan coba lagi.')
     } finally {
       setSaving(false)
     }
@@ -162,27 +223,26 @@ const BlogEditor: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Success Message */}
+      {showSuccess && (
+        <div className="fixed top-4 right-4 z-50 bg-green-50 border border-green-200 text-green-800 px-6 py-4 rounded-lg shadow-lg flex items-center space-x-2">
+          <CheckCircle className="w-5 h-5" />
+          <span>Artikel berhasil disimpan! Mengalihkan...</span>
+        </div>
+      )}
+
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-4">
-                             <button
-                 onClick={() => {
-                   const currentHost = window.location.host
-                   const isAdminSubdomain = currentHost.startsWith('admin.')
-                   
-                   if (isAdminSubdomain) {
-                     navigate('/news')
-                   } else {
-                     navigate('/admin/news')
-                   }
-                 }}
-                 className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
-               >
-                 <ArrowLeft className="w-4 h-4" />
-                 Kembali ke News
-               </button>
+              <button
+                onClick={() => navigate('/news')}
+                className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Kembali ke News
+              </button>
               <h1 className="text-xl font-semibold text-gray-900">
                 {id && id !== 'new' ? 'Edit Artikel' : 'Tulis Artikel Baru'}
               </h1>
@@ -250,21 +310,36 @@ const BlogEditor: React.FC = () => {
                 <div className="p-6 space-y-6">
                   {/* Title */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Judul Artikel</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Judul Artikel <span className="text-red-500">*</span>
+                    </label>
                     <input
                       type="text"
                       required
                       value={formData.title}
-                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-lg"
+                      onChange={(e) => {
+                        setFormData({ ...formData, title: e.target.value })
+                        if (errors.title) setErrors({ ...errors, title: undefined })
+                      }}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-lg ${
+                        errors.title ? 'border-red-300' : 'border-gray-300'
+                      }`}
                       placeholder="Masukkan judul artikel..."
                     />
+                    {errors.title && (
+                      <div className="flex items-center space-x-1 mt-1 text-red-600 text-sm">
+                        <AlertCircle className="w-4 h-4" />
+                        <span>{errors.title}</span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Content */}
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <label className="block text-sm font-medium text-gray-700">Konten Artikel</label>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Konten Artikel <span className="text-red-500">*</span>
+                      </label>
                       <div className="flex items-center space-x-1">
                         <button
                           type="button"
@@ -313,10 +388,21 @@ const BlogEditor: React.FC = () => {
                       required
                       rows={20}
                       value={formData.content}
-                      onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 font-mono text-sm"
+                      onChange={(e) => {
+                        setFormData({ ...formData, content: e.target.value })
+                        if (errors.content) setErrors({ ...errors, content: undefined })
+                      }}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 font-mono text-sm ${
+                        errors.content ? 'border-red-300' : 'border-gray-300'
+                      }`}
                       placeholder="Tulis konten artikel Anda di sini...&#10;&#10;Tips:&#10;- Gunakan **teks** untuk bold&#10;- Gunakan *teks* untuk italic&#10;- Gunakan - untuk list&#10;- Gunakan > untuk quote&#10;- Gunakan `kode` untuk inline code"
                     />
+                    {errors.content && (
+                      <div className="flex items-center space-x-1 mt-1 text-red-600 text-sm">
+                        <AlertCircle className="w-4 h-4" />
+                        <span>{errors.content}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -330,25 +416,51 @@ const BlogEditor: React.FC = () => {
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Informasi Dasar</h3>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Excerpt</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Excerpt <span className="text-red-500">*</span>
+                  </label>
                   <textarea
                     rows={3}
                     value={formData.excerpt}
-                    onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    onChange={(e) => {
+                      setFormData({ ...formData, excerpt: e.target.value })
+                      if (errors.excerpt) setErrors({ ...errors, excerpt: undefined })
+                    }}
+                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 ${
+                      errors.excerpt ? 'border-red-300' : 'border-gray-300'
+                    }`}
                     placeholder="Ringkasan singkat artikel..."
                   />
+                  {errors.excerpt && (
+                    <div className="flex items-center space-x-1 mt-1 text-red-600 text-sm">
+                      <AlertCircle className="w-4 h-4" />
+                      <span>{errors.excerpt}</span>
+                    </div>
+                  )}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Penulis</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Penulis <span className="text-red-500">*</span>
+                  </label>
                   <input
                     type="text"
                     value={formData.author}
-                    onChange={(e) => setFormData({ ...formData, author: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    onChange={(e) => {
+                      setFormData({ ...formData, author: e.target.value })
+                      if (errors.author) setErrors({ ...errors, author: undefined })
+                    }}
+                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 ${
+                      errors.author ? 'border-red-300' : 'border-gray-300'
+                    }`}
                     placeholder="Nama penulis"
                   />
+                  {errors.author && (
+                    <div className="flex items-center space-x-1 mt-1 text-red-600 text-sm">
+                      <AlertCircle className="w-4 h-4" />
+                      <span>{errors.author}</span>
+                    </div>
+                  )}
                 </div>
 
                 <div>
@@ -388,8 +500,13 @@ const BlogEditor: React.FC = () => {
                     <input
                       type="url"
                       value={formData.image_url}
-                      onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                      onChange={(e) => {
+                        setFormData({ ...formData, image_url: e.target.value })
+                        if (errors.image_url) setErrors({ ...errors, image_url: undefined })
+                      }}
+                      className={`flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 ${
+                        errors.image_url ? 'border-red-300' : 'border-gray-300'
+                      }`}
                       placeholder="https://example.com/image.jpg"
                     />
                     <button
@@ -400,6 +517,12 @@ const BlogEditor: React.FC = () => {
                       <ImageIcon className="w-4 h-4" />
                     </button>
                   </div>
+                  {errors.image_url && (
+                    <div className="flex items-center space-x-1 mt-1 text-red-600 text-sm">
+                      <AlertCircle className="w-4 h-4" />
+                      <span>{errors.image_url}</span>
+                    </div>
+                  )}
                 </div>
                 {formData.image_url && (
                   <div>
