@@ -142,7 +142,7 @@ export const LazyKontakPage = withLazyLoading(
 )
 
 export const LazyAdminPage = withLazyLoading(
-  () => import('../pages/AdminPage'),
+  () => import('../pages/AdminPanel'),
   LoadingSpinner
 )
 
@@ -243,7 +243,7 @@ export const preloadPage = (pageName: string, currentPage?: string) => {
     'grand-design': () => import('./GrandDesignPage'),
     galeri: () => import('./GaleriPage'),
     kontak: () => import('./KontakPage'),
-    admin: () => import('../pages/AdminPage')
+    admin: () => import('../pages/AdminPanel')
   }
   
   const importFunc = pageImports[pageName]
