@@ -205,7 +205,7 @@ const AdminPanel: React.FC = () => {
   if (isEditorRoute) {
     // Full-screen editor layout without admin header and sidebar
     return (
-      <div className="min-h-screen bg-white">
+      <div className="h-screen overflow-hidden bg-white">
         {routes}
       </div>
     )
