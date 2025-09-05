@@ -277,14 +277,36 @@ export const authAPI = {
     return user
   },
 
-  // Check if user is admin - rely solely on JWT metadata to avoid querying protected tables
+  // Check if user is admin - dengan fallback untuk tabel users yang tidak ada
   async isAdmin() {
     try {
       const user = await this.getCurrentUser()
       if (!user) return false
-
-      // Determine admin from user/app metadata
-      return this.checkAdminFromMetadata(user)
+      
+      // Primary: cek dari user metadata (lebih reliable)
+      const isAdminFromMetadata = this.checkAdminFromMetadata(user)
+      if (isAdminFromMetadata) {
+        return true
+      }
+      
+      // Fallback: coba cek dari tabel users jika ada
+      try {
+        const { data, error } = await supabase
+          .from('users')
+          .select('role')
+          .eq('id', user.id)
+          .single()
+        
+        if (error) {
+          console.warn('Users table not accessible, using metadata only:', error)
+          return false
+        }
+        
+        return data.role === 'admin'
+      } catch (tableError) {
+        console.warn('Users table not accessible, using metadata only:', tableError)
+        return false
+      }
     } catch (error) {
       console.error('Error checking admin status:', error)
       return false

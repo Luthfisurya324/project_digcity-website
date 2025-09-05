@@ -5,13 +5,23 @@ export const testSupabaseConnection = async () => {
   console.log('🔍 Testing Supabase connection...')
   
   try {
-    // Coba akses tabel news untuk cek koneksi dan RLS
-    const { error, count } = await supabase
-      .from('news')
-      .select('*', { count: 'exact', head: true })
+    // Test 1: Basic connection
+    const { data, error } = await supabase.from('users').select('count', { count: 'exact', head: true })
     
     if (error) {
-      console.error('❌ Error testing news table:', error)
+      console.error('❌ Error testing users table:', error)
+      
+      // Test 2: Check if table exists
+      if (error.code === 'PGRST116') {
+        console.warn('⚠️ Users table tidak ditemukan atau tidak accessible')
+        return {
+          success: false,
+          error: 'Users table tidak ada atau tidak accessible',
+          code: error.code,
+          details: error.message
+        }
+      }
+      
       return {
         success: false,
         error: error.message,
@@ -20,11 +30,11 @@ export const testSupabaseConnection = async () => {
       }
     }
     
-    console.log('✅ News table accessible, count available')
+    console.log('✅ Users table accessible, count:', data)
     return {
       success: true,
-      message: 'News table accessible',
-      count: count ?? null
+      message: 'Users table accessible',
+      count: data
     }
     
   } catch (error: any) {
