@@ -3,6 +3,19 @@
   @apply text-secondary-700 leading-relaxed;
 }
 
+/* Placeholder for contenteditable editor */
+.editor-placeholder:empty::before {
+  content: attr(data-placeholder);
+  @apply text-secondary-400;
+}
+.editor-placeholder:focus::before {
+  content: '';
+}
+.editor-placeholder {
+  /* Ensure typing caret visible and area behaves like text input */
+  caret-color: theme('colors.primary.600');
+}
+
 /* Typography */
 .blog-content h1 {
   @apply text-3xl font-bold text-secondary-900 mb-6 mt-8;

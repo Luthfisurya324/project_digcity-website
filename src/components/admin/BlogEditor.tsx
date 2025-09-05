@@ -289,6 +289,7 @@ const BlogEditor: React.FC = () => {
   const onContentInput = () => {
     if (!contentRef.current) return
     setFormData({ ...formData, content: contentRef.current.innerHTML })
+    if (errors.content) setErrors({ ...errors, content: undefined })
   }
 
   const onEditorClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -297,6 +298,21 @@ const BlogEditor: React.FC = () => {
       setSelectedImageEl(target as HTMLImageElement)
     } else {
       setSelectedImageEl(null)
+    }
+  }
+
+  const onEditorBlur = () => {
+    if (!contentRef.current) return
+    // Bersihkan nilai HTML kosong agar placeholder bisa muncul kembali tanpa overlap
+    const raw = contentRef.current.innerHTML
+    const cleaned = raw
+      .replace(/\u00A0/g, ' ') // nbsp ke spasi
+      .replace(/<br\s*\/?>(?=\s*$)/gi, '') // br di akhir
+      .replace(/<div>\s*<br\s*\/>\s*<\/div>\s*$/i, '') // div kosong berisi br
+      .trim()
+    if (cleaned === '' || cleaned === '<p></p>' || cleaned === '<p> </p>') {
+      contentRef.current.innerHTML = ''
+      setFormData({ ...formData, content: '' })
     }
   }
 
@@ -621,12 +637,14 @@ const BlogEditor: React.FC = () => {
           ) : (
             <div
               ref={contentRef}
-              className="min-h-[300px] bg-white border border-secondary-200 rounded-lg p-4 focus:outline-none"
+              className="min-h-[300px] bg-white border border-secondary-200 rounded-lg p-4 focus:outline-none editor-placeholder caret-primary-600 cursor-text"
               contentEditable
               suppressContentEditableWarning
+              data-placeholder="Tulis konten artikel Anda di sini..."
               onInput={onContentInput}
               onClick={onEditorClick}
-              dangerouslySetInnerHTML={{ __html: formData.content || '<p>Tulis konten artikel Anda di sini...</p>' }}
+              onBlur={onEditorBlur}
+              dangerouslySetInnerHTML={{ __html: formData.content || '' }}
             />
           )}
           {errors.content && (
