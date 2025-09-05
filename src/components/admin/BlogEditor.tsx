@@ -29,6 +29,7 @@ import SocialShare from '../SocialShare'
 import RelatedArticles from '../RelatedArticles'
 import ImageUpload from './ImageUpload'
 import '../../styles/blog.css'
+import { getAdminBasePath } from '../../utils/domainDetection'
 
 interface BlogFormData {
   title: string
@@ -53,6 +54,7 @@ const BlogEditor: React.FC = () => {
   console.log('BlogEditor component loaded')
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
+  const base = getAdminBasePath()
   console.log('BlogEditor id:', id)
   
   const [loading, setLoading] = useState(false)
@@ -200,13 +202,13 @@ const BlogEditor: React.FC = () => {
         await newsAPI.update(id, formData)
         setShowSuccess(true)
         setTimeout(() => {
-          navigate('/news')
+          navigate(`${base}/news`)
         }, 1500)
       } else {
         await newsAPI.create(formData)
         setShowSuccess(true)
         setTimeout(() => {
-          navigate('/news')
+          navigate(`${base}/news`)
         }, 1500)
       }
     } catch (error) {
@@ -358,13 +360,13 @@ const BlogEditor: React.FC = () => {
 
       {/* Back Button + Action Bar */}
       <div className="bg-white border-b border-secondary-200">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+        <div className="w-full px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <button
-            onClick={() => navigate('/blog')}
+            onClick={() => navigate(`${base}/news`)}
             className="inline-flex items-center gap-2 text-secondary-600 hover:text-secondary-900 transition-colors duration-200"
           >
             <ArrowLeft className="w-4 h-4" />
-            Kembali ke Blog
+            Kembali ke News
           </button>
           <div className="flex items-center gap-2">
             <button
@@ -750,7 +752,7 @@ const BlogEditor: React.FC = () => {
 
       {/* Newsletter CTA */}
       <section className="bg-primary-600 py-12 sm:py-16">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div className="w-full px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">
             Tetap Update dengan DIGCITY
           </h2>

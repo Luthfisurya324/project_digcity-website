@@ -175,86 +175,94 @@ const AdminPanel: React.FC = () => {
 
   const activeTab = getActiveTab()
 
+  // Detect if current route is Blog Editor (new or edit) to enable fullscreen mode
+  const adminBasePath = getAdminBasePath()
+  const isEditorRoute = location.pathname === `${adminBasePath}/news/new` || location.pathname.startsWith(`${adminBasePath}/news/edit/`)
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-secondary-50 via-white to-white">
-      {/* Clean Header */}
-      <header className="bg-white/90 backdrop-blur border-b border-secondary-200 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-4">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-secondary-600 rounded-xl flex items-center justify-center shadow-lg">
-                <Home size={20} className="text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-secondary-900">DIGCITY Admin</h1>
-                <p className="text-sm text-secondary-500">Content Management System</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-3">
-              <div className="hidden md:flex items-center space-x-2 bg-white/70 backdrop-blur rounded-lg px-3 py-2 border border-secondary-200">
-                <div className="w-6 h-6 bg-gradient-to-br from-primary-400 to-secondary-500 rounded-full flex items-center justify-center">
-                  <span className="text-white text-xs font-bold">{user.email.charAt(0).toUpperCase()}</span>
+      {/* Clean Header - hidden on editor routes */}
+      {!isEditorRoute && (
+        <header className="bg-white/90 backdrop-blur border-b border-secondary-200 sticky top-0 z-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center h-16">
+              <div className="flex items-center space-x-4">
+                <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-secondary-600 rounded-xl flex items-center justify-center shadow-lg">
+                  <Home size={20} className="text-white" />
                 </div>
-                <span className="text-sm text-secondary-700">{user.email}</span>
+                <div>
+                  <h1 className="text-xl font-bold text-secondary-900">DIGCITY Admin</h1>
+                  <p className="text-sm text-secondary-500">Content Management System</p>
+                </div>
               </div>
-              <button
-                onClick={async () => {
-                  console.log('🧪 Running Supabase tests...')
-                  await runSupabaseTests()
-                }}
-                className="bg-primary-600 text-white px-3 py-2 rounded-lg hover:bg-primary-700 transition-all duration-200 text-sm font-medium"
-                title="Test Supabase connection"
-              >
-                🧪 Test
-              </button>
-              <button
-                onClick={handleLogout}
-                className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-all duration-200 font-medium"
-              >
-                Logout
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <div className="flex">
-        {/* Clean Sidebar */}
-        <aside className="w-64 bg-white/90 backdrop-blur border-r border-secondary-200 min-h-screen">
-          <div className="p-6">
-            <div className="mb-6">
-              <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center mb-3">
-                <User size={24} className="text-primary-600" />
-              </div>
-              <p className="font-semibold text-secondary-900">Welcome back!</p>
-              <p className="text-sm text-secondary-600">Manage your content</p>
-            </div>
-          </div>
-          <nav className="px-4 pb-6">
-            <div className="space-y-1">
-              {tabs.map((tab) => (
+              <div className="flex items-center space-x-3">
+                <div className="hidden md:flex items-center space-x-2 bg-white/70 backdrop-blur rounded-lg px-3 py-2 border border-secondary-200">
+                  <div className="w-6 h-6 bg-gradient-to-br from-primary-400 to-secondary-500 rounded-full flex items-center justify-center">
+                    <span className="text-white text-xs font-bold">{user.email.charAt(0).toUpperCase()}</span>
+                  </div>
+                  <span className="text-sm text-secondary-700">{user.email}</span>
+                </div>
                 <button
-                  key={tab.id}
-                  onClick={() => handleTabClick(tab.id)}
-                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 ${
-                    activeTab === tab.id
-                      ? 'bg-primary-50 border border-primary-200 text-primary-700 shadow-sm'
-                      : 'text-secondary-600 hover:bg-secondary-50 hover:text-secondary-900'
-                  }`}
+                  onClick={async () => {
+                    console.log('🧪 Running Supabase tests...')
+                    await runSupabaseTests()
+                  }}
+                  className="bg-primary-600 text-white px-3 py-2 rounded-lg hover:bg-primary-700 transition-all duration-200 text-sm font-medium"
+                  title="Test Supabase connection"
                 >
-                  <span className={`flex-shrink-0 ${activeTab === tab.id ? 'text-primary-600' : tab.color}`}>
-                    {tab.icon}
-                  </span>
-                  <span className="font-medium">{tab.name}</span>
+                  🧪 Test
                 </button>
-              ))}
+                <button
+                  onClick={handleLogout}
+                  className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-all duration-200 font-medium"
+                >
+                  Logout
+                </button>
+              </div>
             </div>
-          </nav>
-        </aside>
+          </div>
+        </header>
+      )}
+
+      <div className={isEditorRoute ? '' : 'flex'}>
+        {/* Clean Sidebar - hidden on editor routes */}
+        {!isEditorRoute && (
+          <aside className="w-64 bg-white/90 backdrop-blur border-r border-secondary-200 min-h-screen">
+            <div className="p-6">
+              <div className="mb-6">
+                <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center mb-3">
+                  <User size={24} className="text-primary-600" />
+                </div>
+                <p className="font-semibold text-secondary-900">Welcome back!</p>
+                <p className="text-sm text-secondary-600">Manage your content</p>
+              </div>
+            </div>
+            <nav className="px-4 pb-6">
+              <div className="space-y-1">
+                {tabs.map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => handleTabClick(tab.id)}
+                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-all duration-200 ${
+                      activeTab === tab.id
+                        ? 'bg-primary-50 border border-primary-200 text-primary-700 shadow-sm'
+                        : 'text-secondary-600 hover:bg-secondary-50 hover:text-secondary-900'
+                    }`}
+                  >
+                    <span className={`flex-shrink-0 ${activeTab === tab.id ? 'text-primary-600' : tab.color}`}>
+                      {tab.icon}
+                    </span>
+                    <span className="font-medium">{tab.name}</span>
+                  </button>
+                ))}
+              </div>
+            </nav>
+          </aside>
+        )}
 
         {/* Main Content */}
-        <main className="flex-1 p-6 overflow-y-auto">
-          <div className="max-w-7xl mx-auto">
+        <main className={`flex-1 ${isEditorRoute ? '' : 'p-6 overflow-y-auto'}`}>
+          <div className={isEditorRoute ? '' : 'max-w-7xl mx-auto'}>
             <Routes>
               <Route path="/" element={<AdminDashboard />} />
               <Route path="/events" element={<AdminEvents />} />
