@@ -34,11 +34,21 @@ const AdminNews: React.FC = () => {
   const [showSuccess, setShowSuccess] = useState<string | null>(null)
 
   const categories = [
-    { value: 'DIGIMON', label: 'DIGIMON' },
-    { value: 'Level Up Day', label: 'Level Up Day' },
-    { value: 'SCBD', label: 'SCBD' },
-    { value: 'Workshop', label: 'Workshop' },
-    { value: 'Seminar', label: 'Seminar' },
+    { value: 'business', label: 'Business & Entrepreneurship' },
+    { value: 'technology', label: 'Technology & Innovation' },
+    { value: 'education', label: 'Education & Training' },
+    { value: 'workshop', label: 'Workshop & Skills' },
+    { value: 'seminar', label: 'Seminar & Conference' },
+    { value: 'networking', label: 'Networking & Community' },
+    { value: 'startup', label: 'Startup & Innovation' },
+    { value: 'digital_marketing', label: 'Digital Marketing' },
+    { value: 'finance', label: 'Finance & Investment' },
+    { value: 'healthcare', label: 'Healthcare & Wellness' },
+    { value: 'creative', label: 'Creative & Design' },
+    { value: 'sports', label: 'Sports & Fitness' },
+    { value: 'culture', label: 'Culture & Arts' },
+    { value: 'environment', label: 'Environment & Sustainability' },
+    { value: 'social_impact', label: 'Social Impact & Charity' },
     { value: 'general', label: 'General' }
   ]
 

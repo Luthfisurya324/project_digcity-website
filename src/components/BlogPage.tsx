@@ -80,8 +80,29 @@ const BlogPage: React.FC = () => {
   }, [selectedCategory, blogPosts, postsPerPage]);
 
   // Get unique categories
-  const categories = ['Semua', ...Array.from(new Set(blogPosts.map(post => post.category)))];
+  const categories = ['Semua', ...Array.from(new Set(blogPosts.map(post => post.category)))]
 
+  const formatCategoryName = (category: string): string => {
+    const map: Record<string, string> = {
+      business: 'Business & Entrepreneurship',
+      technology: 'Technology & Innovation',
+      education: 'Education & Training',
+      workshop: 'Workshop & Skills',
+      seminar: 'Seminar & Conference',
+      networking: 'Networking & Community',
+      startup: 'Startup & Innovation',
+      digital_marketing: 'Digital Marketing',
+      finance: 'Finance & Investment',
+      healthcare: 'Healthcare & Wellness',
+      creative: 'Creative & Design',
+      sports: 'Sports & Fitness',
+      culture: 'Culture & Arts',
+      environment: 'Environment & Sustainability',
+      social_impact: 'Social Impact & Charity',
+      general: 'General'
+    }
+    return map[category] || category
+  }
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('id-ID', {
