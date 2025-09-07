@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { supabaseConfig, validateSupabaseConfig } from '../config/supabaseConfig'
+import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js'
 
 // Validasi konfigurasi Supabase
 if (!validateSupabaseConfig()) {
@@ -81,6 +82,37 @@ export const eventAPI = {
     return data as Event[]
   },
 
+  // Get optimized upcoming events with minimal columns and limit
+  async getUpcoming(limit: number = 6, columns: string = 'id,title,description,date,location,image_url,additional_images,category,created_at,updated_at') {
+    // Gunakan presisi hari (YYYY-MM-DD) agar kompatibel dengan kolom DATE maupun TIMESTAMP
+    const todayStr = new Date().toISOString().slice(0, 10); // e.g., 2025-09-07
+
+    // Coba ambil upcoming (tanggal >= hari ini) urut naik
+    const upcomingQuery = supabase
+      .from('events')
+      .select(columns)
+      .gte('date', todayStr)
+      .order('date', { ascending: true })
+      .limit(limit);
+
+    const { data, error } = await upcomingQuery;
+    if (error) throw error;
+
+    // Jika tidak ada upcoming, fallback ke event terbaru agar homepage tidak kosong
+    if (!data || data.length === 0) {
+      const { data: fallback, error: fbError } = await supabase
+        .from('events')
+        .select(columns)
+        .order('date', { ascending: false })
+        .limit(limit);
+
+      if (fbError) throw fbError;
+      return (fallback || []) as Event[];
+    }
+
+    return data as Event[];
+  },
+
   // Get event by ID
   async getById(id: string) {
     const { data, error } = await supabase
@@ -126,6 +158,18 @@ export const eventAPI = {
       .eq('id', id)
     
     if (error) throw error
+  },
+
+  // Subscribe to realtime changes on events table
+  subscribeToChanges(handler: (payload: RealtimePostgresChangesPayload<Record<string, any>>) => void) {
+    const channel = supabase
+      .channel('events-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, handler)
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
   }
 }
 

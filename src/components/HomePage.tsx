@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Lightbulb, RefreshCw, Award, CheckCircle2, Target, Calendar, MessageSquare, Users, Building2, Sparkles, Zap, Globe, TrendingUp } from 'lucide-react';
+import EventCarousel from './EventCarousel';
 
 const HomePage: React.FC = () => {
 
@@ -128,27 +129,12 @@ const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* Events Promotion Section */}
-      <section className="py-12 sm:py-16 bg-gradient-to-r from-primary-600 to-primary-700" aria-labelledby="events-heading">
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
-          <div className="text-center text-white">
-            <Calendar className="mx-auto h-12 w-12 sm:h-16 sm:w-16 mb-3 sm:mb-4 opacity-90" aria-hidden="true" />
-            <h2 id="events-heading" className="text-2xl sm:text-3xl font-bold mb-3 sm:mb-4 leading-tight">Acara & Kegiatan Terbaru</h2>
-            <p className="text-base sm:text-lg md:text-xl mb-6 sm:mb-8 text-primary-100 max-w-3xl mx-auto leading-relaxed px-2 sm:px-0">
-              Jangan lewatkan berbagai workshop, seminar, kompetisi, dan acara networking yang kami selenggarakan. Bergabunglah untuk mengembangkan skill dan memperluas jaringan Anda!
-            </p>
-            <Link 
-              to="/events"
-              className="inline-flex items-center justify-center bg-white text-primary-600 px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-semibold hover:bg-primary-50 transition-colors shadow-lg focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-primary-600 interactive-element min-h-[44px] text-sm sm:text-base"
-              aria-label="Lihat semua acara dan kegiatan DIGCITY"
-            >
-              <span className="hidden xs:inline">Lihat Semua Acara</span>
-              <span className="xs:hidden">Lihat Acara</span>
-              <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
-            </Link>
-          </div>
-        </div>
-      </section>
+      {/* Events Carousel Section */}
+      <EventCarousel 
+        autoPlayInterval={3000}
+        showControls={true}
+        maxEvents={6}
+      />
 
       {/* About Section */}
       <section id="tentang" className="py-16 sm:py-20 bg-white" aria-labelledby="about-heading">

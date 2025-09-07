@@ -2,6 +2,7 @@ import React from 'react'
 import { X, Calendar, MapPin, Tag, Clock } from 'lucide-react'
 import ImageCarousel from './ImageCarousel'
 import type { Event } from '../lib/supabase'
+import '../styles/carousel.css'
 
 interface EventDetailModalProps {
   event: Event
@@ -87,16 +88,17 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
   const isUpcoming = new Date(event.date) > new Date()
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+    <div className="modal-overlay fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
       {/* Close button outside modal */}
       <button
         onClick={onClose}
-        className="absolute top-4 right-4 z-60 w-12 h-12 bg-white hover:bg-gray-100 text-gray-600 rounded-full flex items-center justify-center transition-colors shadow-lg"
+        className="absolute top-4 right-4 z-60 w-12 h-12 bg-white hover:bg-gray-100 text-gray-600 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 shadow-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+        aria-label="Close modal"
       >
         <X size={24} />
       </button>
       
-      <div className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="modal-content bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
         {/* Header */}
         <div className="p-6 border-b border-gray-200">
           <div>

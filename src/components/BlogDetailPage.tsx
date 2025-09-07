@@ -183,7 +183,7 @@ const BlogDetailPage: React.FC = () => {
         </div>
 
         {/* Article Title */}
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-secondary-900 mb-6 leading-tight">
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-secondary-900 mb-6 leading-tight break-words">
           {article.title}
         </h1>
 

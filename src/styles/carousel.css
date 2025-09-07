@@ -1,0 +1,202 @@
+/* Event Carousel Styles */
+.event-carousel {
+  position: relative;
+  overflow: hidden;
+}
+
+.event-carousel-track {
+  display: flex;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.event-carousel-slide {
+  flex: 0 0 100%;
+  width: 100%;
+}
+
+/* Card hover animations */
+.event-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: center;
+}
+
+.event-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.event-card-image {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.event-card:hover .event-card-image {
+  transform: scale(1.1);
+}
+
+/* Navigation button animations */
+.carousel-nav-button {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(8px);
+}
+
+.carousel-nav-button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+}
+
+.carousel-nav-button:active {
+  transform: scale(0.95);
+}
+
+/* Dot indicator animations */
+.carousel-dot {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.carousel-dot:hover {
+  transform: scale(1.2);
+}
+
+.carousel-dot.active {
+  transform: scale(1.3);
+}
+
+/* Smooth fade animations for modal */
+.modal-overlay {
+  animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modal-content {
+  animation: slideInUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Loading animation */
+.carousel-loading {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .event-card:hover {
+    transform: translateY(-2px) scale(1.01);
+  }
+  
+  .carousel-nav-button {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .carousel-nav-button:hover {
+    transform: scale(1.05);
+  }
+  
+  .carousel-dot {
+    width: 10px;
+    height: 10px;
+  }
+  
+  .carousel-dot.active {
+    transform: scale(1.2);
+  }
+}
+
+@media (max-width: 480px) {
+  .event-card {
+    margin: 0 8px;
+  }
+  
+  .carousel-nav-button {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .carousel-dot {
+    width: 8px;
+    height: 8px;
+  }
+  
+  .event-card:hover {
+    transform: translateY(-1px);
+  }
+}
+
+/* Text truncation utilities */
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Accessibility improvements */
+.carousel-nav-button:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+.carousel-dot:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .event-carousel-track {
+    transition: none;
+  }
+  
+  .event-card,
+  .event-card-image,
+  .carousel-nav-button,
+  .carousel-dot {
+    transition: none;
+  }
+  
+  .modal-overlay,
+  .modal-content {
+    animation: none;
+  }
+}

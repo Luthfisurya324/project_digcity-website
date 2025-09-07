@@ -1,6 +1,6 @@
 /* Blog Content Styling */
 .blog-content {
-  @apply text-secondary-700 leading-relaxed;
+  @apply text-black leading-relaxed;
 }
 
 /* Placeholder for contenteditable editor */

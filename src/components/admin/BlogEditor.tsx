@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
-import { newsAPI } from '../../lib/supabase'
+import { newsAPI, authAPI, supabase } from '../../lib/supabase'
 import type { News } from '../../lib/supabase'
 import { 
   ArrowLeft, 
@@ -65,9 +65,13 @@ const BlogEditor: React.FC = () => {
   const [readingTime, setReadingTime] = useState(0)
   const [relatedArticles, setRelatedArticles] = useState<News[]>([])
   const contentRef = useRef<HTMLDivElement>(null)
-  const [showImageUpload, setShowImageUpload] = useState(false)
+  const [showHeroImageUpload, setShowHeroImageUpload] = useState(false)
+  const [showContentImageUpload, setShowContentImageUpload] = useState(false)
   const [selectedImageEl, setSelectedImageEl] = useState<HTMLImageElement | null>(null)
   const [textColor, setTextColor] = useState<string>('#111827')
+  
+  // Hydration flag to control when we should sync DOM editor content from state
+  const [editorHydrated, setEditorHydrated] = useState(false)
   
   const [formData, setFormData] = useState<BlogFormData>({
     title: '',
@@ -107,6 +111,8 @@ const BlogEditor: React.FC = () => {
       loadNews()
     } else {
       console.log('🔍 BlogEditor: Creating new news, id:', id)
+      // ensure fresh editor for new item
+      setEditorHydrated(false)
     }
   }, [id])
 
@@ -134,6 +140,21 @@ const BlogEditor: React.FC = () => {
     loadRelated()
   }, [id, formData.category, formData.tags])
 
+  // Sinkronisasi satu kali: isi editor dengan formData.content saat masuk edit mode
+  useEffect(() => {
+    if (!previewMode && contentRef.current && !editorHydrated) {
+      contentRef.current.innerHTML = formData.content || ''
+      setEditorHydrated(true)
+    }
+  }, [previewMode, editorHydrated, formData.content])
+
+  // Ketika toggle dari preview -> edit, izinkan re-hydration sekali
+  useEffect(() => {
+    if (!previewMode) {
+      setEditorHydrated(false)
+    }
+  }, [previewMode])
+
   const loadNews = async () => {
     console.log('🔍 BlogEditor: loadNews called for id:', id)
     setLoading(true)
@@ -151,6 +172,8 @@ const BlogEditor: React.FC = () => {
           category: news.category || 'general',
           tags: news.tags || []
         })
+        // mark editor to rehydrate once in edit mode
+        setEditorHydrated(false)
         console.log('🔍 BlogEditor: Form data updated')
       }
     } catch (error) {
@@ -199,31 +222,56 @@ const BlogEditor: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!validateForm()) {
       return
     }
-    
-    setSaving(true)
-    setErrors({})
 
     try {
+      // Preflight: ensure session exists and user is admin
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+      if (sessionError || !session) {
+        alert('Sesi login Anda sudah berakhir. Silakan login ulang sebagai admin untuk menyimpan artikel.')
+        navigate(`${base}`)
+        return
+      }
+
+      // Optionally refresh soon-to-expire session
+      const now = Math.floor(Date.now() / 1000)
+      if ((session as any).expires_at && (session as any).expires_at < now + 30) {
+        try {
+          await supabase.auth.refreshSession()
+        } catch (e) {
+          console.warn('Gagal refresh session, melanjutkan dengan session saat ini.')
+        }
+      }
+
+      const isAdmin = await authAPI.isAdmin()
+      if (!isAdmin) {
+        alert('Akses ditolak. Hanya admin yang dapat membuat atau mengubah artikel.')
+        return
+      }
+
+      setSaving(true)
+      setErrors({})
+
       if (id && id !== 'new') {
         await newsAPI.update(id, formData)
-        setShowSuccess(true)
-        setTimeout(() => {
-          navigate(`${base}/news`)
-        }, 1500)
       } else {
         await newsAPI.create(formData)
-        setShowSuccess(true)
-        setTimeout(() => {
-          navigate(`${base}/news`)
-        }, 1500)
       }
-    } catch (error) {
+
+      setShowSuccess(true)
+      setTimeout(() => {
+        navigate(`${base}/news`)
+      }, 1500)
+    } catch (error: any) {
       console.error('Error saving news:', error)
-      alert('Gagal menyimpan artikel. Silakan coba lagi.')
+      if (error?.code === '42501' || error?.status === 403) {
+        alert('Gagal menyimpan: ditolak oleh kebijakan keamanan (RLS). Pastikan Anda login sebagai admin dan coba login ulang.')
+      } else {
+        alert('Gagal menyimpan artikel. Silakan coba lagi.')
+      }
     } finally {
       setSaving(false)
     }
@@ -263,14 +311,14 @@ const BlogEditor: React.FC = () => {
       selection.removeAllRanges()
       selection.addRange(range)
     }
-    setFormData({ ...formData, content: contentRef.current.innerHTML })
+    setFormData(prev => ({ ...prev, content: contentRef.current!.innerHTML }))
   }
 
   const exec = (command: string, value?: string) => {
     if (!contentRef.current) return
     contentRef.current.focus()
     document.execCommand(command, false, value)
-    setFormData({ ...formData, content: contentRef.current.innerHTML })
+    setFormData(prev => ({ ...prev, content: contentRef.current!.innerHTML }))
   }
 
   const applyHeading = (level: 1 | 2 | 3) => {
@@ -298,7 +346,7 @@ const BlogEditor: React.FC = () => {
 
   const onContentInput = () => {
     if (!contentRef.current) return
-    setFormData({ ...formData, content: contentRef.current.innerHTML })
+    setFormData(prev => ({ ...prev, content: contentRef.current!.innerHTML }))
     if (errors.content) setErrors({ ...errors, content: undefined })
   }
 
@@ -443,7 +491,7 @@ const BlogEditor: React.FC = () => {
 
         {/* Title */}
         {previewMode ? (
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-secondary-900 mb-6 leading-tight">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-secondary-900 mb-6 leading-tight break-words">
             {formData.title || 'Judul Artikel'}
           </h1>
         ) : (
@@ -530,7 +578,7 @@ const BlogEditor: React.FC = () => {
               />
               <button
                 type="button"
-                onClick={() => setShowImageUpload((s) => !s)}
+                onClick={() => setShowHeroImageUpload((s) => { const next = !s; if (next) setShowContentImageUpload(false); return next; })}
                 className="inline-flex items-center gap-2 px-4 py-2 bg-secondary-100 text-secondary-700 rounded-lg hover:bg-secondary-200"
                 title="Upload Image"
               >
@@ -539,16 +587,16 @@ const BlogEditor: React.FC = () => {
               </button>
             </div>
           )}
-          {!previewMode && showImageUpload && (
+          {!previewMode && showHeroImageUpload && (
             <div className="mt-4">
               <ImageUpload
                 folderPath="news/hero"
                 bucketName="events-images"
                 onImageUploaded={(url) => {
                   setFormData({ ...formData, image_url: url })
-                  setShowImageUpload(false)
+                  setShowHeroImageUpload(false)
                 }}
-                onCancel={() => setShowImageUpload(false)}
+                onCancel={() => setShowHeroImageUpload(false)}
               />
             </div>
           )}
@@ -619,23 +667,27 @@ const BlogEditor: React.FC = () => {
             <button className="p-2 hover:bg-secondary-100 rounded" onClick={insertImageByUrl} title="Sisipkan Gambar via URL">
               <ImageIcon className="w-4 h-4" />
             </button>
-            <button className="px-3 py-2 bg-primary-600 text-white rounded hover:bg-primary-700" onClick={() => setShowImageUpload(true)} title="Upload & Sisipkan Gambar">
+            <button
+              className="px-3 py-2 bg-primary-600 text-white rounded hover:bg-primary-700"
+              onClick={() => { setShowContentImageUpload(true); setShowHeroImageUpload(false); }}
+              title="Upload & Sisipkan Gambar"
+            >
               Upload Gambar
             </button>
           </div>
         )}
 
         {/* Inline ImageUpload for content images */}
-        {!previewMode && showImageUpload && (
+        {!previewMode && showContentImageUpload && (
           <div className="mb-4">
             <ImageUpload
               folderPath="news/content"
               bucketName="events-images"
               onImageUploaded={(url) => {
-                setShowImageUpload(false)
+                setShowContentImageUpload(false)
                 insertContent(`<img src="${url}" alt="image" />`)
               }}
-              onCancel={() => setShowImageUpload(false)}
+              onCancel={() => setShowContentImageUpload(false)}
             />
           </div>
         )}
@@ -654,7 +706,6 @@ const BlogEditor: React.FC = () => {
               onInput={onContentInput}
               onClick={onEditorClick}
               onBlur={onEditorBlur}
-              dangerouslySetInnerHTML={{ __html: formData.content || '' }}
             />
           )}
           {errors.content && (

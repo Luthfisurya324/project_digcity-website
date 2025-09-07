@@ -250,7 +250,7 @@ const BlogPage: React.FC = () => {
                     </span>
                     <span className="text-xs sm:text-sm text-secondary-500">{formatDate(post.published_date)}</span>
                   </div>
-                  <h2 className="text-lg sm:text-xl font-bold text-secondary-900 mb-3 line-clamp-2">
+                  <h2 className="text-lg sm:text-xl font-bold text-secondary-900 mb-3 line-clamp-2 break-words">
                     {post.title}
                   </h2>
                   <p className="text-sm sm:text-base text-secondary-600 mb-4 line-clamp-3">
