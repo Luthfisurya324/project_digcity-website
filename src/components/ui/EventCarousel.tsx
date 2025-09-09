@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { ChevronLeft, ChevronRight, Calendar, MapPin, ArrowRight } from 'lucide-react';
-import { eventAPI, type Event } from '../lib/supabase';
+import { eventAPI, type Event } from '../../lib/supabase';
 import EventDetailModal from './EventDetailModal';
-import '../styles/carousel.css';
+import '../../styles/carousel.css';
 
 interface EventCarouselProps {
   autoPlayInterval?: number;

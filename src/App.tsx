@@ -1,28 +1,28 @@
 import React, { useEffect } from 'react'
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
 import { usePerformance } from './hooks/usePerformance'
-import { preloadCriticalPages } from './components/LazyComponents'
+import { preloadCriticalPages } from './components/common/LazyComponents'
 import { registerServiceWorker } from './utils/serviceWorker'
 import { initFormatDetection } from './utils/formatDetection'
 import { cacheManager } from './utils/cacheManager'
 import { shouldRedirectToLinktree, shouldRedirectToAdmin } from './utils/domainDetection'
-import Header from './components/Header'
-import Footer from './components/Footer'
-import HomePage from './components/HomePage'
-import PerformanceMonitor from './components/PerformanceMonitor'
-import DebugInfo from './components/DebugInfo'
+import Header from './components/layout/Header'
+import Footer from './components/layout/Footer'
+import HomePage from './pages/HomePage'
+import PerformanceMonitor from './components/common/PerformanceMonitor'
+import DebugInfo from './components/common/DebugInfo'
 
 // Lazy load components
-const LazyBlogPage = React.lazy(() => import('./components/BlogPage'))
-const LazyBlogDetailPage = React.lazy(() => import('./components/BlogDetailPage'))
-const LazyEventsPage = React.lazy(() => import('./components/EventsPage'))
-const LazySejarahPage = React.lazy(() => import('./components/SejarahPage'))
-const LazyLogoPage = React.lazy(() => import('./components/LogoPage'))
-const LazyVisiMisiPage = React.lazy(() => import('./components/VisiMisiPage'))
-const LazyStrukturOrganisasiPage = React.lazy(() => import('./components/StrukturOrganisasiPage'))
-const LazyGrandDesignPage = React.lazy(() => import('./components/GrandDesignPage'))
-const LazyGaleriPage = React.lazy(() => import('./components/GaleriPage'))
-const LazyKontakPage = React.lazy(() => import('./components/KontakPage'))
+const LazyBlogPage = React.lazy(() => import('./pages/blog/BlogPage'))
+const LazyBlogDetailPage = React.lazy(() => import('./pages/blog/BlogDetailPage'))
+const LazyEventsPage = React.lazy(() => import('./pages/events/EventsPage'))
+const LazySejarahPage = React.lazy(() => import('./pages/about/SejarahPage'))
+const LazyLogoPage = React.lazy(() => import('./pages/about/LogoPage'))
+const LazyVisiMisiPage = React.lazy(() => import('./pages/about/VisiMisiPage'))
+const LazyStrukturOrganisasiPage = React.lazy(() => import('./pages/about/StrukturOrganisasiPage'))
+const LazyGrandDesignPage = React.lazy(() => import('./pages/about/GrandDesignPage'))
+const LazyGaleriPage = React.lazy(() => import('./pages/gallery/GaleriPage'))
+const LazyKontakPage = React.lazy(() => import('./pages/contact/KontakPage'))
 const LazyAdminPanel = React.lazy(() => import('./pages/AdminPanel'))
 const LazyLinktreePage = React.lazy(() => import('./pages/LinktreePage'))
 

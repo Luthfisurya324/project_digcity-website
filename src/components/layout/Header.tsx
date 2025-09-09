@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ChevronDown, Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { OptimizedLogo } from './OptimizedImage';
+import { OptimizedLogo } from '../ui/OptimizedImage';
 
 const Header: React.FC = () => {
   const location = useLocation();

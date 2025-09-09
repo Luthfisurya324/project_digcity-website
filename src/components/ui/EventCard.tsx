@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Calendar, MapPin, Clock, Users, ArrowRight, Sparkles, Zap } from 'lucide-react';
-import { eventAPI, type Event } from '../lib/supabase';
+import { eventAPI, type Event } from '../../lib/supabase';
 import EventDetailModal from './EventDetailModal';
-import '../styles/eventCard.css';
+import '../../styles/eventCard.css';
 
 interface EventCardProps {
   maxEvents?: number;
@@ -425,7 +425,7 @@ const EventCard: React.FC<EventCardProps> = ({
       {events.length >= maxEvents && (
         <div className="text-center mt-8 sm:mt-12">
           <a
-            href="/events"
+            href="/#/events"
             className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary-600 to-secondary-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 group"
           >
             <Users className="w-5 h-5" />

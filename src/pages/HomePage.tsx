@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Lightbulb, RefreshCw, Award, CheckCircle2, Target, Calendar, MessageSquare, Users, Building2, Sparkles, Zap, Globe, TrendingUp } from 'lucide-react';
-import EventCardCarousel from './EventCardCarousel';
+import EventCardCarousel from '../components/ui/EventCardCarousel';
 
 const HomePage: React.FC = () => {
 

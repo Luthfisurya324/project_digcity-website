@@ -11,7 +11,7 @@ import BlogEditor from '../components/admin/BlogEditor'
 import AdminGallery from '../components/admin/AdminGallery'
 import AdminNewsletter from '../components/admin/AdminNewsletter'
 import AdminLinktree from '../components/admin/AdminLinktree'
-import CacheControl from '../components/CacheControl'
+import CacheControl from '../components/common/CacheControl'
 import { 
   BarChart3, 
   Calendar, 
