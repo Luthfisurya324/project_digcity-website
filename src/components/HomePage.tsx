@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Lightbulb, RefreshCw, Award, CheckCircle2, Target, Calendar, MessageSquare, Users, Building2, Sparkles, Zap, Globe, TrendingUp } from 'lucide-react';
-import EventCarousel from './EventCarousel';
+import EventCard from './EventCard';
 
 const HomePage: React.FC = () => {
 
@@ -129,12 +129,17 @@ const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* Events Carousel Section */}
-      <EventCarousel 
-        autoPlayInterval={3000}
-        showControls={true}
-        maxEvents={6}
-      />
+      {/* Events Section */}
+      <section className="py-16 sm:py-20 bg-gradient-to-b from-white to-secondary-50/30">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+          <EventCard 
+            maxEvents={6}
+            showTitle={true}
+            autoRefresh={true}
+            className=""
+          />
+        </div>
+      </section>
 
       {/* About Section */}
       <section id="tentang" className="py-16 sm:py-20 bg-white" aria-labelledby="about-heading">
