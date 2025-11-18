@@ -1,5 +1,7 @@
 /* Blog Content Styling */
 .blog-content {
+  --blog-font-scale: 1;
+  font-size: calc(1rem * var(--blog-font-scale));
   @apply text-black leading-relaxed;
 }
 
@@ -19,31 +21,44 @@
 /* Typography */
 .blog-content h1 {
   @apply text-3xl font-bold text-secondary-900 mb-6 mt-8;
+  font-size: calc(1.875rem * var(--blog-font-scale));
+  line-height: calc(2.25rem * var(--blog-font-scale));
 }
 
 .blog-content h2 {
   @apply text-2xl font-bold text-secondary-900 mb-4 mt-6;
+  font-size: calc(1.5rem * var(--blog-font-scale));
+  line-height: calc(2rem * var(--blog-font-scale));
 }
 
 .blog-content h3 {
   @apply text-xl font-bold text-secondary-900 mb-3 mt-5;
+  font-size: calc(1.25rem * var(--blog-font-scale));
+  line-height: calc(1.75rem * var(--blog-font-scale));
 }
 
 .blog-content h4 {
   @apply text-lg font-semibold text-secondary-900 mb-2 mt-4;
+  font-size: calc(1.125rem * var(--blog-font-scale));
+  line-height: calc(1.75rem * var(--blog-font-scale));
 }
 
 .blog-content h5 {
   @apply text-base font-semibold text-secondary-900 mb-2 mt-3;
+  font-size: calc(1rem * var(--blog-font-scale));
+  line-height: calc(1.5rem * var(--blog-font-scale));
 }
 
 .blog-content h6 {
   @apply text-sm font-semibold text-secondary-900 mb-2 mt-3;
+  font-size: calc(0.875rem * var(--blog-font-scale));
+  line-height: calc(1.25rem * var(--blog-font-scale));
 }
 
 /* Paragraphs */
 .blog-content p {
   @apply mb-4 text-base leading-relaxed;
+  font-size: calc(1rem * var(--blog-font-scale));
 }
 
 .blog-content p:last-child {
@@ -93,10 +108,13 @@
 /* Code */
 .blog-content code {
   @apply bg-secondary-100 text-secondary-800 px-2 py-1 rounded text-sm font-mono;
+  font-size: calc(0.875rem * var(--blog-font-scale));
 }
 
 .blog-content pre {
   @apply bg-secondary-900 text-secondary-100 p-4 rounded-lg overflow-x-auto mb-4;
+  font-size: calc(0.95rem * var(--blog-font-scale));
+  line-height: calc(1.4rem * var(--blog-font-scale));
 }
 
 .blog-content pre code {
@@ -136,6 +154,7 @@
 
 .blog-content figcaption {
   @apply text-center text-sm text-secondary-600 mt-2 italic;
+  font-size: calc(0.875rem * var(--blog-font-scale));
 }
 
 /* Horizontal Rule */
@@ -163,6 +182,7 @@
 /* Small text */
 .blog-content small {
   @apply text-sm text-secondary-600;
+  font-size: calc(0.875rem * var(--blog-font-scale));
 }
 
 /* Mark */
@@ -173,10 +193,12 @@
 /* Subscript and Superscript */
 .blog-content sub {
   @apply text-xs;
+  font-size: calc(0.75rem * var(--blog-font-scale));
 }
 
 .blog-content sup {
   @apply text-xs;
+  font-size: calc(0.75rem * var(--blog-font-scale));
 }
 
 /* Definition lists */
@@ -195,19 +217,22 @@
 /* Responsive adjustments */
 @media (max-width: 640px) {
   .blog-content h1 {
-    @apply text-2xl;
+    font-size: calc(1.5rem * var(--blog-font-scale));
+    line-height: calc(2rem * var(--blog-font-scale));
   }
   
   .blog-content h2 {
-    @apply text-xl;
+    font-size: calc(1.25rem * var(--blog-font-scale));
+    line-height: calc(1.75rem * var(--blog-font-scale));
   }
   
   .blog-content h3 {
-    @apply text-lg;
+    font-size: calc(1.125rem * var(--blog-font-scale));
+    line-height: calc(1.5rem * var(--blog-font-scale));
   }
   
   .blog-content p {
-    @apply text-sm;
+    font-size: calc(0.875rem * var(--blog-font-scale));
   }
   
   .blog-content ul,
@@ -220,7 +245,9 @@
   }
   
   .blog-content pre {
-    @apply p-3 text-xs;
+    @apply p-3;
+    font-size: calc(0.75rem * var(--blog-font-scale));
+    line-height: calc(1rem * var(--blog-font-scale));
   }
 }
 

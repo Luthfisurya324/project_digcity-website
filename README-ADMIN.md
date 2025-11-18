@@ -61,6 +61,33 @@ Proyek ini sudah terhubung dengan Supabase project:
 - Tags untuk better organization
 - Event date tracking
 
+### 6. LinkTree Management
+- CRUD lengkap untuk LinkTree (profil, links, social media, contact)
+- Split-screen editor dengan live preview (mobile & desktop)
+- Autosave setiap 30 detik saat mengedit profil
+- Reset konten LinkTree dengan konfirmasi
+- Validasi field wajib dan format URL
+
+#### Cara Menggunakan
+- Buka tab `Linktree` di Admin Panel
+- Panel kiri: editor untuk profil, links, social, contact
+- Panel kanan: live preview yang update real-time sesuai perubahan
+- Toggle `Mobile/Desktop` untuk melihat tampilan responsif
+- Tombol `Reset Konten` untuk membersihkan semua data LinkTree (gunakan hati-hati)
+- Tombol `Upload Avatar` untuk mengganti foto profil (bucket `admin-images/linktree`)
+
+#### Struktur Database
+- `linktree` (utama, satu record aktif)
+- `linktree_links` (daftar links)
+- `linktree_social_links` (social media)
+- `linktree_contact_info` (kontak)
+
+#### Best Practices
+- Pastikan URL valid (`http/https`) sebelum menyimpan
+- Gunakan deskripsi singkat dan jelas
+- Jaga urutan links dengan `order_index`
+- Gunakan `is_active` untuk hide/show item tanpa menghapus
+
 ## Accessing Admin Panel
 
 ### Development

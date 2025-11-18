@@ -4,10 +4,20 @@
   "devCommand": "npm run dev",
   "installCommand": "npm install",
   "framework": "vite",
-  "cleanUrls": true,
   "trailingSlash": false,
 
   "rewrites": [
+    {
+      "source": "/blog/:slug",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(facebookexternalhit|WhatsApp|TelegramBot|twitterbot|LinkedInBot|Slackbot|Discordbot|googlebot|bingbot).*"
+        }
+      ],
+      "destination": "/api/blog-og?slug=:slug"
+    },
     {
       "source": "/(.*)",
       "destination": "/index.html"

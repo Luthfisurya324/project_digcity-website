@@ -62,6 +62,6 @@ Semua route admin menggunakan nested routing dengan React Router:
 
 Untuk mengakses admin panel:
 
-- **Local Development**: `http://localhost:5173/#/admin`
+- **Local Development**: `http://localhost:5173/admin`
 - **Production**: `https://yourdomain.com/admin`
 - **Subdomain**: `https://admin.yourdomain.com`

@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react'
-import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
-import { usePerformance } from './hooks/usePerformance'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import { preloadCriticalPages } from './components/common/LazyComponents'
 import { registerServiceWorker } from './utils/serviceWorker'
 import { initFormatDetection } from './utils/formatDetection'
@@ -9,8 +8,7 @@ import { shouldRedirectToLinktree, shouldRedirectToAdmin } from './utils/domainD
 import Header from './components/layout/Header'
 import Footer from './components/layout/Footer'
 import HomePage from './pages/HomePage'
-import PerformanceMonitor from './components/common/PerformanceMonitor'
-import DebugInfo from './components/common/DebugInfo'
+import { NotificationProvider } from './components/common/NotificationCenter'
 
 // Lazy load components
 const LazyBlogPage = React.lazy(() => import('./pages/blog/BlogPage'))
@@ -27,11 +25,6 @@ const LazyAdminPanel = React.lazy(() => import('./pages/AdminPanel'))
 const LazyLinktreePage = React.lazy(() => import('./pages/LinktreePage'))
 
 function App() {
-  // Initialize performance monitoring
-  usePerformance()
-  const navigate = useNavigate()
-  const location = useLocation()
-
          // Check for subdomain redirect
          useEffect(() => {
            if (shouldRedirectToLinktree()) {
@@ -91,16 +84,14 @@ function App() {
   )
 
            return (
+           <NotificationProvider>
            <div className={`min-h-screen ${
              isLinktreeSubdomain ? 'w-full' : 
              isAdminSubdomain ? 'w-full' : 
              'bg-white'
            }`}>
            {/* Performance Monitoring (Development Only) */}
-           <PerformanceMonitor enabled={import.meta.env.DEV} />
-           
-           {/* Debug Info (Development Only) */}
-           <DebugInfo enabled={import.meta.env.DEV} />
+           {/* Debug Info removed per request */}
            
            {/* Conditional rendering untuk subdomain linktree dan admin */}
            {isLinktreeSubdomain ? (
@@ -135,6 +126,7 @@ function App() {
         </Routes>
       )}
     </div>
+    </NotificationProvider>
   )
 }
 

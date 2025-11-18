@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Newspaper } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { newsAPI, newsletterAPI, type News } from '../../lib/supabase';
+import { formatContentCategory } from '../../utils/categoryLabels';
 
 const BlogPage: React.FC = () => {
   const [blogPosts, setBlogPosts] = useState<News[]>([]);
@@ -80,29 +81,15 @@ const BlogPage: React.FC = () => {
   }, [selectedCategory, blogPosts, postsPerPage]);
 
   // Get unique categories
-  const categories = ['Semua', ...Array.from(new Set(blogPosts.map(post => post.category)))]
+  const uniqueCategories = Array.from(
+    new Set(
+      blogPosts
+        .map((post) => post.category)
+        .filter((category): category is string => Boolean(category))
+    )
+  )
+  const categories = ['Semua', ...uniqueCategories]
 
-  const formatCategoryName = (category: string): string => {
-    const map: Record<string, string> = {
-      business: 'Business & Entrepreneurship',
-      technology: 'Technology & Innovation',
-      education: 'Education & Training',
-      workshop: 'Workshop & Skills',
-      seminar: 'Seminar & Conference',
-      networking: 'Networking & Community',
-      startup: 'Startup & Innovation',
-      digital_marketing: 'Digital Marketing',
-      finance: 'Finance & Investment',
-      healthcare: 'Healthcare & Wellness',
-      creative: 'Creative & Design',
-      sports: 'Sports & Fitness',
-      culture: 'Culture & Arts',
-      environment: 'Environment & Sustainability',
-      social_impact: 'Social Impact & Charity',
-      general: 'General'
-    }
-    return map[category] || category
-  }
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('id-ID', {
@@ -222,7 +209,7 @@ const BlogPage: React.FC = () => {
                     : 'bg-white text-secondary-700 hover:bg-primary-600 hover:text-white'
                 }`}
               >
-                {category}
+                {formatContentCategory(category)}
               </button>
             ))}
           </div>
@@ -246,7 +233,7 @@ const BlogPage: React.FC = () => {
                 <div className="p-4 sm:p-6">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 gap-2">
                     <span className="inline-block bg-primary-100 text-primary-600 text-xs px-3 py-1 rounded-full font-medium w-fit">
-                      {post.category}
+                      {formatContentCategory(post.category)}
                     </span>
                     <span className="text-xs sm:text-sm text-secondary-500">{formatDate(post.published_date)}</span>
                   </div>

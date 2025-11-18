@@ -4,10 +4,6 @@ import SocialShare from '../SocialShare';
 
 // Mock navigator.share
 const mockNavigatorShare = jest.fn();
-Object.defineProperty(navigator, 'share', {
-  value: mockNavigatorShare,
-  writable: true
-});
 
 // Mock navigator.clipboard
 const mockClipboardWriteText = jest.fn();
@@ -33,6 +29,10 @@ describe('SocialShare', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    Object.defineProperty(navigator, 'share', {
+      value: mockNavigatorShare,
+      writable: true
+    });
     mockNavigatorShare.mockResolvedValue(undefined);
     mockClipboardWriteText.mockResolvedValue(undefined);
     mockWindowOpen.mockReturnValue(null);
@@ -90,6 +90,18 @@ describe('SocialShare', () => {
     });
   });
 
+  it('calls onShare when native share succeeds', async () => {
+    const handleShare = jest.fn();
+    render(<SocialShare {...defaultProps} onShare={handleShare} />);
+
+    const shareButton = screen.getByText('Bagikan');
+    fireEvent.click(shareButton);
+
+    await waitFor(() => {
+      expect(handleShare).toHaveBeenCalled();
+    });
+  });
+
   it('renders all social media platforms', () => {
     render(<SocialShare {...defaultProps} />);
     
@@ -118,6 +130,25 @@ describe('SocialShare', () => {
         '_blank',
         'width=600,height=400,scrollbars=yes,resizable=yes'
       );
+    });
+  });
+
+  it('calls onShare when copy link button is clicked', async () => {
+    Object.defineProperty(navigator, 'share', {
+      value: undefined,
+      writable: true
+    });
+    const handleShare = jest.fn();
+    render(<SocialShare {...defaultProps} onShare={handleShare} />);
+
+    fireEvent.click(screen.getByText('Bagikan'));
+    await waitFor(() => screen.getByText('Bagikan Artikel'));
+
+    const copyButton = screen.getByText('Salin Link');
+    fireEvent.click(copyButton);
+
+    await waitFor(() => {
+      expect(handleShare).toHaveBeenCalled();
     });
   });
 

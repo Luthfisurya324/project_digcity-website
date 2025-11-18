@@ -1,9 +1,78 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Lightbulb, RefreshCw, Award, CheckCircle2, Target, Calendar, MessageSquare, Users, Building2, Sparkles, Zap, Globe, TrendingUp } from 'lucide-react';
+import { ArrowRight, Lightbulb, RefreshCw, Award, CheckCircle2, Target, Calendar, MessageSquare, Users, Building2, Newspaper } from 'lucide-react';
 import EventCardCarousel from '../components/ui/EventCardCarousel';
+import { newsAPI, galleryAPI, type News, type Gallery } from '../lib/supabase';
+import { formatContentCategory } from '../utils/categoryLabels';
 
 const HomePage: React.FC = () => {
+  const [featuredNews, setFeaturedNews] = useState<News[]>([])
+  const [loadingHighlights, setLoadingHighlights] = useState(true)
+  const [heroPhotos, setHeroPhotos] = useState<string[]>([])
+  const [heroIndex, setHeroIndex] = useState(0)
+
+  useEffect(() => {
+    let isMounted = true
+    const loadHighlights = async () => {
+      try {
+        setLoadingHighlights(true)
+        const [newsData, galleryData] = await Promise.all([
+          newsAPI.getAll(),
+          galleryAPI.getAll()
+        ])
+        if (!isMounted) return
+        setFeaturedNews((newsData || []).slice(0, 4))
+        const galleryImages = (galleryData || [])
+          .map((item: Gallery) => item.image_url)
+          .filter((url): url is string => Boolean(url))
+        setHeroPhotos(galleryImages.slice(0, 12))
+      } catch (error) {
+        console.error('Failed to load homepage highlights:', error)
+      } finally {
+        if (isMounted) {
+          setLoadingHighlights(false)
+        }
+      }
+    }
+    loadHighlights()
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  useEffect(() => {
+    if (heroPhotos.length === 0) return
+    const timer = setInterval(() => {
+      setHeroIndex((prev) => (prev + 1) % heroPhotos.length)
+    }, 3500)
+    return () => clearInterval(timer)
+  }, [heroPhotos])
+
+  const heroCollageImages = useMemo(() => {
+    if (heroPhotos.length === 0) return []
+    return [0, 1, 2].map(
+      (offset) => heroPhotos[(heroIndex + offset) % heroPhotos.length]
+    )
+  }, [heroPhotos, heroIndex])
+
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return 'Tanggal menyusul'
+    try {
+      return new Date(dateString).toLocaleDateString('id-ID', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      })
+    } catch {
+      return dateString
+    }
+  }
+
+  const slugify = (text: string) =>
+    (text || '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '')
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-secondary-50 via-white to-white">
@@ -77,55 +146,149 @@ const HomePage: React.FC = () => {
               </div>
 
               <div className="relative flex items-center justify-center order-1 lg:order-2 mb-6 lg:mb-0">
-                {/* Hidden on mobile, visible on sm and up */}
                 <div className="hidden sm:block relative w-full max-w-sm sm:max-w-md lg:max-w-lg">
-                  {/* Modern visual elements instead of image - mobile optimized */}
-                  <div className="relative w-full aspect-square max-w-sm sm:max-w-md lg:max-w-lg">
-                    {/* Main circular container */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary-100 via-secondary-100 to-primary-200 rounded-full shadow-xl sm:shadow-2xl flex items-center justify-center hover:shadow-3xl transition-shadow duration-300">
-                      {/* Inner content - simplified and eye-catching */}
-                      <div className="text-center p-4 sm:p-6 lg:p-8">
-                        <div className="w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 bg-gradient-to-br from-primary-500 to-secondary-600 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-5 shadow-lg hover:scale-105 transition-transform duration-200">
-                          <Building2 className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 text-white" />
+                  <div className="relative w-full aspect-square">
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary-50 via-secondary-50 to-primary-100 rounded-[36px] shadow-2xl" />
+                    <div className="relative w-full h-full">
+                      {heroCollageImages.length > 0 ? (
+                        <>
+                          <div className="absolute top-6 left-6 sm:top-10 sm:left-10 w-[45%] h-[45%] rounded-[24px] overflow-hidden border-4 border-white shadow-xl rotate-[-4deg] bg-secondary-100">
+                            <div
+                              className="w-full h-full bg-cover bg-center transition-all duration-700"
+                              style={{ backgroundImage: `url(${heroCollageImages[0]})` }}
+                              aria-label="Dokumentasi kegiatan DIGCITY"
+                            />
+                          </div>
+                          <div className="absolute bottom-8 right-6 sm:bottom-12 sm:right-10 w-[46%] h-[46%] rounded-[28px] overflow-hidden border-4 border-white shadow-xl rotate-3 bg-secondary-100">
+                            <div
+                              className="w-full h-full bg-cover bg-center transition-all duration-700"
+                              style={{ backgroundImage: `url(${heroCollageImages[1]})` }}
+                              aria-label="Kegiatan mahasiswa DIGCITY"
+                            />
+                          </div>
+                          <div className="absolute top-1/3 right-12 sm:right-16 w-[38%] h-[38%] rounded-[22px] overflow-hidden border-4 border-white shadow-xl rotate-6 bg-secondary-100">
+                            <div
+                              className="w-full h-full bg-cover bg-center transition-all duration-700"
+                              style={{ backgroundImage: `url(${heroCollageImages[2]})` }}
+                              aria-label="Dokumentasi komunitas"
+                            />
+                          </div>
+                        </>
+                      ) : (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center text-secondary-500">
+                          <Building2 className="w-16 h-16 text-secondary-300 mb-4" />
+                          <p className="text-sm">Dokumentasi akan tampil di sini</p>
                         </div>
-                        <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-secondary-800 mb-2">DIGCITY</h3>
-                        <div className="w-16 h-1 bg-gradient-to-r from-primary-400 to-secondary-500 rounded-full mx-auto"></div>
+                      )}
+                      <div className="absolute -bottom-4 sm:-bottom-6 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur border border-secondary-100 rounded-full px-5 py-2 shadow-xl flex items-center gap-2 text-secondary-700 text-sm">
+                        <span className="inline-flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                        Highlights kegiatan terbaru
                       </div>
                     </div>
-                    
-                    {/* Floating icons around the circle - mobile optimized */}
-                    <div className="absolute -top-2 -right-2 sm:-top-4 sm:-right-4 w-8 h-8 sm:w-12 sm:h-12 lg:w-16 lg:h-16 bg-white rounded-full shadow-lg flex items-center justify-center border-2 border-primary-100 hover:scale-110 transition-transform duration-200">
-                      <Sparkles className="w-4 h-4 sm:w-6 sm:h-6 lg:w-8 lg:h-8 text-primary-500" />
-                    </div>
-                    <div className="absolute -bottom-2 -left-2 sm:-bottom-4 sm:-left-4 w-7 h-7 sm:w-10 sm:h-10 lg:w-14 lg:h-14 bg-white rounded-full shadow-lg flex items-center justify-center border-2 border-secondary-100 hover:scale-110 transition-transform duration-200">
-                      <Zap className="w-3.5 h-3.5 sm:w-5 sm:h-5 lg:w-7 lg:h-7 text-secondary-500" />
-                    </div>
-                    <div className="absolute top-1/2 -left-4 sm:-left-6 lg:-left-8 w-6 h-6 sm:w-8 sm:h-8 lg:w-12 lg:h-12 bg-white rounded-full shadow-lg flex items-center justify-center border-2 border-primary-200 hover:scale-110 transition-transform duration-200">
-                      <Globe className="w-3 h-3 sm:w-4 sm:h-4 lg:w-6 lg:h-6 text-primary-400" />
-                    </div>
-                    <div className="absolute top-1/4 -right-3 sm:-right-4 lg:-right-6 w-5 h-5 sm:w-6 sm:h-6 lg:w-10 lg:h-10 bg-white rounded-full shadow-lg flex items-center justify-center border-2 border-secondary-200 hover:scale-110 transition-transform duration-200">
-                      <TrendingUp className="w-2.5 h-2.5 sm:w-3 sm:h-3 lg:w-5 lg:h-5 text-secondary-400" />
-                    </div>
-                    
-                    {/* Decorative dots - mobile optimized */}
-                    <div className="absolute top-4 left-4 sm:top-6 sm:left-6 lg:top-8 lg:left-8 w-2 h-2 sm:w-2.5 sm:h-2.5 lg:w-3 lg:h-3 bg-primary-300 rounded-full animate-pulse" />
-                    <div className="absolute bottom-6 right-6 sm:bottom-8 sm:right-8 lg:bottom-12 lg:right-12 w-1.5 h-1.5 sm:w-2 sm:h-2 lg:w-2 lg:h-2 bg-secondary-300 rounded-full animate-pulse delay-1000" />
-                    <div className="absolute top-1/2 right-2 sm:right-3 lg:right-4 w-2 h-2 sm:w-2.5 sm:h-2.5 bg-primary-400 rounded-full animate-pulse delay-500" />
                   </div>
-                  
-                  {/* Background decorative elements */}
-                  <div className="absolute -z-10 inset-0 bg-gradient-to-br from-primary-50/50 to-secondary-50/50 rounded-full blur-3xl scale-150" />
+                  <div className="absolute -z-10 inset-0 blur-[70px] bg-gradient-to-br from-primary-200/30 via-secondary-200/30 to-primary-100/20 rounded-[40px]" />
                 </div>
                 
-                {/* Mobile placeholder - simple and clean */}
                 <div className="sm:hidden w-full flex items-center justify-center">
-                  <div className="w-24 h-24 bg-gradient-to-br from-primary-100 to-secondary-100 rounded-full flex items-center justify-center shadow-lg">
-                    <Building2 className="w-12 h-12 text-primary-600" />
+                  <div className="grid grid-cols-2 gap-3 w-full max-w-xs">
+                    {[0, 1, 2, 3].map((idx) => (
+                      <div key={idx} className="aspect-square rounded-2xl overflow-hidden border border-secondary-100 shadow-lg bg-secondary-50">
+                        {heroPhotos[idx] ? (
+                          <div
+                            className="w-full h-full bg-cover bg-center"
+                            style={{ backgroundImage: `url(${heroPhotos[idx]})` }}
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-secondary-300">
+                            <Building2 className="w-6 h-6" />
+                          </div>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Highlights Section */}
+      <section className="py-14 sm:py-16 bg-white" aria-labelledby="highlights-heading">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-10">
+            <div>
+              <p className="text-xs uppercase tracking-[0.4em] text-secondary-400">Cerita terbaru</p>
+              <h2 id="highlights-heading" className="text-2xl sm:text-3xl font-bold text-secondary-900 mt-2 mb-3">
+                Sorotan Artikel DIGCITY
+              </h2>
+              <p className="text-sm sm:text-base text-secondary-600 max-w-2xl">
+                Rangkuman perjalanan organisasi, dokumentasi kegiatan, serta opini anggota dalam format artikel pilihan.
+              </p>
+            </div>
+            <Link
+              to="/blog"
+              className="inline-flex items-center justify-center px-4 py-2 rounded-full font-semibold text-primary-600 border border-primary-200 hover:bg-primary-50 transition-colors text-sm sm:text-base"
+            >
+              Lihat semua artikel
+              <ArrowRight className="ml-2 w-4 h-4" />
+            </Link>
+          </div>
+
+          {loadingHighlights && featuredNews.length === 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+              {Array.from({ length: 3 }).map((_, idx) => (
+                <div key={idx} className="p-5 sm:p-6 rounded-2xl border border-secondary-100 bg-secondary-50/80 animate-pulse">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-10 h-10 rounded-full bg-secondary-200" />
+                    <div className="flex-1">
+                      <div className="h-3 w-20 bg-secondary-200 rounded mb-2" />
+                      <div className="h-4 w-28 bg-secondary-100 rounded" />
+                    </div>
+                  </div>
+                  <div className="h-5 w-3/4 bg-secondary-200 rounded mb-3" />
+                  <div className="h-5 w-2/3 bg-secondary-100 rounded mb-4" />
+                  <div className="h-4 w-1/3 bg-secondary-200 rounded" />
+                </div>
+              ))}
+            </div>
+          ) : featuredNews.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+              {featuredNews.map((news) => (
+                <article
+                  key={news.id}
+                  className="group relative p-5 sm:p-6 rounded-2xl border border-secondary-100 bg-white shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all flex flex-col"
+                >
+                  <div className="inline-flex items-center gap-2 text-xs font-semibold tracking-[0.3em] uppercase text-secondary-400 mb-3">
+                    <Newspaper className="w-4 h-4 text-primary-500" />
+                    {formatContentCategory(news.category)}
+                  </div>
+                  <h3 className="text-lg sm:text-xl font-semibold text-secondary-900 leading-snug mb-3 line-clamp-3">
+                    {news.title}
+                  </h3>
+                  <p className="text-sm text-secondary-600 leading-relaxed line-clamp-3 flex-1">
+                    {news.excerpt || news.content}
+                  </p>
+                  <div className="mt-4 pt-4 border-t border-secondary-100 flex items-center justify-between text-sm text-secondary-500">
+                    <span>{formatDate(news.published_date)}</span>
+                    <Link
+                      to={`/blog/${slugify(news.title)}`}
+                      className="inline-flex items-center gap-1 font-semibold text-primary-600 hover:text-primary-700"
+                    >
+                      Baca selengkapnya
+                      <ArrowRight className="w-4 h-4" />
+                    </Link>
+                  </div>
+                  <div className="absolute inset-x-6 -bottom-2 h-2 rounded-full bg-gradient-to-r from-primary-100 via-secondary-100 to-primary-100 opacity-0 group-hover:opacity-100 transition-opacity" aria-hidden="true" />
+                </article>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12 rounded-2xl border border-dashed border-secondary-200 bg-secondary-50/50">
+              <p className="text-secondary-700 font-semibold mb-2">Belum ada artikel dipublikasikan</p>
+              <p className="text-secondary-500 text-sm">Konten terbaru akan segera hadir. Pantau terus kanal berita kami.</p>
+            </div>
+          )}
         </div>
       </section>
 
@@ -255,10 +418,10 @@ const HomePage: React.FC = () => {
               <Link 
                 to="/events"
                 className="inline-flex items-center justify-center bg-white text-primary-600 px-6 sm:px-8 py-3 rounded-lg font-semibold border border-primary-200 hover:bg-primary-50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 interactive-element min-h-[44px] text-sm sm:text-base"
-                aria-label="Lihat acara mendatang DIGCITY"
+                aria-label="Lihat acara yang sudah dilaksanakan DIGCITY"
               >
-                <span className="hidden xs:inline">Lihat Acara Mendatang</span>
-                <span className="xs:hidden">Lihat Acara</span>
+                <span className="hidden xs:inline">Lihat Acara yang Sudah Dilaksanakan</span>
+                <span className="xs:hidden">Arsip Acara</span>
               </Link>
             </div>
           </div>

@@ -683,7 +683,7 @@ const AdminEvents: React.FC = () => {
                               <MapPin size={16} />
                               {event.location}
                             </span>
-                            <span className="px-2 py-1 bg-primary-100 text-primary-700 rounded text-xs font-semibold">
+                            <span className="px-2 py-1 bg-primary-100 text-primary-700 rounded text-xs font-semibold border border-primary-200 dark:bg-[rgba(187,134,252,0.14)] dark:border-[rgba(187,134,252,0.24)] dark:text-[#BB86FC]">
                               {formatCategoryName(event.category)}
                             </span>
                           </div>

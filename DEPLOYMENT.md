@@ -13,7 +13,7 @@
 
 ## Masalah yang Ditemukan
 
-Setelah deploy ke Vercel di domain `digcity.my.id`, ditemukan beberapa error:
+Setelah deploy ke Vercel di domain `digcity.my.id`, ditemukan bebera pa error:
 
 1. **File tidak ditemukan (404)**: `react.svg`, `main.tsx`
 2. **MIME type error**: CSS file di-load sebagai `text/plain` bukan `text/css`
@@ -94,6 +94,60 @@ npm i -g vercel
 # Deploy
 vercel --prod
 ```
+
+### 3.1 Linking Proyek ke Vercel (Dashboard)
+
+Cara paling mudah menghubungkan proyek ini ke Vercel adalah melalui dashboard:
+
+- Buka `https://vercel.com/new`
+- Pilih sumber kode (GitHub/GitLab/Bitbucket) atau import folder lokal via CLI
+- Pilih root direktori: `c:\dev\project_digcity-website`
+- Vercel akan membaca `vercel.json` dan otomatis menggunakan:
+  - Build Command: `npm run build:vercel`
+  - Output Directory: `dist`
+  - Install Command: `npm install`
+  - Dev Command: `npm run dev`
+- Setelah import, set environment variables (lihat bagian Environment Variables di bawah)
+- Klik Deploy
+
+### 3.2 Linking via CLI (Opsional, non-interaktif)
+
+Jika ingin menghubungkan via CLI tanpa prompt interaktif:
+
+1. Buat Personal Access Token di Vercel (Account Settings → Tokens)
+2. Set environment variables di shell sebelum menjalankan perintah:
+
+```
+# PowerShell (Windows)
+$env:VERCEL_TOKEN = "<YOUR_VERCEL_TOKEN>"
+$env:VERCEL_ORG_ID = "<YOUR_ORG_ID>"
+$env:VERCEL_PROJECT_ID = "<YOUR_PROJECT_ID>"
+```
+
+3. Jalankan deploy non-interaktif:
+
+```
+npx vercel --prod --confirm
+```
+
+Jika project belum dibuat, jalankan `npx vercel` sekali untuk membuatnya (interaktif), kemudian gunakan `--confirm` di deploy berikutnya.
+
+### 3.3 Environment Variables di Vercel
+
+Tambahkan environment variables berikut di Project Settings → Environment Variables (Production):
+
+```
+VITE_SUPABASE_URL=https://your-project-id.supabase.co
+VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
+VITE_APP_NAME=DIGCITY Website
+VITE_APP_VERSION=1.0.0
+VITE_DEV_MODE=false
+VITE_API_BASE_URL=https://your-api-domain.com/api
+VITE_DOMAIN=digcity.my.id
+VITE_APP_URL=https://digcity.my.id
+```
+
+Referensi nilai default tersedia di `.env.example`. Untuk pengujian di Preview, Anda juga bisa menambahkan environment dengan scope Preview.
 
 ### 4. Konfigurasi Domain
 

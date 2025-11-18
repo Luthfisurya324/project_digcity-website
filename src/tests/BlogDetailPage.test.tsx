@@ -81,9 +81,25 @@ jest.mock('../SocialShare', () => {
 });
 
 describe('BlogDetailPage', () => {
+  const originalFetch = global.fetch;
+
   beforeEach(() => {
     jest.clearAllMocks();
     mockNewsAPI.getAll.mockResolvedValue([mockArticle, ...mockRelatedArticles]);
+    global.fetch = jest.fn(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ value: 5 })
+      })
+    ) as jest.Mock;
+  });
+
+  afterEach(() => {
+    (global.fetch as jest.Mock).mockClear();
+  });
+
+  afterAll(() => {
+    global.fetch = originalFetch;
   });
 
   const renderWithRouter = (component: React.ReactElement) => {
@@ -155,6 +171,15 @@ describe('BlogDetailPage', () => {
 
     await waitFor(() => {
       expect(screen.getByTestId('social-share')).toBeInTheDocument();
+    });
+  });
+
+  it('loads share count when article is loaded', async () => {
+    renderWithRouter(<BlogDetailPage />);
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith('https://api.countapi.xyz/get/digcity-share/test-article-title');
+      expect(screen.getByText(/kali dibagikan/)).toBeInTheDocument();
     });
   });
 

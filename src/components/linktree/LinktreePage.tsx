@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import LinktreeLayout from './LinktreeLayout';
 import LinktreeButton from './LinktreeButton';
 import LinktreeCard from './LinktreeCard';
@@ -15,6 +15,7 @@ import {
   Award
 } from 'lucide-react';
 import { defaultLinktreeConfig, getActiveLinks, getActiveSocialLinks, getActiveContactInfo } from '../../config/linktreeConfig';
+import { linktreeAPI, LinktreeData, LinktreeLink as DBLink, SocialLink as DBSocial, ContactInfo as DBContact } from '../../lib/linktreeAPI';
 
 const LinktreePage: React.FC = () => {
   // Initialize domain-specific SEO
@@ -33,29 +34,93 @@ const LinktreePage: React.FC = () => {
     Award: <Award size={24} />
   };
 
-  // Get active links from config
-  const activeLinks = getActiveLinks(defaultLinktreeConfig);
-  const activeSocialLinks = getActiveSocialLinks(defaultLinktreeConfig);
-  const activeContactInfo = getActiveContactInfo(defaultLinktreeConfig);
+  // State from Supabase
+  const [profile, setProfile] = useState<LinktreeData | null>(null);
+  const [links, setLinks] = useState<DBLink[]>([]);
+  const [socials, setSocials] = useState<DBSocial[]>([]);
+  const [contacts, setContacts] = useState<DBContact[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
-  // Convert config data to component format
-  const socialLinks = activeSocialLinks.map(link => ({
-    platform: link.platform as 'instagram' | 'facebook' | 'twitter',
+  useEffect(() => {
+    const load = async () => {
+      try {
+        setLoading(true);
+        const data = await linktreeAPI.getAllLinktreeData();
+        setProfile(data.linktree);
+        setLinks(data.links);
+        setSocials(data.socialLinks);
+        setContacts(data.contactInfo);
+      } catch (e) {
+        // Fallback to config if Supabase fetch fails
+        setProfile(null);
+        setLinks([]);
+        setSocials([]);
+        setContacts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+
+    // Subscribe to realtime changes
+    const unsubscribe = linktreeAPI.subscribeToChanges(async () => {
+      try {
+        const data = await linktreeAPI.getAllLinktreeData();
+        setProfile(data.linktree);
+        setLinks(data.links);
+        setSocials(data.socialLinks);
+        setContacts(data.contactInfo);
+      } catch (err) {
+        // Keep current state; optionally log
+        console.warn('Realtime update failed, keeping current state', err);
+      }
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
+  // Fallback to config when DB empty
+  const useConfigFallback = !profile && links.length === 0 && socials.length === 0 && contacts.length === 0;
+
+  const activeLinks = useConfigFallback ? getActiveLinks(defaultLinktreeConfig) : links.map(l => ({
+    id: l.id,
+    href: l.href,
+    title: l.title,
+    description: l.description,
+    icon: l.icon,
+    variant: (l.variant as 'primary' | 'secondary' | 'accent') || 'primary',
+    isExternal: l.is_external,
+    isActive: l.is_active,
+    order: l.order_index
+  })).filter(l => l.isActive).sort((a, b) => a.order - b.order);
+
+  const socialLinks = useConfigFallback ? getActiveSocialLinks(defaultLinktreeConfig).map(link => ({
+    platform: link.platform as 'instagram' | 'facebook' | 'twitter' | 'youtube' | 'linkedin' | 'tiktok',
     value: link.value,
     href: link.href
+  })) : socials.filter(s => s.is_active).map(s => ({
+    platform: s.platform as 'instagram' | 'facebook' | 'twitter' | 'youtube' | 'linkedin' | 'tiktok',
+    value: s.value,
+    href: s.href
   }));
 
-  const contactInfo = activeContactInfo.map(info => ({
-    platform: info.platform as 'email' | 'phone' | 'location',
+  const contactInfo = useConfigFallback ? getActiveContactInfo(defaultLinktreeConfig).map(info => ({
+    platform: info.platform as 'email' | 'phone' | 'location' | 'address',
     value: info.value,
     href: info.href
+  })) : contacts.filter(c => c.is_active).map(c => ({
+    platform: (c.platform as 'email' | 'phone' | 'location' | 'address'),
+    value: c.value,
+    href: c.href
   }));
 
   return (
     <LinktreeLayout
-      title={defaultLinktreeConfig.title}
-      subtitle={defaultLinktreeConfig.subtitle}
-      avatar={defaultLinktreeConfig.avatar}
+      title={profile?.title || defaultLinktreeConfig.title}
+      subtitle={profile?.subtitle || defaultLinktreeConfig.subtitle}
+      avatar={profile?.avatar || defaultLinktreeConfig.avatar}
     >
       {/* Main Links */}
       {activeLinks.map((link) => (
@@ -78,19 +143,7 @@ const LinktreePage: React.FC = () => {
         variant="social"
       />
 
-      {/* Event Instagram Section */}
-      <LinktreeCard
-        title="🎉 Instagram Acara"
-        content="Ikuti Instagram khusus acara DIGCITY untuk update event, workshop, dan kegiatan terbaru"
-        socialLinks={[
-          {
-            platform: 'instagram',
-            value: '@dbasic.official',
-            href: 'https://instagram.com/dbasic.official'
-          }
-        ]}
-        variant="social"
-      />
+      {/* Instagram Acara section removed per request */}
 
       {/* Contact Information */}
       <LinktreeCard

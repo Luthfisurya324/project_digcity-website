@@ -134,7 +134,11 @@ export const eventAPI = {
       .single()
     
     if (error) throw error
-    return data as Event
+    const createdEvent = data as Event
+    await syncGalleryFromEvent(createdEvent).catch((err) => {
+      console.warn('Failed to sync gallery from event create:', err)
+    })
+    return createdEvent
   },
 
   // Update event
@@ -147,7 +151,11 @@ export const eventAPI = {
       .single()
     
     if (error) throw error
-    return data as Event
+    const updatedEvent = data as Event
+    await syncGalleryFromEvent(updatedEvent).catch((err) => {
+      console.warn('Failed to sync gallery from event update:', err)
+    })
+    return updatedEvent
   },
 
   // Delete event
@@ -158,6 +166,9 @@ export const eventAPI = {
       .eq('id', id)
     
     if (error) throw error
+    await removeGallerySource('event', id).catch((err) => {
+      console.warn('Failed to remove gallery entries for event delete:', err)
+    })
   },
 
   // Subscribe to realtime changes on events table
@@ -207,7 +218,11 @@ export const newsAPI = {
       .single()
     
     if (error) throw error
-    return data as News
+    const createdNews = data as News
+    await syncGalleryFromNews(createdNews).catch((err) => {
+      console.warn('Failed to sync gallery from news create:', err)
+    })
+    return createdNews
   },
 
   // Update news
@@ -220,7 +235,11 @@ export const newsAPI = {
       .single()
     
     if (error) throw error
-    return data as News
+    const updatedNews = data as News
+    await syncGalleryFromNews(updatedNews).catch((err) => {
+      console.warn('Failed to sync gallery from news update:', err)
+    })
+    return updatedNews
   },
 
   // Delete news
@@ -231,6 +250,9 @@ export const newsAPI = {
       .eq('id', id)
     
     if (error) throw error
+    await removeGallerySource('news', id).catch((err) => {
+      console.warn('Failed to remove gallery entries for news delete:', err)
+    })
   }
 }
 
@@ -440,4 +462,94 @@ export const newsletterAPI = {
     }
     return data.is_active
   }
+}
+
+type GallerySourceType = 'event' | 'news'
+
+const buildSourceTag = (sourceType: GallerySourceType, sourceId: string) => `source:${sourceType}:${sourceId}`
+
+const normalizeDateOnly = (value?: string | null) => {
+  if (!value) return new Date().toISOString().slice(0, 10)
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) {
+    return new Date().toISOString().slice(0, 10)
+  }
+  return date.toISOString().slice(0, 10)
+}
+
+const syncGalleryEntries = async (options: {
+  sourceType: GallerySourceType
+  sourceId: string
+  images: string[]
+  title: string
+  description?: string
+  category?: string
+  date?: string
+}) => {
+  const { sourceType, sourceId, images, title, description, category, date } = options
+  if (!images || images.length === 0) return
+  
+  const sourceTag = buildSourceTag(sourceType, sourceId)
+  await supabase
+    .from('gallery')
+    .delete()
+    .contains('tags', [sourceTag])
+  
+  const today = new Date().toISOString()
+  const rows = images.map((imageUrl) => ({
+    title: title || 'Dokumentasi DIGCITY',
+    description: description || title || 'Dokumentasi kegiatan DIGCITY',
+    image_url: imageUrl,
+    category: category || (sourceType === 'news' ? 'Berita' : 'Event'),
+    event_date: normalizeDateOnly(date),
+    tags: [sourceTag],
+    created_at: today,
+    updated_at: today
+  }))
+  
+  const { error } = await supabase.from('gallery').insert(rows)
+  if (error) throw error
+}
+
+const removeGallerySource = async (sourceType: GallerySourceType, sourceId: string) => {
+  const sourceTag = buildSourceTag(sourceType, sourceId)
+  const { error } = await supabase
+    .from('gallery')
+    .delete()
+    .contains('tags', [sourceTag])
+  if (error) throw error
+}
+
+const syncGalleryFromEvent = async (event: Event) => {
+  if (!event?.id) return
+  const imagesSet = new Set<string>()
+  if (event.image_url) imagesSet.add(event.image_url)
+  if (Array.isArray(event.additional_images)) {
+    event.additional_images.filter(Boolean).forEach((img) => imagesSet.add(img))
+  }
+  const images = Array.from(imagesSet)
+  if (images.length === 0) return
+  
+  await syncGalleryEntries({
+    sourceType: 'event',
+    sourceId: event.id,
+    images,
+    title: event.title,
+    description: event.description,
+    category: event.category,
+    date: event.date
+  })
+}
+
+const syncGalleryFromNews = async (news: News) => {
+  if (!news?.id || !news.image_url) return
+  await syncGalleryEntries({
+    sourceType: 'news',
+    sourceId: news.id,
+    images: [news.image_url],
+    title: news.title,
+    description: news.excerpt || news.content,
+    category: news.category,
+    date: news.published_date
+  })
 }

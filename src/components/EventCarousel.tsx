@@ -389,8 +389,8 @@ const EventCarousel: React.FC<EventCarouselProps> = ({
 
           {/* View All Events Button */}
           <div className="text-center mt-8">
-            <a
-              href="/#/events"
+              <a
+                href="/events"
               className="inline-flex items-center justify-center bg-white text-primary-600 px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-semibold hover:bg-primary-50 transition-colors shadow-lg focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-primary-600"
             >
               <span>Lihat Semua Acara</span>

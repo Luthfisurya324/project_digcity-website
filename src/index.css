@@ -30,6 +30,89 @@
     overflow-x: hidden;
     width: 100%;
   }
+
+  /* Dark mode palette variables for admin */
+  :root.dark {
+    --bg-main: #121212;
+    --text-main: rgba(255, 255, 255, 0.87);
+    --surface-1: #1E1E1E;
+    --surface-2: #232323;
+    --border-muted: #2A2A2A;
+    --primary-accent: #BB86FC;
+    --primary-accent-hover: #A870F0;
+    --secondary-accent: #03DAC6;
+    --secondary-accent-hover: #02C7B5;
+  }
+}
+
+/* Admin dark-mode overrides without touching public pages */
+@layer components {
+  .dark .admin-container {
+    color: var(--text-main);
+    background-color: var(--bg-main);
+  }
+
+  /* Common surfaces */
+  .dark .admin-container .bg-white { background-color: var(--surface-1) !important; }
+  .dark .admin-container .bg-secondary-50 { background-color: var(--surface-2) !important; }
+  .dark .admin-container .bg-gray-50 { background-color: var(--surface-2) !important; }
+  .dark .admin-container .bg-gray-100 { background-color: var(--surface-1) !important; }
+  .dark .admin-container .bg-gray-200 { background-color: var(--surface-1) !important; }
+  .dark .admin-container .bg-neutral-800 { background-color: var(--surface-1) !important; }
+  .dark .admin-container .bg-neutral-700 { background-color: var(--surface-2) !important; }
+  .dark .admin-container .border-secondary-200 { border-color: var(--border-muted) !important; }
+  .dark .admin-container .border-gray-200 { border-color: var(--border-muted) !important; }
+  .dark .admin-container .border-gray-300 { border-color: var(--border-muted) !important; }
+  .dark .admin-container .border-neutral-700 { border-color: var(--border-muted) !important; }
+  .dark .admin-container .text-secondary-900 { color: var(--text-main) !important; }
+  .dark .admin-container .text-gray-900 { color: var(--text-main) !important; }
+  .dark .admin-container .text-secondary-700 { color: rgba(255,255,255,0.8) !important; }
+  .dark .admin-container .text-gray-700 { color: rgba(255,255,255,0.8) !important; }
+  .dark .admin-container .text-secondary-600 { color: rgba(255,255,255,0.7) !important; }
+  .dark .admin-container .text-gray-600 { color: rgba(255,255,255,0.7) !important; }
+  .dark .admin-container .text-neutral-100 { color: var(--text-main) !important; }
+  .dark .admin-container .text-neutral-300 { color: rgba(255,255,255,0.7) !important; }
+
+  /* Primary accent mapping */
+  .dark .admin-container .text-primary-700 { color: var(--primary-accent) !important; }
+  .dark .admin-container .bg-primary-50 { background-color: rgba(187, 134, 252, 0.12) !important; }
+  .dark .admin-container .bg-primary-100 { background-color: rgba(187, 134, 252, 0.14) !important; }
+  .dark .admin-container .border-primary-200 { border-color: rgba(187, 134, 252, 0.24) !important; }
+  .dark .admin-container .bg-primary-600 { background-color: var(--primary-accent) !important; }
+  .dark .admin-container .hover\:bg-primary-700:hover { background-color: var(--primary-accent-hover) !important; }
+  .dark .admin-container .hover\:bg-gray-50:hover { background-color: var(--surface-2) !important; }
+
+  /* Secondary accent mapping */
+  .dark .admin-container .text-secondary-500 { color: rgba(255,255,255,0.7) !important; }
+  .dark .admin-container .text-secondary-600 { color: rgba(255,255,255,0.7) !important; }
+  .dark .admin-container .text-secondary-700 { color: rgba(255,255,255,0.8) !important; }
+  .dark .admin-container .text-secondary-800 { color: rgba(255,255,255,0.9) !important; }
+  .dark .admin-container .text-secondary-900 { color: var(--text-main) !important; }
+
+  /* Buttons and interactive states */
+  .dark .admin-container button { color: var(--text-main); }
+  .dark .admin-container .focus-ring:focus { outline: none; box-shadow: 0 0 0 2px var(--primary-accent); }
+  .dark .admin-container .disabled\:opacity-50:disabled { opacity: 0.5; }
+
+  /* Form inputs and tables */
+  .dark .admin-container input,
+  .dark .admin-container select,
+  .dark .admin-container textarea {
+    background-color: var(--surface-1);
+    color: var(--text-main);
+    border-color: var(--border-muted);
+  }
+  .dark .admin-container input::placeholder,
+  .dark .admin-container textarea::placeholder { color: rgba(255,255,255,0.6); }
+
+  .dark .admin-container table { background-color: var(--surface-1); color: var(--text-main); }
+  .dark .admin-container th { color: rgba(255,255,255,0.87); }
+  .dark .admin-container td { color: rgba(255,255,255,0.8); }
+  .dark .admin-container tr:hover { background-color: var(--surface-2); }
+
+  /* Notification toasts mapping when used */
+  .dark .admin-container .toast-primary { background-color: rgba(187, 134, 252, 0.14); border-color: rgba(187, 134, 252, 0.30); }
+  .dark .admin-container .toast-secondary { background-color: rgba(3, 218, 198, 0.14); border-color: rgba(3, 218, 198, 0.30); }
 }
 
 @layer utilities {

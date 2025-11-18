@@ -306,7 +306,7 @@ const EventCardCarousel: React.FC<EventCardCarouselProps> = ({
         {showTitle && (
           <div className="text-center mb-8">
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-secondary-900 mb-4">
-              Acara Mendatang
+              Acara yang Sudah Dilaksanakan
             </h2>
             <div className="w-20 h-1 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full mx-auto"></div>
           </div>
@@ -333,7 +333,7 @@ const EventCardCarousel: React.FC<EventCardCarouselProps> = ({
         {showTitle && (
           <div className="text-center mb-8">
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-secondary-900 mb-4">
-              Acara Mendatang
+              Acara yang Sudah Dilaksanakan
             </h2>
             <div className="w-20 h-1 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full mx-auto"></div>
           </div>
@@ -362,7 +362,7 @@ const EventCardCarousel: React.FC<EventCardCarouselProps> = ({
         {showTitle && (
           <div className="text-center mb-8">
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-secondary-900 mb-4">
-              Acara Mendatang
+              Acara yang Sudah Dilaksanakan
             </h2>
             <div className="w-20 h-1 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full mx-auto"></div>
           </div>
@@ -385,7 +385,7 @@ const EventCardCarousel: React.FC<EventCardCarouselProps> = ({
         {showTitle && (
           <div className="text-center mb-8">
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-secondary-900 mb-4">
-              Acara Mendatang
+              Acara yang Sudah Dilaksanakan
             </h2>
             <div className="w-20 h-1 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full mx-auto"></div>
           </div>
@@ -410,13 +410,13 @@ const EventCardCarousel: React.FC<EventCardCarouselProps> = ({
         <div className="text-center mb-8 sm:mb-12">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-primary-50 to-secondary-50 border border-primary-200 mb-4">
             <Sparkles className="w-4 h-4 text-primary-500" />
-            <span className="text-sm font-medium text-primary-700">Acara Terbaru</span>
+            <span className="text-sm font-medium text-primary-700">Kilas Balik</span>
           </div>
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-secondary-900 mb-4">
-            Acara Mendatang
+            Acara yang Sudah Dilaksanakan
           </h2>
           <p className="text-secondary-600 max-w-2xl mx-auto mb-6">
-            Jangan lewatkan berbagai acara menarik dari DIGCITY. Bergabunglah dengan komunitas digital business yang dinamis!
+            Kilas balik berbagai acara terbaik DIGCITY. Simak dokumentasi dan highlight setiap kegiatan yang sudah terlaksana.
           </p>
           <div className="w-20 h-1 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full mx-auto"></div>
         </div>
@@ -629,7 +629,7 @@ const EventCardCarousel: React.FC<EventCardCarouselProps> = ({
       {/* Show More Button */}
       <div className="text-center mt-8 sm:mt-12">
         <a
-          href="/#/events"
+          href="/events"
           className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary-600 to-secondary-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 group"
         >
           <Users className="w-5 h-5" />

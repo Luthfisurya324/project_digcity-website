@@ -62,6 +62,88 @@ class LinktreeAPI {
     }
   }
 
+  // Subscribe to realtime changes on all LinkTree tables
+  subscribeToChanges(handler: (type: 'linktree' | 'links' | 'social' | 'contact', payload: any) => void) {
+    const channel = supabase
+      .channel('linktree-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'linktree' }, (payload) => handler('linktree', payload))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'linktree_links' }, (payload) => handler('links', payload))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'linktree_social_links' }, (payload) => handler('social', payload))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'linktree_contact_info' }, (payload) => handler('contact', payload))
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }
+
+  // Delete all links for a linktree
+  async deleteAllLinks(linktreeId: string): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('linktree_links')
+        .delete()
+        .eq('linktree_id', linktreeId)
+
+      if (error) throw error
+      return true
+    } catch (error) {
+      console.error('Error deleting all links:', error)
+      return false
+    }
+  }
+
+  // Delete all social links for a linktree
+  async deleteAllSocialLinks(linktreeId: string): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('linktree_social_links')
+        .delete()
+        .eq('linktree_id', linktreeId)
+
+      if (error) throw error
+      return true
+    } catch (error) {
+      console.error('Error deleting all social links:', error)
+      return false
+    }
+  }
+
+  // Delete all contact info for a linktree
+  async deleteAllContactInfo(linktreeId: string): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('linktree_contact_info')
+        .delete()
+        .eq('linktree_id', linktreeId)
+
+      if (error) throw error
+      return true
+    } catch (error) {
+      console.error('Error deleting all contact info:', error)
+      return false
+    }
+  }
+
+  // Reset linktree content (links, social links, contact info)
+  async resetLinktreeContent(): Promise<boolean> {
+    try {
+      const linktree = await this.getMainLinktree()
+      const linktreeId = linktree?.id || 'main'
+
+      const [linksOk, socialsOk, contactsOk] = await Promise.all([
+        this.deleteAllLinks(linktreeId),
+        this.deleteAllSocialLinks(linktreeId),
+        this.deleteAllContactInfo(linktreeId)
+      ])
+
+      return !!(linksOk && socialsOk && contactsOk)
+    } catch (error) {
+      console.error('Error resetting linktree content:', error)
+      return false
+    }
+  }
+
   // Get all links for a linktree
   async getLinks(linktreeId: string): Promise<LinktreeLink[]> {
     try {
@@ -119,6 +201,16 @@ class LinktreeAPI {
   // Update main linktree data
   async updateLinktree(id: string, updates: Partial<LinktreeData>): Promise<boolean> {
     try {
+      // Ensure target exists to avoid false success
+      const { data: existing, error: existErr } = await supabase
+        .from('linktree')
+        .select('id')
+        .eq('id', id)
+        .maybeSingle()
+
+      if (existErr) throw existErr
+      if (!existing) return false
+
       const { error } = await supabase
         .from('linktree')
         .update({
@@ -159,6 +251,15 @@ class LinktreeAPI {
   // Update link
   async updateLink(id: string, updates: Partial<LinktreeLink>): Promise<boolean> {
     try {
+      const { data: existing, error: existErr } = await supabase
+        .from('linktree_links')
+        .select('id')
+        .eq('id', id)
+        .maybeSingle()
+
+      if (existErr) throw existErr
+      if (!existing) return false
+
       const { error } = await supabase
         .from('linktree_links')
         .update({
@@ -215,6 +316,15 @@ class LinktreeAPI {
   // Update social link
   async updateSocialLink(id: string, updates: Partial<SocialLink>): Promise<boolean> {
     try {
+      const { data: existing, error: existErr } = await supabase
+        .from('linktree_social_links')
+        .select('id')
+        .eq('id', id)
+        .maybeSingle()
+
+      if (existErr) throw existErr
+      if (!existing) return false
+
       const { error } = await supabase
         .from('linktree_social_links')
         .update({
@@ -271,6 +381,15 @@ class LinktreeAPI {
   // Update contact info
   async updateContactInfo(id: string, updates: Partial<ContactInfo>): Promise<boolean> {
     try {
+      const { data: existing, error: existErr } = await supabase
+        .from('linktree_contact_info')
+        .select('id')
+        .eq('id', id)
+        .maybeSingle()
+
+      if (existErr) throw existErr
+      if (!existing) return false
+
       const { error } = await supabase
         .from('linktree_contact_info')
         .update({
@@ -331,11 +450,13 @@ class LinktreeAPI {
     contactInfo: ContactInfo[]
   }> {
     try {
-      const [linktree, links, socialLinks, contactInfo] = await Promise.all([
-        this.getMainLinktree(),
-        this.getLinks('main'), // Assuming main linktree ID
-        this.getSocialLinks('main'),
-        this.getContactInfo('main')
+      const linktree = await this.getMainLinktree()
+      const linktreeId = linktree?.id || 'main'
+
+      const [links, socialLinks, contactInfo] = await Promise.all([
+        this.getLinks(linktreeId),
+        this.getSocialLinks(linktreeId),
+        this.getContactInfo(linktreeId)
       ])
 
       return {

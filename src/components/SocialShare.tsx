@@ -6,13 +6,15 @@ interface SocialShareProps {
   title: string;
   description: string;
   hashtags?: string[];
+  onShare?: () => void;
 }
 
 const SocialShare: React.FC<SocialShareProps> = ({ 
   url, 
   title, 
   description, 
-  hashtags = ['DIGCITY', 'BisnisDigital', 'UIKA'] 
+  hashtags = ['DIGCITY', 'BisnisDigital', 'UIKA'],
+  onShare
 }) => {
   const [copied, setCopied] = useState(false);
   const [showShareOptions, setShowShareOptions] = useState(false);
@@ -27,6 +29,7 @@ const SocialShare: React.FC<SocialShareProps> = ({
     if (navigator.share) {
       try {
         await navigator.share(shareData);
+        onShare?.();
       } catch (error) {
         console.log('Error sharing:', error);
         setShowShareOptions(true);
@@ -41,6 +44,7 @@ const SocialShare: React.FC<SocialShareProps> = ({
       await navigator.clipboard.writeText(url);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+      onShare?.();
     } catch (error) {
       console.error('Failed to copy:', error);
       // Fallback for older browsers
@@ -52,6 +56,7 @@ const SocialShare: React.FC<SocialShareProps> = ({
       document.body.removeChild(textArea);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+      onShare?.();
     }
   };
 
@@ -84,6 +89,7 @@ const SocialShare: React.FC<SocialShareProps> = ({
     }
 
     window.open(shareUrl, '_blank', 'width=600,height=400,scrollbars=yes,resizable=yes');
+    onShare?.();
   };
 
   const socialPlatforms = [
