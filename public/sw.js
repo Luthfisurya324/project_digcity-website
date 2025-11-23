@@ -39,16 +39,10 @@ self.addEventListener('install', (event) => {
   CACHE_NAMES = getCacheNames();
   
   event.waitUntil(
-    Promise.all([
-      // Cache static assets
-      caches.open(CACHE_NAMES.STATIC_CACHE).then((cache) => {
-        console.log('Service Worker: Caching static assets');
-        return cache.addAll(STATIC_ASSETS);
-      }),
-      
-      // Skip waiting to activate immediately
-      self.skipWaiting()
-    ])
+    caches.open(CACHE_NAMES.STATIC_CACHE).then((cache) => {
+      console.log('Service Worker: Caching static assets');
+      return cache.addAll(STATIC_ASSETS);
+    })
   );
 });
 
@@ -307,7 +301,6 @@ self.addEventListener('message', (event) => {
   
   switch (type) {
     case 'SKIP_WAITING':
-      self.skipWaiting();
       break;
       
     case 'GET_VERSION':

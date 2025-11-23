@@ -102,7 +102,50 @@ Pastikan bucket `admin-images` sudah dibuat dengan:
 - 📖 [Fix Admin Subdomain Routing](./docs/035_fix_admin_subdomain_routing.md) - Perbaikan routing admin subdomain dan konflik newsletter/news
 - 📖 [Fix Events RLS Policy](./docs/036_fix_events_rls_policy.md) - Perbaikan error 403 saat menyimpan events (BARU)
 
+## Fitur Internal Organization Dashboard
+
+Proyek ini menyertakan **Internal Organization Dashboard** yang dapat diakses melalui:
+- **Subdomain:** `internal.digcity.my.id` (perlu konfigurasi DNS)
+
+Internal Dashboard adalah sistem manajemen organisasi terpisah yang dirancang khusus untuk mengelola operasional internal DIGCITY, berbeda dari website publik dan admin website.
+
+### Fitur Internal Dashboard
+- 💰 **Manajemen Keuangan** - Pencatatan pemasukan dan pengeluaran kas organisasi (✅ Ready)
+- 👥 **Database Anggota** - Manajemen data anggota dan pengurus (🚧 Coming Soon)
+- ✅ **Sistem Absensi** - Absensi untuk rapat dan kegiatan dengan QR Code (🚧 Coming Soon)
+- 📄 **Manajemen Persuratan** - Arsip surat masuk dan keluar (🚧 Coming Soon)
+
+### Perbedaan dengan Admin Website
+
+| Aspek | Admin Website | Internal Dashboard |
+|-------|---------------|-------------------|
+| **Subdomain** | `admin.digcity.my.id` | `internal.digcity.my.id` |
+| **Fokus** | Konten website publik | Operasional organisasi |
+| **Fitur** | Events, News, Gallery, Newsletter | Keuangan, Anggota, Absensi, Surat |
+| **Tema UI** | Purple/Pink gradient | Blue/Teal gradient |
+| **Autentikasi** | Admin role check | Authenticated users (internal members) |
+
+### Fitur Keuangan (Finance) - Ready)
+- ✅ Dashboard ringkasan keuangan (Balance, Income, Expense)
+- ✅ Daftar semua transaksi dengan filter dan search
+- ✅ Form untuk mencatat pemasukan/pengeluaran
+- ✅ Kategori transaksi yang lengkap
+- ✅ Upload/link bukti transaksi
+- ✅ Format currency Indonesia (IDR)
+- ✅ Hapus transaksi dengan konfirmasi
+
+### Database Schema
+
+**Table:** `finance_transactions`
+- RLS enabled dengan policies untuk authenticated users
+- Storage bucket: `finance-proofs` untuk file bukti
+
+### Dokumentasi Internal Dashboard
+- 📖 [Internal Organization Dashboard](./docs/052_internal_organization_dashboard.md) - Dokumentasi lengkap sistem internal dashboard
+- 📖 [README Internal Components](./src/components/internal/README.md) - Quick reference untuk komponen internal
+
 ## Deployment ke Vercel
+
 
 ### Direktori Root untuk Deployment
 

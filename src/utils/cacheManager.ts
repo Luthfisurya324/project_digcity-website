@@ -140,7 +140,7 @@ export class CacheManager {
       await this.clearAllCaches();
       
       // Reload halaman
-      window.location.reload();
+      
       
       return true;
     } catch (error) {
@@ -165,8 +165,7 @@ export class CacheManager {
           // Check jika ada service worker baru
           if (registration.waiting) {
             hasUpdate = true;
-            // Auto-activate new service worker
-            registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+            
           }
         }
       }
@@ -206,10 +205,7 @@ export class CacheManager {
       
       console.log('Cache Manager: Auto-update berhasil');
       
-      // Reload halaman untuk memastikan konten terbaru
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
+      
     } catch (error) {
       console.error('Cache Manager: Gagal auto-update:', error);
     }

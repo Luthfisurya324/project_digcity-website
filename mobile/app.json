@@ -1,0 +1,29 @@
+{
+  "expo": {
+    "name": "digcity-mobile",
+    "slug": "digcity-mobile",
+    "version": "0.1.0",
+    "sdkVersion": "54.0.0",
+    "orientation": "portrait",
+    "platforms": [
+      "android",
+      "ios"
+    ],
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#FFFFFF"
+      },
+      "package": "com.anonymous.digcitymobile"
+    }
+  }
+}

@@ -4,7 +4,7 @@ import { preloadCriticalPages } from './components/common/LazyComponents'
 import { registerServiceWorker } from './utils/serviceWorker'
 import { initFormatDetection } from './utils/formatDetection'
 import { cacheManager } from './utils/cacheManager'
-import { shouldRedirectToLinktree, shouldRedirectToAdmin } from './utils/domainDetection'
+import { shouldRedirectToLinktree, shouldRedirectToAdmin, shouldRedirectToInternal } from './utils/domainDetection'
 import Header from './components/layout/Header'
 import Footer from './components/layout/Footer'
 import HomePage from './pages/HomePage'
@@ -22,7 +22,9 @@ const LazyGrandDesignPage = React.lazy(() => import('./pages/about/GrandDesignPa
 const LazyGaleriPage = React.lazy(() => import('./pages/gallery/GaleriPage'))
 const LazyKontakPage = React.lazy(() => import('./pages/contact/KontakPage'))
 const LazyAdminPanel = React.lazy(() => import('./pages/AdminPanel'))
+const LazyInternalPanel = React.lazy(() => import('./pages/InternalPanel'))
 const LazyLinktreePage = React.lazy(() => import('./pages/LinktreePage'))
+const LazyComplaintsPage = React.lazy(() => import('./pages/complaints/ComplaintsPage'))
 
 function App() {
          // Check for subdomain redirect
@@ -34,12 +36,22 @@ function App() {
            if (shouldRedirectToAdmin()) {
              console.log('Accessing from admin subdomain')
            }
+
+           if (shouldRedirectToInternal()) {
+             console.log('Accessing from internal subdomain')
+           }
          }, []) // Remove navigate and location dependencies to prevent re-renders
 
          // Deteksi apakah user mengakses dari subdomain linktree atau admin
          // Gunakan useMemo untuk mencegah re-render yang tidak perlu
          const isLinktreeSubdomain = React.useMemo(() => shouldRedirectToLinktree(), [])
          const isAdminSubdomain = React.useMemo(() => shouldRedirectToAdmin(), [])
+         // Do NOT check internal subdomain here if we want path-based access
+         // because it would hijack the router. Path-based access is handled by main Routes.
+         const isInternalSubdomain = React.useMemo(() => {
+            if (typeof window === 'undefined') return false;
+            return window.location.hostname === 'internal.digcity.my.id';
+         }, [])
 
   // Initialize service worker and performance optimizations
   useEffect(() => {
@@ -84,12 +96,13 @@ function App() {
   )
 
            return (
-           <NotificationProvider>
-           <div className={`min-h-screen ${
-             isLinktreeSubdomain ? 'w-full' : 
-             isAdminSubdomain ? 'w-full' : 
-             'bg-white'
-           }`}>
+           <    NotificationProvider>
+    <div className={`min-h-screen ${
+      isLinktreeSubdomain ? 'w-full' : 
+      isAdminSubdomain ? 'w-full' : 
+      isInternalSubdomain ? 'w-full' :
+      'bg-white'
+    }`}>
            {/* Performance Monitoring (Development Only) */}
            {/* Debug Info removed per request */}
            
@@ -100,10 +113,17 @@ function App() {
              <Routes>
                <Route path="/*" element={<LazyAdminPanel />} />
              </Routes>
+           ) : isInternalSubdomain ? (
+             <Routes>
+               <Route path="/*" element={<LazyInternalPanel />} />
+             </Routes>
            ) : (
         <Routes>
           {/* Admin route - no header/footer (untuk akses dari domain utama) */}
           <Route path="/admin/*" element={<LazyAdminPanel />} />
+          
+          {/* Internal route - no header/footer (untuk akses dari domain utama/localhost) */}
+          <Route path="/internal/*" element={<LazyInternalPanel />} />
           
           {/* Main routes with header/footer */}
           <Route path="/" element={<PageLayout><HomePage /></PageLayout>} />
@@ -117,6 +137,7 @@ function App() {
           <Route path="/grand-design" element={<PageLayout><LazyGrandDesignPage /></PageLayout>} />
           <Route path="/galeri" element={<PageLayout><LazyGaleriPage /></PageLayout>} />
           <Route path="/kontak" element={<PageLayout><LazyKontakPage /></PageLayout>} />
+          <Route path="/pengaduan" element={<PageLayout><LazyComplaintsPage /></PageLayout>} />
           
           {/* Linktree route - no header/footer for clean linktree experience */}
           <Route path="/linktree" element={<LazyLinktreePage />} />

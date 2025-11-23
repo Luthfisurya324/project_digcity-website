@@ -23,6 +23,13 @@ export const isAdminSubdomain = (): boolean => {
   return hostname === 'admin.digcity.my.id';
 };
 
+export const isInternalSubdomain = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  
+  const hostname = window.location.hostname;
+  return hostname === 'internal.digcity.my.id';
+};
+
 export const shouldRedirectToLinktree = (): boolean => {
   if (typeof window === 'undefined') return false;
   
@@ -40,6 +47,24 @@ export const shouldRedirectToAdmin = (): boolean => {
   
   // Jika mengakses dari subdomain admin, langsung return true
   return hostname === 'admin.digcity.my.id';
+};
+
+export const shouldRedirectToInternal = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  
+  const hostname = window.location.hostname;
+  
+  // 1. Real subdomain
+  if (hostname === 'internal.digcity.my.id') {
+    return true;
+  }
+  
+  // 2. Development path bypass:
+  // Actually, for localhost path-based access, we should NOT redirect to subdomain mode
+  // because App.tsx handles path routing separately.
+  // If we return true here, App.tsx might assume we are in subdomain mode and mess up routing.
+  
+  return false;
 };
 
 export const redirectToLinktree = (): void => {
@@ -104,6 +129,28 @@ export const getAdminBasePath = (): string => {
   
   // Production domain utama: use /admin prefix
   return '/admin';
+};
+
+/**
+ * Get internal base path based on current environment
+ */
+export const getInternalBasePath = (): string => {
+  if (typeof window === 'undefined') return '/internal';
+  
+  const hostname = window.location.hostname;
+  
+  // Development environment or main domain: use /internal prefix
+  if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname.includes('localhost') || hostname === 'digcity.my.id') {
+    return '/internal';
+  }
+  
+  // Internal subdomain: no prefix needed
+  if (hostname === 'internal.digcity.my.id') {
+    return '';
+  }
+  
+  // Fallback
+  return '/internal';
 };
 
 /**

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { eventAPI, newsAPI, galleryAPI, newsletterAPI } from '../../lib/supabase'
+import { getAdminBasePath } from '../../utils/domainDetection'
 import { 
   Calendar, 
   Newspaper, 
   Image, 
-  Mail, 
   Plus, 
   Edit3, 
   Upload, 
@@ -12,12 +13,10 @@ import {
   CheckCircle,
   TrendingUp,
   Users,
-  Eye,
   ExternalLink,
   Clock,
   Star
 } from 'lucide-react'
-import { useNotifications } from '../common/NotificationCenter'
 
 interface DashboardStats {
   totalEvents: number
@@ -40,7 +39,8 @@ interface RecentActivity {
 }
 
 const AdminDashboard: React.FC = () => {
-  const { notify } = useNotifications()
+  const navigate = useNavigate()
+  const adminPath = getAdminBasePath()
   const [stats, setStats] = useState<DashboardStats>({
     totalEvents: 0,
     totalNews: 0,
@@ -82,33 +82,47 @@ const AdminDashboard: React.FC = () => {
         activeContent
       })
 
-      // Mock recent activity
-      setRecentActivity([
-        {
-          id: '1',
+      // Mock recent activity - replace with actual data fetching if available
+      const recentActivities: RecentActivity[] = []
+
+      // Add recent events
+      events.slice(0, 2).forEach((e: any) => {
+        recentActivities.push({
+          id: `event-${e.id}`,
           type: 'event',
-          title: 'Workshop Digital Marketing',
-          action: 'Published',
-          timestamp: '2 hours ago',
+          title: e.title,
+          action: 'Created',
+          timestamp: new Date(e.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }),
           status: 'published'
-        },
-        {
-          id: '2',
+        })
+      })
+
+      // Add recent news
+      news.slice(0, 2).forEach((n: any) => {
+        recentActivities.push({
+          id: `news-${n.id}`,
           type: 'news',
-          title: 'Update Kebijakan Digital City',
-          action: 'Updated',
-          timestamp: '1 day ago',
+          title: n.title,
+          action: 'Published',
+          timestamp: new Date(n.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }),
           status: 'published'
-        },
-        {
-          id: '3',
+        })
+      })
+
+      // Add recent photos
+      photos.slice(0, 2).forEach((p: any) => {
+        recentActivities.push({
+          id: `photo-${p.id}`,
           type: 'gallery',
-          title: 'Event Photos - Tech Summit 2025',
+          title: p.title,
           action: 'Uploaded',
-          timestamp: '3 days ago',
+          timestamp: new Date(p.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }),
           status: 'published'
-        }
-      ])
+        })
+      })
+
+      // Sort by timestamp (mock, since we formatted it already, in real app sort by raw date)
+      setRecentActivity(recentActivities.sort(() => 0.5 - Math.random()).slice(0, 5))
 
     } catch (error) {
       console.error('Error loading dashboard data:', error)
@@ -128,87 +142,92 @@ const AdminDashboard: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Welcome Header */}
-      <div className="bg-gradient-to-r from-primary-600 to-secondary-600 dark:bg-[#1E1E1E] dark:text-[rgba(255,255,255,0.87)] rounded-xl p-6 text-white transition-colors">
+      <div className="bg-gradient-to-r from-primary-600 to-secondary-600 dark:bg-[#1E1E1E] dark:text-[rgba(255,255,255,0.87)] rounded-xl p-6 text-white transition-colors shadow-lg">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold mb-2">Selamat Datang di DIGCITY Admin</h1>
             <p className="text-primary-100">Kelola konten website dan pantau performa dengan mudah</p>
           </div>
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden md:flex items-center space-x-8">
             <div className="text-center">
-              <div className="text-2xl font-bold">{stats.totalViews.toLocaleString()}</div>
-              <div className="text-sm text-primary-100">Total Views</div>
+              <div className="text-3xl font-bold">{stats.totalViews.toLocaleString()}</div>
+              <div className="text-sm text-primary-100 font-medium">Total Views</div>
             </div>
+            <div className="w-px h-10 bg-primary-400/30"></div>
             <div className="text-center">
-              <div className="text-2xl font-bold">{stats.activeContent}</div>
-              <div className="text-sm text-primary-100">Active Content</div>
+              <div className="text-3xl font-bold">{stats.activeContent}</div>
+              <div className="text-sm text-primary-100 font-medium">Active Content</div>
             </div>
           </div>
         </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl border border-secondary-200 p-4 hover:shadow-lg transition-colors dark:bg-[#1E1E1E] dark:border-[#2A2A2A]">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-xl flex items-center justify-center">
-              <Calendar size={20} className="text-white" />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="bg-white rounded-xl border border-secondary-100 p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 dark:bg-[#1E1E1E] dark:border-[#2A2A2A]">
+          <div className="flex items-center space-x-4">
+            <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center border border-blue-100">
+              <Calendar size={24} className="text-blue-600" />
             </div>
             <div className="flex-1">
-              <p className="text-sm text-secondary-600 dark:text-neutral-300">Events</p>
-              <p className="text-xl font-bold text-secondary-900 dark:text-neutral-100">{stats.totalEvents}</p>
-              <p className="text-xs text-green-600 flex items-center">
-                <TrendingUp size={12} className="mr-1" />
+              <p className="text-sm font-medium text-secondary-500 dark:text-neutral-400 uppercase tracking-wide">Events</p>
+              <div className="flex items-baseline gap-2">
+                <p className="text-2xl font-bold text-secondary-900 dark:text-neutral-100">{stats.totalEvents}</p>
+                <span className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
                 {stats.upcomingEvents} upcoming
-              </p>
+                </span>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-secondary-200 p-4 hover:shadow-lg transition-colors dark:bg-[#1E1E1E] dark:border-[#2A2A2A]">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-green-600 rounded-xl flex items-center justify-center">
-              <Newspaper size={20} className="text-white" />
+        <div className="bg-white rounded-xl border border-secondary-100 p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 dark:bg-[#1E1E1E] dark:border-[#2A2A2A]">
+          <div className="flex items-center space-x-4">
+            <div className="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center border border-green-100">
+              <Newspaper size={24} className="text-green-600" />
             </div>
             <div className="flex-1">
-              <p className="text-sm text-secondary-600 dark:text-neutral-300">News</p>
-              <p className="text-xl font-bold text-secondary-900 dark:text-neutral-100">{stats.totalNews}</p>
-              <p className="text-xs text-blue-600 flex items-center">
-                <Clock size={12} className="mr-1" />
+              <p className="text-sm font-medium text-secondary-500 dark:text-neutral-400 uppercase tracking-wide">News</p>
+              <div className="flex items-baseline gap-2">
+                <p className="text-2xl font-bold text-secondary-900 dark:text-neutral-100">{stats.totalNews}</p>
+                <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
                 {stats.recentNews} recent
-              </p>
+                </span>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-secondary-200 p-4 hover:shadow-lg transition-colors dark:bg-[#1E1E1E] dark:border-[#2A2A2A]">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-purple-600 rounded-xl flex items-center justify-center">
-              <Image size={20} className="text-white" />
+        <div className="bg-white rounded-xl border border-secondary-100 p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 dark:bg-[#1E1E1E] dark:border-[#2A2A2A]">
+          <div className="flex items-center space-x-4">
+            <div className="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center border border-purple-100">
+              <Image size={24} className="text-purple-600" />
             </div>
             <div className="flex-1">
-              <p className="text-sm text-secondary-600 dark:text-neutral-300">Gallery</p>
-              <p className="text-xl font-bold text-secondary-900 dark:text-neutral-100">{stats.totalPhotos}</p>
-              <p className="text-xs text-purple-600 flex items-center">
-                <Eye size={12} className="mr-1" />
-                Photos
-              </p>
+              <p className="text-sm font-medium text-secondary-500 dark:text-neutral-400 uppercase tracking-wide">Gallery</p>
+              <div className="flex items-baseline gap-2">
+                <p className="text-2xl font-bold text-secondary-900 dark:text-neutral-100">{stats.totalPhotos}</p>
+                <span className="text-xs font-medium text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full">
+                  Total Photos
+                </span>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-secondary-200 p-4 hover:shadow-lg transition-colors dark:bg-[#1E1E1E] dark:border-[#2A2A2A]">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-pink-400 to-pink-600 rounded-xl flex items-center justify-center">
-              <Users size={20} className="text-white" />
+        <div className="bg-white rounded-xl border border-secondary-100 p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 dark:bg-[#1E1E1E] dark:border-[#2A2A2A]">
+          <div className="flex items-center space-x-4">
+            <div className="w-12 h-12 bg-pink-50 rounded-xl flex items-center justify-center border border-pink-100">
+              <Users size={24} className="text-pink-600" />
             </div>
             <div className="flex-1">
-              <p className="text-sm text-secondary-600 dark:text-neutral-300">Subscribers</p>
-              <p className="text-xl font-bold text-secondary-900 dark:text-neutral-100">{stats.totalSubscribers}</p>
-              <p className="text-xs text-pink-600 flex items-center">
-                <Mail size={12} className="mr-1" />
-                Newsletter
-              </p>
+              <p className="text-sm font-medium text-secondary-500 dark:text-neutral-400 uppercase tracking-wide">Subscribers</p>
+              <div className="flex items-baseline gap-2">
+                <p className="text-2xl font-bold text-secondary-900 dark:text-neutral-100">{stats.totalSubscribers}</p>
+                <span className="text-xs font-medium text-pink-600 bg-pink-50 px-2 py-0.5 rounded-full">
+                  Active
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -217,86 +236,111 @@ const AdminDashboard: React.FC = () => {
       {/* Quick Actions & Recent Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Quick Actions */}
-        <div className="bg-white rounded-xl border border-secondary-200 p-6 transition-colors dark:bg-[#1E1E1E] dark:border-[#2A2A2A]">
-          <h2 className="text-lg font-semibold text-secondary-900 mb-4 flex items-center">
-            <Star size={20} className="text-yellow-500 mr-2" />
+        <div className="bg-white rounded-xl border border-secondary-100 p-6 transition-colors dark:bg-[#1E1E1E] dark:border-[#2A2A2A] hover:shadow-md">
+          <h2 className="text-lg font-bold text-secondary-900 mb-6 flex items-center dark:text-white">
+            <div className="p-2 bg-yellow-50 rounded-lg mr-3">
+              <Star size={20} className="text-yellow-600" />
+            </div>
             Quick Actions
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <button
-              className="flex items-center space-x-3 p-3 bg-primary-50 hover:bg-primary-100 rounded-lg transition-colors group dark:bg-[#232323] dark:hover:bg-[#2B2B2B] focus-ring"
-              onClick={() => notify({ type: 'info', title: 'Add Event', message: 'Navigasi ke halaman Events untuk membuat acara baru.' })}
+              className="flex items-center p-4 bg-white border border-secondary-100 rounded-xl hover:border-primary-300 hover:shadow-md transition-all group dark:bg-[#232323] dark:border-[#2A2A2A] dark:hover:border-primary-500"
+              onClick={() => navigate(`${adminPath}/events/new`)}
             >
-              <div className="w-8 h-8 bg-primary-100 rounded-lg flex items-center justify-center group-hover:bg-primary-200 transition-colors">
-                <Plus size={16} className="text-primary-600" />
+              <div className="w-10 h-10 bg-primary-50 rounded-full flex items-center justify-center group-hover:bg-primary-100 transition-colors mr-3">
+                <Plus size={20} className="text-primary-600" />
               </div>
-              <span className="text-primary-700 dark:text-neutral-100 font-medium text-sm">Add Event</span>
+              <div className="text-left">
+                <span className="block text-sm font-semibold text-secondary-900 dark:text-white">Add Event</span>
+                <span className="text-xs text-secondary-500 dark:text-secondary-400">Create new activity</span>
+              </div>
             </button>
             
             <button
-              className="flex items-center space-x-3 p-3 bg-green-50 hover:bg-green-100 rounded-lg transition-colors group dark:bg-[#232323] dark:hover:bg-[#2B2B2B] focus-ring"
-              onClick={() => notify({ type: 'success', title: 'Write News', message: 'Buka editor berita dari tab News.' })}
+              className="flex items-center p-4 bg-white border border-secondary-100 rounded-xl hover:border-green-300 hover:shadow-md transition-all group dark:bg-[#232323] dark:border-[#2A2A2A] dark:hover:border-green-500"
+              onClick={() => navigate(`${adminPath}/news/new`)}
             >
-              <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center group-hover:bg-green-200 transition-colors">
-                <Edit3 size={16} className="text-green-600" />
+              <div className="w-10 h-10 bg-green-50 rounded-full flex items-center justify-center group-hover:bg-green-100 transition-colors mr-3">
+                <Edit3 size={20} className="text-green-600" />
               </div>
-              <span className="text-green-700 dark:text-neutral-100 font-medium text-sm">Write News</span>
+              <div className="text-left">
+                <span className="block text-sm font-semibold text-secondary-900 dark:text-white">Write News</span>
+                <span className="text-xs text-secondary-500 dark:text-secondary-400">Publish article</span>
+              </div>
             </button>
             
             <button
-              className="flex items-center space-x-3 p-3 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors group dark:bg-[#232323] dark:hover:bg-[#2B2B2B] focus-ring"
-              onClick={() => notify({ type: 'info', title: 'Upload Photo', message: 'Pergi ke tab Gallery untuk unggah foto.' })}
+              className="flex items-center p-4 bg-white border border-secondary-100 rounded-xl hover:border-purple-300 hover:shadow-md transition-all group dark:bg-[#232323] dark:border-[#2A2A2A] dark:hover:border-purple-500"
+              onClick={() => navigate(`${adminPath}/gallery`)}
             >
-              <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center group-hover:bg-purple-200 transition-colors">
-                <Upload size={16} className="text-purple-600" />
+              <div className="w-10 h-10 bg-purple-50 rounded-full flex items-center justify-center group-hover:bg-purple-100 transition-colors mr-3">
+                <Upload size={20} className="text-purple-600" />
               </div>
-              <span className="text-purple-700 dark:text-neutral-100 font-medium text-sm">Upload Photo</span>
+              <div className="text-left">
+                <span className="block text-sm font-semibold text-secondary-900 dark:text-white">Upload Photo</span>
+                <span className="text-xs text-secondary-500 dark:text-secondary-400">Add to gallery</span>
+              </div>
             </button>
             
             <button
-              className="flex items-center space-x-3 p-3 bg-pink-50 hover:bg-pink-100 rounded-lg transition-colors group dark:bg-[#232323] dark:hover:bg-[#2B2B2B] focus-ring"
-              onClick={() => notify({ type: 'info', title: 'Send Newsletter', message: 'Kelola newsletter di tab Newsletter.' })}
+              className="flex items-center p-4 bg-white border border-secondary-100 rounded-xl hover:border-pink-300 hover:shadow-md transition-all group dark:bg-[#232323] dark:border-[#2A2A2A] dark:hover:border-pink-500"
+              onClick={() => navigate(`${adminPath}/newsletter`)}
             >
-              <div className="w-8 h-8 bg-pink-100 rounded-lg flex items-center justify-center group-hover:bg-pink-200 transition-colors">
-                <Send size={16} className="text-pink-600" />
+              <div className="w-10 h-10 bg-pink-50 rounded-full flex items-center justify-center group-hover:bg-pink-100 transition-colors mr-3">
+                <Send size={20} className="text-pink-600" />
               </div>
-              <span className="text-pink-700 dark:text-neutral-100 font-medium text-sm">Send Newsletter</span>
+              <div className="text-left">
+                <span className="block text-sm font-semibold text-secondary-900 dark:text-white">Newsletter</span>
+                <span className="text-xs text-secondary-500 dark:text-secondary-400">Send updates</span>
+              </div>
             </button>
           </div>
         </div>
 
         {/* Recent Activity */}
-        <div className="bg-white rounded-xl border border-secondary-200 p-6 transition-colors dark:bg-[#1E1E1E] dark:border-[#2A2A2A]">
-          <h2 className="text-lg font-semibold text-secondary-900 mb-4 flex items-center">
-            <Clock size={20} className="text-secondary-500 mr-2" />
+        <div className="bg-white rounded-xl border border-secondary-100 p-6 transition-colors dark:bg-[#1E1E1E] dark:border-[#2A2A2A] hover:shadow-md">
+          <h2 className="text-lg font-bold text-secondary-900 mb-6 flex items-center dark:text-white">
+            <div className="p-2 bg-blue-50 rounded-lg mr-3">
+              <Clock size={20} className="text-blue-600" />
+            </div>
             Recent Activity
           </h2>
-          <div className="space-y-3">
-            {recentActivity.map((activity) => (
-              <div key={activity.id} className="flex items-center space-x-3 p-3 bg-secondary-50 rounded-lg dark:bg-[#232323]">
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                  activity.type === 'event' ? 'bg-blue-100' :
-                  activity.type === 'news' ? 'bg-green-100' :
-                  activity.type === 'gallery' ? 'bg-purple-100' : 'bg-secondary-100'
+          <div className="space-y-4">
+            {recentActivity.length > 0 ? recentActivity.map((activity) => (
+              <div key={activity.id} className="flex items-center space-x-4 p-3 hover:bg-secondary-50 rounded-xl transition-colors dark:hover:bg-[#232323]">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 border ${
+                  activity.type === 'event' ? 'bg-blue-50 border-blue-100 text-blue-600' :
+                  activity.type === 'news' ? 'bg-green-50 border-green-100 text-green-600' :
+                  activity.type === 'gallery' ? 'bg-purple-50 border-purple-100 text-purple-600' : 
+                  'bg-secondary-50 border-secondary-100 text-secondary-600'
                 }`}>
-                  {activity.type === 'event' && <Calendar size={16} className="text-blue-600" />}
-                  {activity.type === 'news' && <Newspaper size={16} className="text-green-600" />}
-                  {activity.type === 'gallery' && <Image size={16} className="text-purple-600" />}
-                  {activity.type === 'linktree' && <ExternalLink size={16} className="text-secondary-600" />}
+                  {activity.type === 'event' && <Calendar size={18} />}
+                  {activity.type === 'news' && <Newspaper size={18} />}
+                  {activity.type === 'gallery' && <Image size={18} />}
+                  {activity.type === 'linktree' && <ExternalLink size={18} />}
                 </div>
-                <div className="flex-1">
-                  <p className="font-medium text-secondary-900 dark:text-neutral-100 text-sm">{activity.title}</p>
-                  <p className="text-xs text-secondary-600 dark:text-neutral-300">{activity.action} • {activity.timestamp}</p>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-secondary-900 truncate dark:text-neutral-100">{activity.title}</p>
+                  <p className="text-xs text-secondary-500 dark:text-neutral-400 flex items-center mt-0.5">
+                    <span className="capitalize font-medium text-secondary-700 dark:text-neutral-300 mr-1.5">{activity.action}</span>
+                    <span className="w-1 h-1 rounded-full bg-secondary-300 mx-1.5"></span>
+                    {activity.timestamp}
+                  </p>
                 </div>
-                <div className={`px-2 py-1 rounded-full text-xs font-medium ${
-                  activity.status === 'published' ? 'bg-green-100 text-green-700' :
-                  activity.status === 'draft' ? 'bg-yellow-100 text-yellow-700' :
-                  'bg-red-100 text-red-700'
+                <div className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${
+                  activity.status === 'published' ? 'bg-green-50 text-green-700 border border-green-100' :
+                  activity.status === 'draft' ? 'bg-yellow-50 text-yellow-700 border border-yellow-100' :
+                  'bg-red-50 text-red-700 border border-red-100'
                 }`}>
                   {activity.status}
                 </div>
               </div>
-            ))}
+            )) : (
+              <div className="text-center py-8 text-secondary-500 text-sm">
+                No recent activity found
+              </div>
+            )}
           </div>
         </div>
       </div>

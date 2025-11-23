@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react'
 import { supabase, authAPI } from '../../lib/supabase'
 import { useNavigate } from 'react-router-dom'
+import { getAdminBasePath } from '../../utils/domainDetection'
 
 const AdminLogin: React.FC = () => {
   const [email, setEmail] = useState('')
@@ -26,14 +27,16 @@ const AdminLogin: React.FC = () => {
         // Check if user is admin
         const isAdmin = await authAPI.isAdmin()
         if (isAdmin) {
-          navigate('/')
+          const basePath = getAdminBasePath()
+          navigate(basePath || '/', { replace: true })
         } else {
           setError('Access denied. Admin privileges required.')
           await supabase.auth.signOut()
         }
       }
-    } catch (err: any) {
-      setError(err.message || 'Login failed. Please check your credentials.')
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Login failed. Please check your credentials.'
+      setError(msg)
     } finally {
       setLoading(false)
     }

@@ -9,7 +9,9 @@ import {
   Calendar, 
   Upload,
   FolderOpen,
-  Eye
+  Eye,
+  ExternalLink,
+  Lock
 } from 'lucide-react'
 
 interface GalleryFormData {
@@ -30,7 +32,7 @@ const AdminGallery: React.FC = () => {
     title: '',
     description: '',
     image_url: '',
-    category: 'DIGIMON',
+    category: 'digimon',
     event_date: '',
     tags: []
   })
@@ -39,13 +41,16 @@ const AdminGallery: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState('all')
 
   const categories = [
-    { value: 'DIGIMON', label: 'DIGIMON' },
-    { value: 'Level Up Day', label: 'Level Up Day' },
-    { value: 'SCBD', label: 'SCBD' },
-    { value: 'Workshop', label: 'Workshop' },
-    { value: 'Seminar', label: 'Seminar' },
-    { value: 'Competition', label: 'Competition' },
-    { value: 'Other', label: 'Other' }
+    { value: 'digimon', label: 'DIGIMON' },
+    { value: 'levelup', label: 'Level Up Day' },
+    { value: 'scbd', label: 'SCBD' },
+    { value: 'merchandise', label: 'Merchandise' },
+    { value: 'networking', label: 'Networking' },
+    { value: 'social_impact', label: 'Social Impact' },
+    { value: 'workshop', label: 'Workshop' },
+    { value: 'seminar', label: 'Seminar' },
+    { value: 'competition', label: 'Kompetisi' },
+    { value: 'social', label: 'Social Activity' }
   ]
 
   useEffect(() => {
@@ -114,7 +119,7 @@ const AdminGallery: React.FC = () => {
       title: '',
       description: '',
       image_url: '',
-      category: 'DIGIMON',
+      category: 'digimon',
       event_date: '',
       tags: []
     })
@@ -138,6 +143,43 @@ const AdminGallery: React.FC = () => {
     if (e.key === 'Enter') {
       e.preventDefault()
       addTag()
+    }
+  }
+
+  const formatCategoryLabel = (cat: string) => {
+    const found = categories.find(c => c.value === cat)
+    if (found) return found.label
+    return cat.split(/[_-]/).map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
+  }
+
+  const isSyncedItem = (item: Gallery) => {
+    if (!item.tags) return false
+    return item.tags.some(tag => tag.startsWith('source:event:') || tag.startsWith('source:news:'))
+  }
+
+  const getSourceType = (item: Gallery): 'event' | 'news' | 'direct' => {
+    if (!item.tags) return 'direct'
+    if (item.tags.some(tag => tag.startsWith('source:event:'))) return 'event'
+    if (item.tags.some(tag => tag.startsWith('source:news:'))) return 'news'
+    return 'direct'
+  }
+
+  const handleSourceRedirect = (item: Gallery) => {
+    const sourceType = getSourceType(item)
+    if (sourceType === 'event') {
+      // Extract event ID from tag
+      const tag = item.tags?.find(t => t.startsWith('source:event:'))
+      if (tag) {
+        const id = tag.split(':')[2]
+        window.location.href = `/admin/events/edit/${id}`
+      }
+    } else if (sourceType === 'news') {
+      // Extract news ID from tag
+      const tag = item.tags?.find(t => t.startsWith('source:news:'))
+      if (tag) {
+        const id = tag.split(':')[2]
+        window.location.href = `/admin/news/edit/${id}`
+      }
     }
   }
 
@@ -205,19 +247,19 @@ const AdminGallery: React.FC = () => {
           >
             All ({gallery.length})
           </button>
-          {categories.map((cat) => {
-            const count = gallery.filter(item => item.category === cat.value).length
+          {Array.from(new Set(gallery.map(item => item.category))).map((cat) => {
+            const count = gallery.filter(item => item.category === cat).length
             return (
               <button
-                key={cat.value}
-                onClick={() => setSelectedCategory(cat.value)}
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
                 className={`px-4 py-2 rounded-lg transition-colors ${
-                  selectedCategory === cat.value
+                  selectedCategory === cat
                     ? 'bg-primary-600 text-white'
                     : 'bg-gray-100 text-secondary-700 hover:bg-gray-200'
                 }`}
               >
-                {cat.label} ({count})
+                {formatCategoryLabel(cat)} ({count})
               </button>
             )
           })}
@@ -410,9 +452,14 @@ const AdminGallery: React.FC = () => {
                         e.currentTarget.src = 'https://via.placeholder.com/400x300?text=Image+Not+Found'
                       }}
                     />
-                    <div className="absolute top-2 right-2">
-                      <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-primary-100 text-primary-800">
-                        {item.category}
+                    <div className="absolute top-2 right-2 flex gap-2">
+                      {isSyncedItem(item) && (
+                        <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-white/90 text-secondary-700 shadow-sm backdrop-blur-sm border border-gray-200">
+                          {getSourceType(item) === 'event' ? 'Event' : 'News'}
+                        </span>
+                      )}
+                      <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-primary-100 text-primary-800 shadow-sm backdrop-blur-sm">
+                        {formatCategoryLabel(item.category)}
                       </span>
                     </div>
                   </div>
@@ -450,19 +497,39 @@ const AdminGallery: React.FC = () => {
                       </div>
                     )}
                     
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between pt-2 border-t border-gray-50 mt-2">
+                      {isSyncedItem(item) ? (
+                        <div className="w-full">
+                          <p className="text-xs text-secondary-500 italic mb-2 flex items-center">
+                            <Lock size={12} className="mr-1" />
+                            Synced from {getSourceType(item) === 'event' ? 'Events' : 'News'}
+                          </p>
+                          <button
+                            onClick={() => handleSourceRedirect(item)}
+                            className="w-full py-2 px-3 bg-secondary-50 text-secondary-600 hover:bg-secondary-100 hover:text-secondary-900 rounded-lg transition-colors text-xs font-medium flex items-center justify-center"
+                          >
+                            <ExternalLink size={14} className="mr-1.5" />
+                            Manage in {getSourceType(item) === 'event' ? 'Events' : 'News'}
+                          </button>
+                        </div>
+                      ) : (
+                        <>
                       <button
                         onClick={() => handleEdit(item)}
-                        className="p-2 text-secondary-600 hover:text-secondary-900 hover:bg-secondary-50 rounded-lg transition-colors"
+                            className="flex-1 py-2 px-3 text-secondary-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors text-xs font-medium flex items-center justify-center mr-2"
                       >
-                        <Edit3 size={16} />
+                            <Edit3 size={14} className="mr-1.5" />
+                            Edit
                       </button>
                       <button
                         onClick={() => handleDelete(item.id)}
-                        className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+                            className="flex-1 py-2 px-3 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors text-xs font-medium flex items-center justify-center"
                       >
-                        <Trash2 size={16} />
+                            <Trash2 size={14} className="mr-1.5" />
+                            Delete
                       </button>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>

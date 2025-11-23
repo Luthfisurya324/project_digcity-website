@@ -162,6 +162,7 @@ pnpm-debug.log*
 .netlify/
 .firebase/
 .surge/
+.expo/
 
 # ===================================
 # Database & Backend Services

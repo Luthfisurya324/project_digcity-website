@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom'
 import type { LucideIcon } from 'lucide-react'
-import { authAPI } from '../lib/supabase'
+import { authAPI, supabase } from '../lib/supabase'
 import { getAdminBasePath } from '../utils/domainDetection'
 import AdminLogin from '../components/admin/AdminLogin'
 import AdminDashboard from '../components/admin/AdminDashboard'
@@ -27,8 +27,10 @@ import {
   ShieldCheck,
   ChevronLeft,
   ChevronRight,
-  Globe
+  Globe,
+  AlertCircle
 } from 'lucide-react'
+import AdminComplaints from '../components/admin/AdminComplaints'
 
 interface User {
   id: string
@@ -107,6 +109,15 @@ const navigationItems: NavigationItem[] = [
     section: 'audience'
   },
   {
+    id: 'complaints',
+    name: 'Keluhan',
+    description: 'Pengaduan mahasiswa',
+    icon: AlertCircle,
+    accent: 'from-red-500 to-orange-500',
+    path: '/complaints',
+    section: 'audience'
+  },
+  {
     id: 'cache',
     name: 'Cache Tools',
     description: 'Sinkronisasi data & performa',
@@ -136,6 +147,21 @@ const AdminPanel: React.FC = () => {
   useEffect(() => {
     checkUser()
   }, [])
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      checkUser()
+      if (event === 'SIGNED_IN') {
+        navigate(getAdminBasePath() || '/', { replace: true })
+      }
+      if (event === 'SIGNED_OUT') {
+        navigate('/', { replace: true })
+      }
+    })
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [navigate])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -172,6 +198,7 @@ const AdminPanel: React.FC = () => {
     if (path.startsWith(`${adminBasePath}/gallery`)) return 'gallery'
     if (path.startsWith(`${adminBasePath}/linktree`)) return 'linktree'
     if (path.startsWith(`${adminBasePath}/newsletter`)) return 'newsletter'
+    if (path.startsWith(`${adminBasePath}/complaints`)) return 'complaints'
     if (path.startsWith(`${adminBasePath}/cache`)) return 'cache'
     
     return 'dashboard'
@@ -502,6 +529,7 @@ const AdminPanel: React.FC = () => {
               <Route path="/gallery" element={<AdminGallery />} />
               <Route path="/linktree" element={<AdminLinktree />} />
               <Route path="/newsletter" element={<AdminNewsletter />} />
+              <Route path="/complaints" element={<AdminComplaints />} />
               <Route
                 path="/cache"
                 element={
