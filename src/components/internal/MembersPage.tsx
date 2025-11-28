@@ -4,12 +4,12 @@ import MemberForm from './MemberForm'
 import MemberImportModal from './MemberImportModal'
 import MemberEditForm from './MemberEditForm'
 import MemberCardModal from './MemberCardModal'
-import { 
-  Users, 
-  Search, 
-  Plus, 
-  Download, 
-  MoreVertical, 
+import {
+  Users,
+  Search,
+  Plus,
+  Download,
+  MoreVertical,
   Filter,
   User,
   Linkedin,
@@ -45,7 +45,7 @@ const MembersPage: React.FC = () => {
         const internalRole = (user?.user_metadata?.internal_role || 'anggota') as string
         setRoleLabel(internalRole)
         const normalized = internalRole.toLowerCase()
-        setCanManage(['ketua','wakil ketua','sekretaris','bendahara','administrator','admin','bph'].includes(normalized))
+        setCanManage(['ketua', 'wakil ketua', 'sekretaris', 'bendahara', 'administrator', 'admin', 'bph'].includes(normalized))
       } catch (error) {
         console.error('Error determining role:', error)
       }
@@ -66,9 +66,9 @@ const MembersPage: React.FC = () => {
 
   const filteredMembers = members.filter(member => {
     const matchesFilter = filter === 'all' || member.status === filter
-    const matchesSearch = member.full_name.toLowerCase().includes(search.toLowerCase()) || 
-                         member.npm.includes(search) ||
-                         member.division.toLowerCase().includes(search.toLowerCase())
+    const matchesSearch = member.full_name.toLowerCase().includes(search.toLowerCase()) ||
+      member.npm.includes(search) ||
+      member.division.toLowerCase().includes(search.toLowerCase())
     return matchesFilter && matchesSearch
   })
 
@@ -101,7 +101,7 @@ const MembersPage: React.FC = () => {
   }
 
   const exportCSV = () => {
-    const headers = ['Nama','NPM','Email','Telepon','Divisi','Jabatan','Angkatan','Status','LinkedIn','Instagram','Foto']
+    const headers = ['Nama', 'NPM', 'Email', 'Telepon', 'Divisi', 'Jabatan', 'Angkatan', 'Status', 'LinkedIn', 'Instagram', 'Foto']
     const escapeCsv = (value: unknown) => {
       const str = value == null ? '' : String(value)
       return '"' + str.replace(/"/g, '""') + '"'
@@ -143,7 +143,7 @@ const MembersPage: React.FC = () => {
             Akses: {roleLabel.toUpperCase()} {canManage ? '(full control)' : '(read only)'}
           </p>
         </div>
-      <div className="flex gap-2">
+        <div className="flex gap-2">
           <div className="flex bg-slate-100 dark:bg-[#2A2A2A] rounded-lg p-1">
             <button
               onClick={() => setViewMode('card')}
@@ -160,14 +160,14 @@ const MembersPage: React.FC = () => {
               <List size={18} />
             </button>
           </div>
-          <button 
+          <button
             className="px-4 py-2 bg-white dark:bg-[#1E1E1E] border border-slate-200 dark:border-[#2A2A2A] text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 transition-colors flex items-center gap-2"
             onClick={exportCSV}
           >
             <Download size={18} />
             <span className="hidden sm:inline">Export CSV</span>
           </button>
-          <button 
+          <button
             disabled={!canManage}
             title={canManage ? undefined : 'Hanya pengurus inti yang dapat import'}
             className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-colors ${canManage ? 'bg-white dark:bg-[#1E1E1E] border border-slate-200 dark:border-[#2A2A2A] text-slate-700 dark:text-slate-300 hover:bg-slate-50' : 'bg-slate-200 text-slate-500 cursor-not-allowed'}`}
@@ -176,7 +176,7 @@ const MembersPage: React.FC = () => {
             <Filter size={18} />
             <span className="hidden sm:inline">Import CSV</span>
           </button>
-          <button 
+          <button
             disabled={!canManage}
             title={canManage ? undefined : 'Hanya pengurus inti yang dapat menambah anggota'}
             className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-colors shadow-lg shadow-blue-200 dark:shadow-none ${canManage ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-slate-200 text-slate-500 cursor-not-allowed'}`}
@@ -210,11 +210,10 @@ const MembersPage: React.FC = () => {
             <button
               key={type.id}
               onClick={() => setFilter(type.id)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
-                filter === type.id
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${filter === type.id
                   ? 'bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800'
                   : 'bg-white dark:bg-[#1E1E1E] text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-[#2A2A2A]'
-              }`}
+                }`}
             >
               {type.label}
             </button>
@@ -225,81 +224,81 @@ const MembersPage: React.FC = () => {
       {/* Members View */}
       {filteredMembers.length > 0 ? (
         viewMode === 'card' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredMembers.map((member) => (
-            <div key={member.id} className="bg-white dark:bg-[#1E1E1E] rounded-xl border border-slate-200 dark:border-[#2A2A2A] p-6 hover:shadow-lg transition-all group relative overflow-hidden">
-              <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
-                <button 
-                  className="p-2 text-slate-400 hover:text-blue-600 rounded-lg hover:bg-blue-50"
-                  title="Kartu Anggota"
-                  onClick={() => setCardTarget(member)}
-                >
-                  <QrCode size={18} />
-                </button>
-                <button 
-                  className={`p-2 rounded-lg ${canManage ? 'text-slate-400 hover:text-emerald-600 hover:bg-emerald-50' : 'text-slate-300 cursor-not-allowed'}`}
-                  title={canManage ? 'Edit Profil' : 'Hanya pengurus inti'}
-                  onClick={() => canManage && setEditTarget(member)}
-                >
-                  <MoreVertical size={18} />
-                </button>
-              </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredMembers.map((member) => (
+              <div key={member.id} className="bg-white dark:bg-[#1E1E1E] rounded-xl border border-slate-200 dark:border-[#2A2A2A] p-6 hover:shadow-lg transition-all group relative overflow-hidden">
+                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                  <button
+                    className="p-2 text-slate-400 hover:text-blue-600 rounded-lg hover:bg-blue-50"
+                    title="Kartu Anggota"
+                    onClick={() => setCardTarget(member)}
+                  >
+                    <QrCode size={18} />
+                  </button>
+                  <button
+                    className={`p-2 rounded-lg ${canManage ? 'text-slate-400 hover:text-emerald-600 hover:bg-emerald-50' : 'text-slate-300 cursor-not-allowed'}`}
+                    title={canManage ? 'Edit Profil' : 'Hanya pengurus inti'}
+                    onClick={() => canManage && setEditTarget(member)}
+                  >
+                    <MoreVertical size={18} />
+                  </button>
+                </div>
 
-              <div className="flex flex-col items-center text-center mb-4">
-                <div className="w-20 h-20 rounded-full bg-slate-100 dark:bg-[#2A2A2A] mb-3 overflow-hidden border-2 border-white dark:border-[#333] shadow-sm">
-                  {member.image_url ? (
-                    <img src={member.image_url} alt={member.full_name} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-slate-400">
-                      <User size={32} />
-                    </div>
+                <div className="flex flex-col items-center text-center mb-4">
+                  <div className="w-20 h-20 rounded-full bg-slate-100 dark:bg-[#2A2A2A] mb-3 overflow-hidden border-2 border-white dark:border-[#333] shadow-sm">
+                    {member.image_url ? (
+                      <img src={member.image_url} alt={member.full_name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-slate-400">
+                        <User size={32} />
+                      </div>
+                    )}
+                  </div>
+                  <h3 className="font-bold text-slate-900 dark:text-white text-lg mb-1">{member.full_name}</h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-2">{member.position}</p>
+                  <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase border ${getStatusColor(member.status)}`}>
+                    {getStatusLabel(member.status)}
+                  </span>
+                </div>
+
+                <div className="space-y-3 border-t border-slate-100 dark:border-[#2A2A2A] pt-4">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-500 dark:text-slate-400">NPM</span>
+                    <span className="font-mono text-slate-700 dark:text-slate-300">{member.npm}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-500 dark:text-slate-400">Divisi</span>
+                    <span className="text-slate-700 dark:text-slate-300 text-right">{member.division}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-500 dark:text-slate-400">Angkatan</span>
+                    <span className="text-slate-700 dark:text-slate-300">{member.join_year}</span>
+                  </div>
+                </div>
+
+                <div className="flex justify-center gap-3 mt-6 pt-4 border-t border-slate-100 dark:border-[#2A2A2A]">
+                  <a href={`mailto:${member.email}`} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                    <Mail size={18} />
+                  </a>
+                  {member.phone && (
+                    <a href={`https://wa.me/${member.phone.replace(/^0/, '62')}`} target="_blank" rel="noreferrer" className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors">
+                      <Phone size={18} />
+                    </a>
+                  )}
+                  {member.linkedin_url && (
+                    <a href={member.linkedin_url} target="_blank" rel="noreferrer" className="p-2 text-slate-400 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors">
+                      <Linkedin size={18} />
+                    </a>
+                  )}
+                  {member.instagram_handle && (
+                    <a href={`https://instagram.com/${member.instagram_handle.replace('@', '')}`} target="_blank" rel="noreferrer" className="p-2 text-slate-400 hover:text-pink-600 hover:bg-pink-50 rounded-lg transition-colors">
+                      <Instagram size={18} />
+                    </a>
                   )}
                 </div>
-                <h3 className="font-bold text-slate-900 dark:text-white text-lg mb-1">{member.full_name}</h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400 mb-2">{member.position}</p>
-                <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase border ${getStatusColor(member.status)}`}>
-                  {getStatusLabel(member.status)}
-                </span>
               </div>
-
-              <div className="space-y-3 border-t border-slate-100 dark:border-[#2A2A2A] pt-4">
-                <div className="flex justify-between text-sm">
-                  <span className="text-slate-500 dark:text-slate-400">NPM</span>
-                  <span className="font-mono text-slate-700 dark:text-slate-300">{member.npm}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-slate-500 dark:text-slate-400">Divisi</span>
-                  <span className="text-slate-700 dark:text-slate-300 text-right">{member.division}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-slate-500 dark:text-slate-400">Angkatan</span>
-                  <span className="text-slate-700 dark:text-slate-300">{member.join_year}</span>
-                </div>
-              </div>
-
-              <div className="flex justify-center gap-3 mt-6 pt-4 border-t border-slate-100 dark:border-[#2A2A2A]">
-                <a href={`mailto:${member.email}`} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
-                  <Mail size={18} />
-                </a>
-                {member.phone && (
-                  <a href={`https://wa.me/${member.phone.replace(/^0/, '62')}`} target="_blank" rel="noreferrer" className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors">
-                    <Phone size={18} />
-                  </a>
-                )}
-                {member.linkedin_url && (
-                  <a href={member.linkedin_url} target="_blank" rel="noreferrer" className="p-2 text-slate-400 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors">
-                    <Linkedin size={18} />
-                  </a>
-                )}
-                {member.instagram_handle && (
-                  <a href={`https://instagram.com/${member.instagram_handle.replace('@', '')}`} target="_blank" rel="noreferrer" className="p-2 text-slate-400 hover:text-pink-600 hover:bg-pink-50 rounded-lg transition-colors">
-                    <Instagram size={18} />
-                  </a>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
         ) : (
           <div className="bg-white dark:bg-[#1E1E1E] rounded-xl border border-slate-200 dark:border-[#2A2A2A] overflow-hidden">
             <div className="overflow-x-auto">
@@ -364,7 +363,7 @@ const MembersPage: React.FC = () => {
           </div>
           <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-1">Belum ada anggota</h3>
           <p className="text-slate-500 dark:text-slate-400 mb-6">Mulai dengan menambahkan data pengurus atau anggota baru.</p>
-          <button 
+          <button
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors inline-flex items-center gap-2"
             onClick={() => setShowForm(true)}
           >
@@ -375,27 +374,27 @@ const MembersPage: React.FC = () => {
       )}
 
       {showForm && (
-        <MemberForm 
-          onClose={() => setShowForm(false)} 
-          onSuccess={loadMembers} 
+        <MemberForm
+          onClose={() => setShowForm(false)}
+          onSuccess={loadMembers}
         />
       )}
       {showImport && (
-        <MemberImportModal 
+        <MemberImportModal
           onClose={() => setShowImport(false)}
           onImported={loadMembers}
           existingMembers={members}
         />
       )}
       {editTarget && (
-        <MemberEditForm 
+        <MemberEditForm
           member={editTarget}
           onClose={() => setEditTarget(null)}
           onUpdated={async () => { await loadMembers(); setEditTarget(null) }}
         />
       )}
       {cardTarget && (
-        <MemberCardModal 
+        <MemberCardModal
           member={cardTarget}
           onClose={() => setCardTarget(null)}
         />

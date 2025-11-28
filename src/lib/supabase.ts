@@ -97,6 +97,7 @@ export interface FinanceTransaction {
   updated_at: string
   status?: 'pending' | 'approved' | 'rejected'
   sub_account?: string | null
+  budget_id?: string | null
 }
 
 export interface MemberDue {
@@ -134,7 +135,7 @@ export interface OrganizationMember {
   id: string
   full_name: string
   npm: string
-  email: string
+  email: string | null
   phone?: string
   division: string
   position: string
@@ -285,7 +286,7 @@ export const eventAPI = {
       .from('events')
       .select('*')
       .order('date', { ascending: false })
-    
+
     if (error) throw error
     return data as Event[]
   },
@@ -328,7 +329,7 @@ export const eventAPI = {
       .select('*')
       .eq('id', id)
       .single()
-    
+
     if (error) throw error
     return data as Event
   },
@@ -340,7 +341,7 @@ export const eventAPI = {
       .insert([event])
       .select()
       .single()
-    
+
     if (error) throw error
     const createdEvent = data as Event
     await syncGalleryFromEvent(createdEvent).catch((err) => {
@@ -357,7 +358,7 @@ export const eventAPI = {
       .eq('id', id)
       .select()
       .single()
-    
+
     if (error) throw error
     const updatedEvent = data as Event
     await syncGalleryFromEvent(updatedEvent).catch((err) => {
@@ -372,7 +373,7 @@ export const eventAPI = {
       .from('events')
       .delete()
       .eq('id', id)
-    
+
     if (error) throw error
     await removeGallerySource('event', id).catch((err) => {
       console.warn('Failed to remove gallery entries for event delete:', err)
@@ -400,7 +401,7 @@ export const newsAPI = {
       .from('news')
       .select('*')
       .order('published_date', { ascending: false })
-    
+
     if (error) throw error
     return data as News[]
   },
@@ -412,7 +413,7 @@ export const newsAPI = {
       .select('*')
       .eq('id', id)
       .single()
-    
+
     if (error) throw error
     return data as News
   },
@@ -424,7 +425,7 @@ export const newsAPI = {
       .insert([news])
       .select()
       .single()
-    
+
     if (error) throw error
     const createdNews = data as News
     await syncGalleryFromNews(createdNews).catch((err) => {
@@ -441,7 +442,7 @@ export const newsAPI = {
       .eq('id', id)
       .select()
       .single()
-    
+
     if (error) throw error
     const updatedNews = data as News
     await syncGalleryFromNews(updatedNews).catch((err) => {
@@ -456,7 +457,7 @@ export const newsAPI = {
       .from('news')
       .delete()
       .eq('id', id)
-    
+
     if (error) throw error
     await removeGallerySource('news', id).catch((err) => {
       console.warn('Failed to remove gallery entries for news delete:', err)
@@ -472,7 +473,7 @@ export const galleryAPI = {
       .from('gallery')
       .select('*')
       .order('event_date', { ascending: false })
-    
+
     if (error) throw error
     return data as Gallery[]
   },
@@ -484,7 +485,7 @@ export const galleryAPI = {
       .select('*')
       .eq('category', category)
       .order('event_date', { ascending: false })
-    
+
     if (error) throw error
     return data as Gallery[]
   },
@@ -496,7 +497,7 @@ export const galleryAPI = {
       .insert([gallery])
       .select()
       .single()
-    
+
     if (error) throw error
     return data as Gallery
   },
@@ -509,7 +510,7 @@ export const galleryAPI = {
       .eq('id', id)
       .select()
       .single()
-    
+
     if (error) throw error
     return data as Gallery
   },
@@ -520,7 +521,7 @@ export const galleryAPI = {
       .from('gallery')
       .delete()
       .eq('id', id)
-    
+
     if (error) throw error
   }
 }
@@ -533,7 +534,7 @@ export const financeAPI = {
       .from('finance_transactions')
       .select('*')
       .order('date', { ascending: false })
-    
+
     if (error) throw error
     return data as FinanceTransaction[]
   },
@@ -543,15 +544,15 @@ export const financeAPI = {
     const { data, error } = await supabase
       .from('finance_transactions')
       .select('type, amount, status')
-    
+
     if (error) throw error
-    
+
     // Only count approved transactions for balance
     const approvedTransactions = data.filter(t => t.status === 'approved' || !t.status)
-    
+
     const income = approvedTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + Number(t.amount), 0)
     const expense = approvedTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + Number(t.amount), 0)
-    
+
     return {
       totalIncome: income,
       totalExpense: expense,
@@ -566,7 +567,7 @@ export const financeAPI = {
       .insert([transaction])
       .select()
       .single()
-    
+
     if (error) throw error
     return data as FinanceTransaction
   },
@@ -579,7 +580,7 @@ export const financeAPI = {
       .eq('id', id)
       .select()
       .single()
-    
+
     if (error) throw error
     return data as FinanceTransaction
   },
@@ -590,7 +591,7 @@ export const financeAPI = {
       .from('finance_transactions')
       .delete()
       .eq('id', id)
-    
+
     if (error) throw error
   },
 
@@ -680,7 +681,7 @@ export const documentsAPI = {
       .from('organization_documents')
       .select('*')
       .order('created_at', { ascending: false })
-    
+
     if (error) throw error
     return data as Document[]
   },
@@ -695,7 +696,7 @@ export const documentsAPI = {
       .insert([{ ...doc, ticket_number: ticketNumber, version }])
       .select()
       .single()
-    
+
     if (error) throw error
     return data as Document
   },
@@ -719,7 +720,7 @@ export const documentsAPI = {
       .eq('id', id)
       .select()
       .single()
-    
+
     if (error) throw error
     return data as Document
   },
@@ -730,7 +731,7 @@ export const documentsAPI = {
       .from('organization_documents')
       .delete()
       .eq('id', id)
-    
+
     if (error) throw error
   },
 
@@ -762,11 +763,38 @@ export const membersAPI = {
       .from('organization_members')
       .select('*')
       .order('full_name', { ascending: true })
-    
+
     if (error) throw error
     return data as OrganizationMember[]
   },
 
+  // Get email by NPM (secure)
+  async getEmailByNpm(npm: string) {
+    const { data, error } = await supabase.rpc('get_member_email_by_npm', { npm_input: npm })
+    if (error) throw error
+    return data as string | null
+  },
+
+  // Get member by email (secure)
+  async getMemberByEmail(email: string) {
+    const { data, error } = await supabase.rpc('get_member_by_email', { email_input: email })
+    if (error) throw error
+    return data as OrganizationMember | null
+  },
+
+  // Get member by NPM (secure)
+  async getMemberByNpm(npm: string) {
+    const { data, error } = await supabase.rpc('get_member_by_npm', { npm_input: npm })
+    if (error) throw error
+    return data as OrganizationMember | null
+  },
+
+  // Update email if empty (secure)
+  async updateEmailIfEmpty(memberId: string, newEmail: string) {
+    const { data, error } = await supabase.rpc('update_member_email_if_empty', { member_id: memberId, new_email: newEmail })
+    if (error) throw error
+    return data as boolean
+  },
   // Create member
   async create(member: Omit<OrganizationMember, 'id' | 'created_at' | 'updated_at'>) {
     const { data, error } = await supabase
@@ -774,7 +802,7 @@ export const membersAPI = {
       .insert([member])
       .select()
       .single()
-    
+
     if (error) throw error
     return data as OrganizationMember
   },
@@ -787,7 +815,7 @@ export const membersAPI = {
       .eq('id', id)
       .select()
       .single()
-    
+
     if (error) throw error
     return data as OrganizationMember
   },
@@ -798,7 +826,7 @@ export const membersAPI = {
       .from('organization_members')
       .delete()
       .eq('id', id)
-    
+
     if (error) throw error
   },
 
@@ -821,6 +849,78 @@ export const membersAPI = {
     return data.publicUrl
   }
 }
+
+export interface InventoryItem {
+  id: string
+  name: string
+  category: string
+  quantity: number
+  condition: 'good' | 'repair_needed' | 'broken'
+  acquisition_date?: string
+  price: number
+  location?: string
+  image_url?: string
+  notes?: string
+  created_at?: string
+  updated_at?: string
+}
+
+export const inventoryAPI = {
+  list: async () => {
+    const { data, error } = await supabase
+      .from('inventory_items')
+      .select('*')
+      .order('created_at', { ascending: false })
+    if (error) throw error
+    return data as InventoryItem[]
+  },
+
+  create: async (item: Omit<InventoryItem, 'id' | 'created_at' | 'updated_at'>) => {
+    const { data, error } = await supabase
+      .from('inventory_items')
+      .insert([item])
+      .select()
+      .single()
+    if (error) throw error
+    return data as InventoryItem
+  },
+
+  update: async (id: string, updates: Partial<InventoryItem>) => {
+    const { data, error } = await supabase
+      .from('inventory_items')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single()
+    if (error) throw error
+    return data as InventoryItem
+  },
+
+  delete: async (id: string) => {
+    const { error } = await supabase
+      .from('inventory_items')
+      .delete()
+      .eq('id', id)
+    if (error) throw error
+    return true
+  },
+
+  uploadImage: async (file: File) => {
+    const fileExt = file.name.split('.').pop()
+    const fileName = `${Math.random()}.${fileExt}`
+    const filePath = `inventory/${fileName}`
+
+    const { error: uploadError } = await supabase.storage
+      .from('documents') // Reusing documents bucket for now, or create 'inventory' bucket if preferred
+      .upload(filePath, file)
+
+    if (uploadError) throw uploadError
+
+    const { data } = supabase.storage.from('documents').getPublicUrl(filePath)
+    return data.publicUrl
+  }
+}
+
 
 export interface MemberSanction {
   id: string
@@ -865,7 +965,7 @@ export const attendanceAPI = {
       .from('internal_events')
       .select('*')
       .order('date', { ascending: false })
-    
+
     if (error) throw error
     return data as InternalEvent[]
   },
@@ -874,13 +974,13 @@ export const attendanceAPI = {
   async createEvent(event: Omit<InternalEvent, 'id' | 'created_at' | 'updated_at' | 'qr_code'>) {
     // Generate QR code string
     const qrCode = createQrPayload()
-    
+
     const { data, error } = await supabase
       .from('internal_events')
       .insert([{ ...event, qr_code: qrCode }])
       .select()
       .single()
-    
+
     if (error) throw error
     return data as InternalEvent
   },
@@ -899,6 +999,16 @@ export const attendanceAPI = {
     return data.qr_code as string
   },
 
+  // Delete internal event
+  async deleteEvent(id: string) {
+    const { error } = await supabase
+      .from('internal_events')
+      .delete()
+      .eq('id', id)
+
+    if (error) throw error
+  },
+
   // Record attendance
   async recordAttendance(attendance: Omit<Attendance, 'id' | 'created_at'>) {
     const { data, error } = await supabase
@@ -906,7 +1016,7 @@ export const attendanceAPI = {
       .insert([attendance])
       .select()
       .single()
-    
+
     if (error) throw error
     return data as Attendance
   },
@@ -918,7 +1028,7 @@ export const attendanceAPI = {
       .select('*')
       .eq('event_id', eventId)
       .order('check_in_time', { ascending: true })
-    
+
     if (error) throw error
     return data as Attendance[]
   },
@@ -946,7 +1056,7 @@ export const authAPI = {
       email,
       password
     })
-    
+
     if (error) throw error
     return data
   },
@@ -969,13 +1079,13 @@ export const authAPI = {
     try {
       const user = await this.getCurrentUser()
       if (!user) return false
-      
+
       // Primary: cek dari user metadata (lebih reliable)
       const isAdminFromMetadata = this.checkAdminFromMetadata(user)
       if (isAdminFromMetadata) {
         return true
       }
-      
+
       // Fallback: coba cek dari tabel users jika ada
       try {
         const { data, error } = await supabase
@@ -983,12 +1093,12 @@ export const authAPI = {
           .select('role')
           .eq('id', user.id)
           .single()
-        
+
         if (error) {
           console.warn('Users table not accessible, using metadata only:', error)
           return false
         }
-        
+
         return data.role === 'admin'
       } catch (tableError) {
         console.warn('Users table not accessible, using metadata only:', tableError)
@@ -1013,6 +1123,118 @@ export const authAPI = {
   }
 }
 
+// UPM Types
+export interface UPMAllocation {
+  id: string
+  period: string
+  total_amount: number
+  start_date: string
+  end_date: string
+  created_at: string
+}
+
+export interface UPMRequest {
+  id: string
+  allocation_id: string
+  program_id?: string
+  description: string
+  amount_proposed: number
+  amount_approved?: number
+  status: 'pending' | 'approved' | 'rejected' | 'disbursed'
+  submission_date: string
+  disbursement_date?: string
+  created_at: string
+  // Joins
+  internal_events?: {
+    title: string
+  }
+}
+
+// UPM API
+export const upmAPI = {
+  // Allocations
+  async getAllocations() {
+    const { data, error } = await supabase
+      .from('upm_allocations')
+      .select('*')
+      .order('created_at', { ascending: false })
+
+    if (error) throw error
+    return data as UPMAllocation[]
+  },
+
+  async createAllocation(allocation: Omit<UPMAllocation, 'id' | 'created_at'>) {
+    const { data, error } = await supabase
+      .from('upm_allocations')
+      .insert(allocation)
+      .select()
+      .single()
+
+    if (error) throw error
+    return data as UPMAllocation
+  },
+
+  async updateAllocation(id: string, updates: Partial<UPMAllocation>) {
+    const { data, error } = await supabase
+      .from('upm_allocations')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (error) throw error
+    return data as UPMAllocation
+  },
+
+  // Requests
+  async getRequests(allocationId: string) {
+    const { data, error } = await supabase
+      .from('upm_requests')
+      .select('*, internal_events(title)')
+      .eq('allocation_id', allocationId)
+      .order('submission_date', { ascending: false })
+
+    if (error) throw error
+    return data as UPMRequest[]
+  },
+
+  async createRequest(request: Omit<UPMRequest, 'id' | 'created_at' | 'status'>) {
+    const { data, error } = await supabase
+      .from('upm_requests')
+      .insert({ ...request, status: 'pending' })
+      .select()
+      .single()
+
+    if (error) throw error
+    return data as UPMRequest
+  },
+
+  async updateRequestStatus(id: string, status: UPMRequest['status'], amount_approved?: number, disbursement_date?: string) {
+    const updates: any = { status }
+    if (amount_approved !== undefined) updates.amount_approved = amount_approved
+    if (disbursement_date !== undefined) updates.disbursement_date = disbursement_date
+
+    const { data, error } = await supabase
+      .from('upm_requests')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (error) throw error
+    return data as UPMRequest
+  },
+
+  async deleteRequest(id: string) {
+    const { error } = await supabase
+      .from('upm_requests')
+      .delete()
+      .eq('id', id)
+
+    if (error) throw error
+  }
+}
+
 // Newsletter API
 export const newsletterAPI = {
   // Subscribe to newsletter
@@ -1022,7 +1244,7 @@ export const newsletterAPI = {
       .insert([{ email }])
       .select()
       .single()
-    
+
     if (error) {
       // Check if email already exists
       if (error.code === '23505') {
@@ -1041,7 +1263,7 @@ export const newsletterAPI = {
       .eq('email', email)
       .select()
       .single()
-    
+
     if (error) throw error
     return data
   },
@@ -1053,7 +1275,7 @@ export const newsletterAPI = {
       .select('*')
       .eq('is_active', true)
       .order('subscribed_at', { ascending: false })
-    
+
     if (error) throw error
     return data
   },
@@ -1064,7 +1286,7 @@ export const newsletterAPI = {
       .from('newsletter')
       .select('*', { count: 'exact', head: true })
       .eq('is_active', true)
-    
+
     if (error) throw error
     return count || 0
   },
@@ -1076,7 +1298,7 @@ export const newsletterAPI = {
       .select('is_active')
       .eq('email', email)
       .single()
-    
+
     if (error) {
       if (error.code === 'PGRST116') return false // No rows found
       throw error
@@ -1299,13 +1521,13 @@ const syncGalleryEntries = async (options: {
 }) => {
   const { sourceType, sourceId, images, title, description, category, date } = options
   if (!images || images.length === 0) return
-  
+
   const sourceTag = buildSourceTag(sourceType, sourceId)
   await supabase
     .from('gallery')
     .delete()
     .contains('tags', [sourceTag])
-  
+
   const today = new Date().toISOString()
   const rows = images.map((imageUrl) => ({
     title: title || 'Dokumentasi DIGCITY',
@@ -1317,7 +1539,7 @@ const syncGalleryEntries = async (options: {
     created_at: today,
     updated_at: today
   }))
-  
+
   const { error } = await supabase.from('gallery').insert(rows)
   if (error) throw error
 }
@@ -1340,7 +1562,7 @@ const syncGalleryFromEvent = async (event: Event) => {
   }
   const images = Array.from(imagesSet)
   if (images.length === 0) return
-  
+
   await syncGalleryEntries({
     sourceType: 'event',
     sourceId: event.id,
@@ -1363,4 +1585,66 @@ const syncGalleryFromNews = async (news: News) => {
     category: news.category,
     date: news.published_date
   })
+}
+export interface WorkProgramBudget {
+  id: string
+  program_id: string
+  item_name: string
+  unit_price: number
+  quantity: number
+  total_price: number
+  status: 'planned' | 'approved' | 'rejected'
+  category: string
+  created_at: string
+  updated_at: string
+}
+
+// API functions for Budgets
+export const budgetAPI = {
+  // Get budgets by program ID
+  async getBudgets(programId: string) {
+    const { data, error } = await supabase
+      .from('work_program_budgets')
+      .select('*')
+      .eq('program_id', programId)
+      .order('created_at', { ascending: true })
+
+    if (error) throw error
+    return data as WorkProgramBudget[]
+  },
+
+  // Create budget item
+  async create(budget: Omit<WorkProgramBudget, 'id' | 'created_at' | 'updated_at'>) {
+    const { data, error } = await supabase
+      .from('work_program_budgets')
+      .insert([budget])
+      .select()
+      .single()
+
+    if (error) throw error
+    return data as WorkProgramBudget
+  },
+
+  // Update budget item
+  async update(id: string, updates: Partial<WorkProgramBudget>) {
+    const { data, error } = await supabase
+      .from('work_program_budgets')
+      .update({ ...updates, updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (error) throw error
+    return data as WorkProgramBudget
+  },
+
+  // Delete budget item
+  async delete(id: string) {
+    const { error } = await supabase
+      .from('work_program_budgets')
+      .delete()
+      .eq('id', id)
+
+    if (error) throw error
+  }
 }

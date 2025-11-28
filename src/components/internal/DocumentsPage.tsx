@@ -4,13 +4,13 @@ import { useNotifications } from '../common/NotificationCenter'
 import DocumentForm from './DocumentForm'
 import DocumentTemplates from './DocumentTemplates'
 import DocumentDetail from './DocumentDetail'
-import { 
-  FileText, 
-  Search, 
-  Plus, 
-  Download, 
-  Eye, 
-  Clock, 
+import {
+  FileText,
+  Search,
+  Plus,
+  Download,
+  Eye,
+  Clock,
   File,
   Shield
 } from 'lucide-react'
@@ -61,8 +61,8 @@ const DocumentsPage: React.FC = () => {
 
   const filteredDocuments = documents.filter(doc => {
     const matchesFilter = typeFilter === 'all' || doc.type === typeFilter
-    const matchesSearch = doc.title.toLowerCase().includes(search.toLowerCase()) || 
-                         doc.ticket_number.toLowerCase().includes(search.toLowerCase())
+    const matchesSearch = doc.title.toLowerCase().includes(search.toLowerCase()) ||
+      doc.ticket_number.toLowerCase().includes(search.toLowerCase())
     return matchesFilter && matchesSearch
   })
 
@@ -129,19 +129,18 @@ const DocumentsPage: React.FC = () => {
           </p>
         </div>
         <div className="flex gap-2">
-          <button 
+          <button
             className="px-4 py-2 bg-white dark:bg-[#1E1E1E] border border-slate-200 dark:border-[#2A2A2A] text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 transition-colors flex items-center gap-2"
             onClick={() => setShowTemplates(true)}
-            >
+          >
             <Download size={18} />
             <span className="hidden sm:inline">Templates</span>
           </button>
-          <button 
+          <button
             disabled={!canManage}
             title={canManage ? undefined : 'Hanya pengurus inti yang dapat membuat dokumen'}
-            className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-colors shadow-lg shadow-blue-200 dark:shadow-none ${
-              canManage ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-slate-200 text-slate-500 cursor-not-allowed'
-            }`}
+            className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-colors shadow-lg shadow-blue-200 dark:shadow-none ${canManage ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-slate-200 text-slate-500 cursor-not-allowed'
+              }`}
             onClick={() => handleOpenForm('create')}
           >
             <Plus size={18} />
@@ -172,11 +171,10 @@ const DocumentsPage: React.FC = () => {
             <button
               key={type.id}
               onClick={() => setTypeFilter(type.id)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
-                typeFilter === type.id
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${typeFilter === type.id
                   ? 'bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800'
                   : 'bg-white dark:bg-[#1E1E1E] text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-[#2A2A2A]'
-              }`}
+                }`}
             >
               {type.label}
             </button>
@@ -189,18 +187,17 @@ const DocumentsPage: React.FC = () => {
         {filteredDocuments.length > 0 ? (
           <div className="divide-y divide-slate-100 dark:divide-[#2A2A2A]">
             {filteredDocuments.map((doc) => (
-              <div 
-                key={doc.id} 
+              <div
+                key={doc.id}
                 className="p-4 hover:bg-slate-50 dark:hover:bg-[#232323] transition-colors group cursor-pointer"
                 onClick={() => setSelectedDocument(doc)}
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start gap-4">
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${
-                      doc.type === 'incoming' ? 'bg-blue-100 text-blue-600' :
-                      doc.type === 'outgoing' ? 'bg-purple-100 text-purple-600' :
-                      'bg-orange-100 text-orange-600'
-                    }`}>
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${doc.type === 'incoming' ? 'bg-blue-100 text-blue-600' :
+                        doc.type === 'outgoing' ? 'bg-purple-100 text-purple-600' :
+                          'bg-orange-100 text-orange-600'
+                      }`}>
                       <FileText size={20} />
                     </div>
                     <div>
@@ -214,7 +211,7 @@ const DocumentsPage: React.FC = () => {
                       </div>
                       <h3 className="font-semibold text-slate-900 dark:text-white mb-1">{doc.title}</h3>
                       <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-1">{doc.description}</p>
-                      
+
                       <div className="flex items-center gap-4 mt-3 text-xs text-slate-500 dark:text-slate-400">
                         <span className="flex items-center gap-1">
                           <Clock size={12} />
@@ -231,9 +228,9 @@ const DocumentsPage: React.FC = () => {
 
                   <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     {doc.file_url && (
-                      <a 
-                        href={doc.file_url} 
-                        target="_blank" 
+                      <a
+                        href={doc.file_url}
+                        target="_blank"
                         rel="noreferrer"
                         className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                         title="Lihat Dokumen"
@@ -254,7 +251,7 @@ const DocumentsPage: React.FC = () => {
             </div>
             <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-1">Belum ada dokumen</h3>
             <p className="text-slate-500 dark:text-slate-400 mb-6">Mulai dengan membuat surat baru atau upload arsip lama.</p>
-            <button 
+            <button
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors inline-flex items-center gap-2"
               onClick={() => setShowForm(true)}
             >
@@ -266,7 +263,7 @@ const DocumentsPage: React.FC = () => {
       </div>
 
       {showForm && (
-        <DocumentForm 
+        <DocumentForm
           mode={formMode}
           document={formDocument}
           onClose={handleCloseForm}
@@ -275,7 +272,7 @@ const DocumentsPage: React.FC = () => {
       )}
 
       {showTemplates && (
-        <DocumentTemplates 
+        <DocumentTemplates
           onClose={() => setShowTemplates(false)}
         />
       )}

@@ -6,9 +6,10 @@ import { X, Check } from 'lucide-react'
 interface EventFormProps {
   onClose: () => void
   onSuccess: () => void
+  initialType?: 'meeting' | 'work_program' | 'gathering' | 'other'
 }
 
-const EventForm: React.FC<EventFormProps> = ({ onClose, onSuccess }) => {
+const EventForm: React.FC<EventFormProps> = ({ onClose, onSuccess, initialType = 'meeting' }) => {
   const { notify } = useNotifications()
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
@@ -16,7 +17,7 @@ const EventForm: React.FC<EventFormProps> = ({ onClose, onSuccess }) => {
   const [endDate, setEndDate] = useState('')
   const [location, setLocation] = useState('')
   const [division, setDivision] = useState('')
-  const [type, setType] = useState<'meeting' | 'work_program' | 'gathering' | 'other'>('meeting')
+  const [type, setType] = useState<'meeting' | 'work_program' | 'gathering' | 'other'>(initialType)
   const [loading, setLoading] = useState(false)
   const [divisionOptions, setDivisionOptions] = useState<string[]>([])
   useEffect(() => {

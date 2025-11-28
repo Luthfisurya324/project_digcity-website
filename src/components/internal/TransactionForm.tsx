@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { financeAPI, supabase, FinanceTransaction } from '../../lib/supabase'
+import { financeAPI, supabase, FinanceTransaction, auditAPI } from '../../lib/supabase'
 import { X, Upload, Check } from 'lucide-react'
 
 interface TransactionFormProps {
@@ -64,7 +64,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onClose, onSuccess, m
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return
-    
+
     setUploading(true)
     try {
       const file = e.target.files[0]
@@ -97,8 +97,15 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onClose, onSuccess, m
           sub_account: subAccount,
           status
         })
+        await auditAPI.log({
+          module: 'finance',
+          action: 'update_transaction',
+          entity_type: 'transaction',
+          entity_id: transaction.id,
+          details: { amount: Number(amount), type, category }
+        })
       } else {
-        await financeAPI.create({
+        const newTx = await financeAPI.create({
           type,
           amount: Number(amount),
           category,
@@ -109,6 +116,15 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onClose, onSuccess, m
           created_by: user.id,
           status
         })
+        if (newTx) {
+          await auditAPI.log({
+            module: 'finance',
+            action: 'create_transaction',
+            entity_type: 'transaction',
+            entity_id: newTx.id,
+            details: { amount: Number(amount), type, category }
+          })
+        }
       }
 
       onSuccess()
@@ -139,22 +155,20 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onClose, onSuccess, m
             <button
               type="button"
               onClick={() => setType('income')}
-              className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${
-                type === 'income'
-                  ? 'bg-white dark:bg-[#1E1E1E] text-emerald-600 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
-              }`}
+              className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${type === 'income'
+                ? 'bg-white dark:bg-[#1E1E1E] text-emerald-600 shadow-sm'
+                : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                }`}
             >
               Pemasukan
             </button>
             <button
               type="button"
               onClick={() => setType('expense')}
-              className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${
-                type === 'expense'
-                  ? 'bg-white dark:bg-[#1E1E1E] text-rose-600 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
-              }`}
+              className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${type === 'expense'
+                ? 'bg-white dark:bg-[#1E1E1E] text-rose-600 shadow-sm'
+                : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                }`}
             >
               Pengeluaran
             </button>

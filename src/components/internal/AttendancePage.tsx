@@ -4,6 +4,7 @@ import EventForm from './EventForm'
 import AttendanceDetail from './AttendanceDetail'
 import EventQRModal from './EventQRModal'
 import EventCalendar from './EventCalendar'
+import QRScannerModal from './QRScannerModal'
 import {
   Calendar,
   Clock,
@@ -16,7 +17,8 @@ import {
   CalendarPlus,
   TrendingUp,
   Medal,
-  Filter
+  Filter,
+  Trash2
 } from 'lucide-react'
 
 type ActivityStats = {
@@ -53,6 +55,7 @@ const AttendancePage: React.FC = () => {
   const [events, setEvents] = useState<InternalEvent[]>([])
   const [loadingEvents, setLoadingEvents] = useState(true)
   const [showForm, setShowForm] = useState(false)
+  const [showScanner, setShowScanner] = useState(false)
   const [selectedEvent, setSelectedEvent] = useState<InternalEvent | null>(null)
   const [qrEvent, setQrEvent] = useState<InternalEvent | null>(null)
   const [viewMode, setViewMode] = useState<'grid' | 'calendar'>('grid')
@@ -67,6 +70,7 @@ const AttendancePage: React.FC = () => {
   const [eventTypeFilter, setEventTypeFilter] = useState<'all' | 'meeting' | 'work_program' | 'gathering' | 'other'>('all')
   const [monthFilter, setMonthFilter] = useState<string>('')
   const [divisionOptions, setDivisionOptions] = useState<string[]>([])
+  const [visibleCount, setVisibleCount] = useState(9)
 
   useEffect(() => {
     loadEvents()
@@ -76,7 +80,7 @@ const AttendancePage: React.FC = () => {
       try {
         const list = await orgAPI.getStructure(null)
         setDivisionOptions(list.map((d: OrganizationDivision) => d.name))
-      } catch {}
+      } catch { }
     }
     loadDivisions()
   }, [])
@@ -95,6 +99,19 @@ const AttendancePage: React.FC = () => {
       console.error('Failed to load events:', error)
     } finally {
       setLoadingEvents(false)
+    }
+  }
+
+  const handleDeleteEvent = async (id: string, title: string) => {
+    if (window.confirm(`Apakah Anda yakin ingin menghapus agenda "${title}"?`)) {
+      try {
+        await attendanceAPI.deleteEvent(id)
+        loadEvents()
+        // Also refresh stats if needed, but loadEvents is crucial
+      } catch (error) {
+        console.error('Failed to delete event:', error)
+        alert('Gagal menghapus agenda.')
+      }
     }
   }
 
@@ -157,7 +174,7 @@ const AttendancePage: React.FC = () => {
     setSelectedDayEvents(items)
   }
 
-  const upcomingCount = useMemo(() => events.filter((e) => new Date(e.date) > new Date()).length, [events])
+
   const attendanceRate = useMemo(() => {
     const total = activityStats.totalRecords
     const attended = activityStats.statusCounts.present + activityStats.statusCounts.late
@@ -165,12 +182,13 @@ const AttendancePage: React.FC = () => {
   }, [activityStats])
 
   const filteredEvents = useMemo(() => {
+    setVisibleCount(9) // Reset pagination when filters change
     return events.filter((ev) => {
       const matchesDivision = divisionFilter === 'all' || ev.division === divisionFilter
       const matchesType = eventTypeFilter === 'all' || ev.type === eventTypeFilter
       const matchesMonth = monthFilter === '' || (() => {
         const d = new Date(ev.date)
-        const ym = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`
+        const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
         return ym === monthFilter
       })()
       return matchesDivision && matchesType && matchesMonth
@@ -198,6 +216,31 @@ const AttendancePage: React.FC = () => {
   const divisionPerformance = useMemo(() => {
     const totalEvents = divisionEventsForMonth.length
     if (totalEvents === 0) return [] as { name: string; count: number; rate: number }[]
+
+    if (divisionFilter === 'all') {
+      // Aggregate by division
+      const divisions = Array.from(new Set(members.map((m) => m.division))).filter(Boolean)
+      return divisions.map((divName) => {
+        const divMembers = members.filter((m) => m.division === divName)
+        if (divMembers.length === 0) return { name: divName, count: 0, rate: 0 }
+
+        let totalAttended = 0
+        const totalPossible = divMembers.length * totalEvents
+
+        divMembers.forEach((member) => {
+          const attended = divisionEventsForMonth.reduce((acc, ev) => {
+            const list = attendanceByEvent.get(ev.id) || []
+            const hit = list.some((r) => (member.id ? r.member_id === member.id : false) || r.name === member.full_name)
+            return acc + (hit ? 1 : 0)
+          }, 0)
+          totalAttended += attended
+        })
+
+        const rate = totalPossible > 0 ? Math.round((totalAttended / totalPossible) * 100) : 0
+        return { name: divName, count: totalAttended, rate }
+      }).sort((a, b) => b.rate - a.rate)
+    }
+
     return divisionMembers.map((member) => {
       const attended = divisionEventsForMonth.reduce((acc, ev) => {
         const list = attendanceByEvent.get(ev.id) || []
@@ -206,8 +249,8 @@ const AttendancePage: React.FC = () => {
       }, 0)
       const rate = Math.round((attended / totalEvents) * 100)
       return { name: member.full_name, count: attended, rate }
-    }).sort((a,b)=> a.rate - b.rate)
-  }, [divisionMembers, divisionEventsForMonth, attendanceByEvent])
+    }).sort((a, b) => a.rate - b.rate)
+  }, [divisionMembers, divisionEventsForMonth, attendanceByEvent, divisionFilter, members])
 
   const committeeEvents = useMemo(() => {
     return filteredEvents.filter((e) => e.type === 'work_program')
@@ -226,7 +269,7 @@ const AttendancePage: React.FC = () => {
         counts.set(key, cur)
       })
     })
-    return Array.from(counts.values()).map((v) => ({ name: v.name, count: v.count, rate: Math.round((v.count / totalEvents) * 100) })).sort((a,b)=> b.rate - a.rate)
+    return Array.from(counts.values()).map((v) => ({ name: v.name, count: v.count, rate: Math.round((v.count / totalEvents) * 100) })).sort((a, b) => b.rate - a.rate)
   }, [committeeEvents, attendanceByEvent])
 
   const formatGoogleCalendarDate = (date: Date) => {
@@ -267,17 +310,24 @@ const AttendancePage: React.FC = () => {
             </button>
           </div>
           <button
+            onClick={() => setShowScanner(true)}
+            className="px-4 py-2 bg-white dark:bg-[#1E1E1E] border border-slate-200 dark:border-[#2A2A2A] text-slate-700 dark:text-slate-300 rounded-lg flex items-center gap-2 hover:bg-slate-50 dark:hover:bg-[#2A2A2A] transition-colors shadow-sm"
+          >
+            <QrCode size={18} />
+            <span className="hidden sm:inline">Scan QR</span>
+          </button>
+          <button
             onClick={() => setShowForm(true)}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg flex items-center gap-2 hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200 dark:shadow-none"
           >
             <Plus size={18} />
             <span>Buat Agenda</span>
           </button>
-      </div>
+        </div>
       </div>
       {(loadingEvents || loadingStats) ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {[0,1,2].map((i) => (
+          {[0, 1, 2].map((i) => (
             <div key={i} className="bg-white dark:bg-[#1E1E1E] p-4 rounded-xl border border-slate-200 dark:border-[#2A2A2A] flex items-center gap-4 animate-pulse">
               <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-[#232323]"></div>
               <div className="flex-1">
@@ -304,7 +354,7 @@ const AttendancePage: React.FC = () => {
             </div>
             <div>
               <p className="text-sm text-slate-500 dark:text-slate-400">Akan Datang</p>
-              <p className="text-xl font-bold text-slate-900 dark:text-white">{filteredEvents.filter((e)=>new Date(e.date)>new Date()).length}</p>
+              <p className="text-xl font-bold text-slate-900 dark:text-white">{filteredEvents.filter((e) => new Date(e.date) > new Date()).length}</p>
             </div>
           </div>
           <div className="bg-white dark:bg-[#1E1E1E] p-4 rounded-xl border border-slate-200 dark:border-[#2A2A2A] flex items-center gap-4">
@@ -322,14 +372,14 @@ const AttendancePage: React.FC = () => {
       <div className="bg-white dark:bg-[#1E1E1E] p-4 rounded-xl border border-slate-200 dark:border-[#2A2A2A] flex flex-wrap items-center gap-3">
         <div className="relative">
           <Filter size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <select value={divisionFilter} onChange={(e)=>setDivisionFilter(e.target.value)} className="pl-10 pr-4 py-2 border border-slate-200 dark:border-[#2A2A2A] rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-[#1A1A1A] dark:text-white">
+          <select value={divisionFilter} onChange={(e) => setDivisionFilter(e.target.value)} className="pl-10 pr-4 py-2 border border-slate-200 dark:border-[#2A2A2A] rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-[#1A1A1A] dark:text-white">
             <option value="all">Semua Divisi</option>
-            {divisionOptions.map((d)=>(<option key={d} value={d}>{d}</option>))}
+            {divisionOptions.map((d) => (<option key={d} value={d}>{d}</option>))}
           </select>
         </div>
         <div className="relative">
           <Filter size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <select value={eventTypeFilter} onChange={(e)=>setEventTypeFilter(e.target.value as 'all' | 'meeting' | 'work_program' | 'gathering' | 'other')} className="pl-10 pr-4 py-2 border border-slate-200 dark:border-[#2A2A2A] rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-[#1A1A1A] dark:text-white">
+          <select value={eventTypeFilter} onChange={(e) => setEventTypeFilter(e.target.value as 'all' | 'meeting' | 'work_program' | 'gathering' | 'other')} className="pl-10 pr-4 py-2 border border-slate-200 dark:border-[#2A2A2A] rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-[#1A1A1A] dark:text-white">
             <option value="all">Semua Tipe</option>
             <option value="meeting">Rapat</option>
             <option value="work_program">Panitia/Program Kerja</option>
@@ -339,7 +389,7 @@ const AttendancePage: React.FC = () => {
         </div>
         <div className="relative">
           <Calendar size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input type="month" value={monthFilter} onChange={(e)=>setMonthFilter(e.target.value)} className="pl-10 pr-4 py-2 border border-slate-200 dark:border-[#2A2A2A] rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-[#1A1A1A] dark:text-white" />
+          <input type="month" value={monthFilter} onChange={(e) => setMonthFilter(e.target.value)} className="pl-10 pr-4 py-2 border border-slate-200 dark:border-[#2A2A2A] rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-[#1A1A1A] dark:text-white" />
         </div>
       </div>
 
@@ -367,70 +417,90 @@ const AttendancePage: React.FC = () => {
               </div>
             ))
           ) : (
-          filteredEvents.map((event) => (
-            <div key={event.id} className="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl border border-slate-200 dark:border-[#2A2A2A] hover:shadow-lg transition-all">
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`text-xs font-bold px-2 py-1 rounded-full uppercase ${
-                        event.type === 'meeting'
-                          ? 'bg-blue-100 text-blue-700'
-                          : event.type === 'work_program'
-                          ? 'bg-purple-100 text-purple-700'
-                          : 'bg-slate-100 text-slate-700'
-                      }`}
-                    >
-                      {event.type.replace('_', ' ')}
-                    </span>
-                    <span className="text-[10px] px-2 py-1 rounded-full bg-slate-100 text-slate-500">{event.division}</span>
+            <>
+              {filteredEvents.slice(0, visibleCount).map((event) => (
+                <div key={event.id} className="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl border border-slate-200 dark:border-[#2A2A2A] hover:shadow-lg transition-all">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`text-xs font-bold px-2 py-1 rounded-full uppercase ${event.type === 'meeting'
+                            ? 'bg-blue-100 text-blue-700'
+                            : event.type === 'work_program'
+                              ? 'bg-purple-100 text-purple-700'
+                              : 'bg-slate-100 text-slate-700'
+                            }`}
+                        >
+                          {event.type.replace('_', ' ')}
+                        </span>
+                        <span className="text-[10px] px-2 py-1 rounded-full bg-slate-100 text-slate-500">{event.division}</span>
+                      </div>
+                      <h3 className="text-lg font-bold mt-2 text-slate-900 dark:text-white line-clamp-1">{event.title}</h3>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleDeleteEvent(event.id, event.title)}
+                        className="p-2 bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 rounded-lg hover:bg-rose-100 transition-colors"
+                        title="Hapus Agenda"
+                      >
+                        <Trash2 size={20} />
+                      </button>
+                      <button
+                        onClick={() => setQrEvent(event)}
+                        className="p-2 bg-slate-50 dark:bg-[#2A2A2A] text-slate-600 dark:text-slate-300 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                        title="QR Presensi Dinamis"
+                      >
+                        <QrCode size={20} />
+                      </button>
+                    </div>
                   </div>
-                  <h3 className="text-lg font-bold mt-2 text-slate-900 dark:text-white line-clamp-1">{event.title}</h3>
-                </div>
-                <button
-                  onClick={() => setQrEvent(event)}
-                  className="p-2 bg-slate-50 dark:bg-[#2A2A2A] text-slate-600 dark:text-slate-300 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors"
-                  title="QR Presensi Dinamis"
-                >
-                  <QrCode size={20} />
-                </button>
-              </div>
 
-              <div className="space-y-3 text-sm text-slate-500 dark:text-slate-400 mb-6">
-                <div className="flex items-center gap-2">
-                  <Calendar size={16} className="shrink-0" />
-                  <span>{new Date(event.date).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Clock size={16} className="shrink-0" />
-                  <span>
-                    {new Date(event.date).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} WIB
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <MapPin size={16} className="shrink-0" />
-                  <span className="truncate">{event.location}</span>
-                </div>
-              </div>
+                  <div className="space-y-3 text-sm text-slate-500 dark:text-slate-400 mb-6">
+                    <div className="flex items-center gap-2">
+                      <Calendar size={16} className="shrink-0" />
+                      <span>{new Date(event.date).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Clock size={16} className="shrink-0" />
+                      <span>
+                        {new Date(event.date).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} WIB
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <MapPin size={16} className="shrink-0" />
+                      <span className="truncate">{event.location}</span>
+                    </div>
+                  </div>
 
-              <div className="flex flex-col gap-2">
-                <button
-                  className="w-full py-2.5 bg-slate-50 dark:bg-[#2A2A2A] text-slate-700 dark:text-slate-300 rounded-lg font-medium text-sm hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/20 dark:hover:text-blue-400 transition-colors flex items-center justify-center gap-2"
-                  onClick={() => setSelectedEvent(event)}
-                >
-                  <Users size={16} />
-                  Detail Presensi
-                </button>
-                <button
-                  onClick={() => handleAddToGoogleCalendar(event)}
-                  className="w-full py-2.5 border border-slate-200 dark:border-[#2A2A2A] rounded-lg text-sm font-medium flex items-center justify-center gap-2 text-slate-600 dark:text-slate-300 hover:border-blue-400"
-                >
-                  <CalendarPlus size={16} />
-                  Tambah ke Google Calendar
-                </button>
-              </div>
-            </div>
-          ))
+                  <div className="flex flex-col gap-2">
+                    <button
+                      className="w-full py-2.5 bg-slate-50 dark:bg-[#2A2A2A] text-slate-700 dark:text-slate-300 rounded-lg font-medium text-sm hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/20 dark:hover:text-blue-400 transition-colors flex items-center justify-center gap-2"
+                      onClick={() => setSelectedEvent(event)}
+                    >
+                      <Users size={16} />
+                      Detail Presensi
+                    </button>
+                    <button
+                      onClick={() => handleAddToGoogleCalendar(event)}
+                      className="w-full py-2.5 border border-slate-200 dark:border-[#2A2A2A] rounded-lg text-sm font-medium flex items-center justify-center gap-2 text-slate-600 dark:text-slate-300 hover:border-blue-400"
+                    >
+                      <CalendarPlus size={16} />
+                      Tambah ke Google Calendar
+                    </button>
+                  </div>
+                </div>
+              ))}
+              {visibleCount < filteredEvents.length && (
+                <div className="col-span-full flex justify-center mt-4">
+                  <button
+                    onClick={() => setVisibleCount((prev) => prev + 9)}
+                    className="px-6 py-2 bg-white dark:bg-[#1E1E1E] border border-slate-200 dark:border-[#2A2A2A] rounded-full text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#2A2A2A] transition-colors shadow-sm"
+                  >
+                    Muat Lebih Banyak
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
       ) : (
@@ -441,17 +511,15 @@ const AttendancePage: React.FC = () => {
               <div className="flex bg-slate-100 dark:bg-[#2A2A2A] rounded-lg p-1">
                 <button
                   onClick={() => setCalendarMode('month')}
-                  className={`px-3 py-1 text-xs font-semibold rounded-md ${
-                    calendarMode === 'month' ? 'bg-white dark:bg-[#1E1E1E] shadow text-blue-600' : 'text-slate-500'
-                  }`}
+                  className={`px-3 py-1 text-xs font-semibold rounded-md ${calendarMode === 'month' ? 'bg-white dark:bg-[#1E1E1E] shadow text-blue-600' : 'text-slate-500'
+                    }`}
                 >
                   Bulanan
                 </button>
                 <button
                   onClick={() => setCalendarMode('week')}
-                  className={`px-3 py-1 text-xs font-semibold rounded-md ${
-                    calendarMode === 'week' ? 'bg-white dark:bg-[#1E1E1E] shadow text-blue-600' : 'text-slate-500'
-                  }`}
+                  className={`px-3 py-1 text-xs font-semibold rounded-md ${calendarMode === 'week' ? 'bg-white dark:bg-[#1E1E1E] shadow text-blue-600' : 'text-slate-500'
+                    }`}
                 >
                   Mingguan
                 </button>
@@ -500,12 +568,20 @@ const AttendancePage: React.FC = () => {
                   <div key={event.id} className="p-3 rounded-xl border border-slate-100 dark:border-[#2A2A2A]">
                     <div className="flex items-center justify-between mb-2">
                       <p className="font-semibold text-slate-900 dark:text-white">{event.title}</p>
-                      <button
-                        className="text-blue-600 text-xs font-semibold"
-                        onClick={() => setSelectedEvent(event)}
-                      >
-                        Lihat
-                      </button>
+                      <div className="flex gap-2">
+                        <button
+                          className="text-blue-600 text-xs font-semibold"
+                          onClick={() => setSelectedEvent(event)}
+                        >
+                          Lihat
+                        </button>
+                        <button
+                          className="text-rose-600 text-xs font-semibold"
+                          onClick={() => handleDeleteEvent(event.id, event.title)}
+                        >
+                          Hapus
+                        </button>
+                      </div>
                     </div>
                     <p className="text-xs text-slate-500 mb-1">{event.division}</p>
                     <div className="flex items-center gap-2 text-xs text-slate-500">
@@ -669,6 +745,12 @@ const AttendancePage: React.FC = () => {
         <EventQRModal
           event={qrEvent}
           onClose={() => setQrEvent(null)}
+        />
+      )}
+
+      {showScanner && (
+        <QRScannerModal
+          onClose={() => setShowScanner(false)}
         />
       )}
     </div>

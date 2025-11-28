@@ -6,7 +6,7 @@
   <!-- Blog Main Page -->
   <url>
     <loc>https://digcity.my.id/blog</loc>
-    <lastmod>2025-11-27</lastmod>
+    <lastmod>2025-11-28</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
     <news:news>
@@ -14,17 +14,16 @@
         <news:name>DIGCITY Blog</news:name>
         <news:language>id</news:language>
       </news:publication>
-      <news:publication_date>2025-11-27T00:00:00+07:00</news:publication_date>
+      <news:publication_date>2025-11-28T00:00:00+07:00</news:publication_date>
       <news:title>Blog DIGCITY - Artikel dan Berita Terkini</news:title>
       <news:keywords>blog, artikel, berita, bisnis digital, teknologi, DIGCITY</news:keywords>
       <news:stock_tickers>DIGCITY</news:stock_tickers>
     </news:news>
   </url>
 
-  <!-- Sample Blog Articles (akan di-generate secara dinamis) -->
   <url>
-    <loc>https://digcity.my.id/blog/pengenalan-bisnis-digital</loc>
-    <lastmod>2025-11-27</lastmod>
+    <loc>https://digcity.my.id/blog/digcity-uika-bogor-mengecam-keras-ruu-kuhp-ini-ancaman-nyata-bagi-generasi-digital-dan-ekonomi-kreatif-indonesia</loc>
+    <lastmod>2025-11-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <news:news>
@@ -32,21 +31,21 @@
         <news:name>DIGCITY Blog</news:name>
         <news:language>id</news:language>
       </news:publication>
-      <news:publication_date>2025-11-27T00:00:00+07:00</news:publication_date>
-      <news:title>Pengenalan Bisnis Digital: Memulai Perjalanan di Era Digital</news:title>
-      <news:keywords>bisnis digital, teknologi, startup, entrepreneurship</news:keywords>
+      <news:publication_date>2025-11-18T00:00:00+07:00</news:publication_date>
+      <news:title>DIGCITY UIKA Bogor Mengecam Keras RUU KUHP: “Ini Ancaman Nyata bagi Generasi Digital dan Ekonomi Kreatif Indonesia”</news:title>
+      <news:keywords>AntiRakyat, PembungkamDigital, TolakKUHP, general</news:keywords>
       <news:stock_tickers>DIGCITY</news:stock_tickers>
     </news:news>
     <image:image>
-      <image:loc>https://digcity.my.id/digital-innovation.png</image:loc>
-      <image:title>Bisnis Digital</image:title>
-      <image:caption>Ilustrasi bisnis digital modern</image:caption>
+      <image:loc>https://mqjdyiyoigjnfadqatrx.supabase.co/storage/v1/object/public/admin-images/events/sertijab-dan-pelantikan-digcity-20242025/1756663330634-f2faeap1fk7.png</image:loc>
+      <image:title>DIGCITY UIKA Bogor Mengecam Keras RUU KUHP</image:title>
+      <image:caption>DIGCITY UIKA Bogor Mengecam Keras RUU KUHP: “Ini Ancaman Nyata bagi Generasi Digital dan Ekonomi Kreatif Indonesia”</image:caption>
     </image:image>
   </url>
 
   <url>
-    <loc>https://digcity.my.id/blog/teknologi-blockchain</loc>
-    <lastmod>2025-11-27</lastmod>
+    <loc>https://digcity.my.id/blog/digcity-selenggarakan-kegiatan-mentari-edukasi-untuk-mahasiswa-baru</loc>
+    <lastmod>2025-11-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <news:news>
@@ -54,21 +53,21 @@
         <news:name>DIGCITY Blog</news:name>
         <news:language>id</news:language>
       </news:publication>
-      <news:publication_date>2025-11-27T00:00:00+07:00</news:publication_date>
-      <news:title>Teknologi Blockchain: Masa Depan Transaksi Digital</news:title>
-      <news:keywords>blockchain, cryptocurrency, teknologi, fintech</news:keywords>
+      <news:publication_date>2025-11-14T00:00:00+07:00</news:publication_date>
+      <news:title>DIGCITY Selenggarakan Kegiatan Mentari Edukasi untuk Mahasiswa Baru</news:title>
+      <news:keywords>study club, matematika, belajar, education</news:keywords>
       <news:stock_tickers>DIGCITY</news:stock_tickers>
     </news:news>
     <image:image>
-      <image:loc>https://digcity.my.id/digital-innovation.png</image:loc>
-      <image:title>Blockchain Technology</image:title>
-      <image:caption>Konsep teknologi blockchain</image:caption>
+      <image:loc>https://mqjdyiyoigjnfadqatrx.supabase.co/storage/v1/object/public/admin-images/events/mentari-edukasi-matematika-bisnis/1756666393921-6r3l6oemzhy.png</image:loc>
+      <image:title>DIGCITY Selenggarakan Kegiatan Mentari Edukasi untuk Mahasiswa Baru</image:title>
+      <image:caption>DIGCITY Selenggarakan Kegiatan Mentari Edukasi untuk Mahasiswa Baru</image:caption>
     </image:image>
   </url>
 
   <url>
-    <loc>https://digcity.my.id/blog/startup-indonesia</loc>
-    <lastmod>2025-11-27</lastmod>
+    <loc>https://digcity.my.id/blog/digcity-uika-bogor-gelar-acara-bubaran-untuk-satukan-kebersamaan-dan-kepedulian-di-bulan-ramadan</loc>
+    <lastmod>2025-11-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <news:news>
@@ -76,59 +75,15 @@
         <news:name>DIGCITY Blog</news:name>
         <news:language>id</news:language>
       </news:publication>
-      <news:publication_date>2025-11-27T00:00:00+07:00</news:publication_date>
-      <news:title>Startup Indonesia: Potensi dan Tantangan di Era Digital</news:title>
-      <news:keywords>startup, Indonesia, bisnis digital, entrepreneurship</news:keywords>
+      <news:publication_date>2025-11-14T00:00:00+07:00</news:publication_date>
+      <news:title>DIGCITY UIKA Bogor Gelar Acara “BUBARAN” untuk Satukan Kebersamaan dan Kepedulian di Bulan Ramadan</news:title>
+      <news:keywords>ramadhan, puasa, berbagi, social_impact</news:keywords>
       <news:stock_tickers>DIGCITY</news:stock_tickers>
     </news:news>
     <image:image>
-      <image:loc>https://digcity.my.id/digital-innovation.png</image:loc>
-      <image:title>Startup Indonesia</image:title>
-      <image:caption>Ekosistem startup Indonesia</image:caption>
-    </image:image>
-  </url>
-
-  <url>
-    <loc>https://digcity.my.id/blog/ai-machine-learning</loc>
-    <lastmod>2025-11-27</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-    <news:news>
-      <news:publication>
-        <news:name>DIGCITY Blog</news:name>
-        <news:language>id</news:language>
-      </news:publication>
-      <news:publication_date>2025-11-27T00:00:00+07:00</news:publication_date>
-      <news:title>AI dan Machine Learning: Transformasi Bisnis di Era Digital</news:title>
-      <news:keywords>AI, machine learning, artificial intelligence, teknologi</news:keywords>
-      <news:stock_tickers>DIGCITY</news:stock_tickers>
-    </news:news>
-    <image:image>
-      <image:loc>https://digcity.my.id/digital-innovation.png</image:loc>
-      <image:title>AI Machine Learning</image:title>
-      <image:caption>Konsep AI dan machine learning</image:caption>
-    </image:image>
-  </url>
-
-  <url>
-    <loc>https://digcity.my.id/blog/digital-marketing</loc>
-    <lastmod>2025-11-27</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-    <news:news>
-      <news:publication>
-        <news:name>DIGCITY Blog</news:name>
-        <news:language>id</news:language>
-      </news:publication>
-      <news:publication_date>2025-11-27T00:00:00+07:00</news:publication_date>
-      <news:title>Digital Marketing: Strategi Pemasaran di Era Digital</news:title>
-      <news:keywords>digital marketing, pemasaran, social media, SEO</news:keywords>
-      <news:stock_tickers>DIGCITY</news:stock_tickers>
-    </news:news>
-    <image:image>
-      <image:loc>https://digcity.my.id/digital-innovation.png</image:loc>
-      <image:title>Digital Marketing</image:title>
-      <image:caption>Strategi digital marketing modern</image:caption>
+      <image:loc>https://mqjdyiyoigjnfadqatrx.supabase.co/storage/v1/object/public/admin-images/events/bubaran-buka-bareng-anggota-2025/1756663007691-2ar0wbjxvwk.png</image:loc>
+      <image:title>DIGCITY UIKA Bogor Gelar Acara “BUBARAN”</image:title>
+      <image:caption>DIGCITY UIKA Bogor Gelar Acara “BUBARAN” untuk Satukan Kebersamaan dan Kepedulian di Bulan Ramadan</image:caption>
     </image:image>
   </url>
 

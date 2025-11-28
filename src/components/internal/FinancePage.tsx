@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import { financeAPI, FinanceTransaction } from '../../lib/supabase'
+import { financeAPI, FinanceTransaction, auditAPI } from '../../lib/supabase'
 import TransactionForm from './TransactionForm'
-import { 
-  Plus, 
-  Search, 
-  Filter, 
+import {
+  Plus,
+  Search,
+  Filter,
   Download,
   ArrowUpRight,
   ArrowDownRight,
@@ -16,10 +16,12 @@ import {
   XCircle,
   Edit3,
   Printer,
-  BarChart3
+  BarChart3,
+  Wallet
 } from 'lucide-react'
 import MemberDuesPanel from './DuesPanel'
 import DivisionCashPanel from './DivisionCashPanel'
+import UPMPanel from './UPMPanel'
 
 const FinancePage: React.FC = () => {
   const [transactions, setTransactions] = useState<FinanceTransaction[]>([])
@@ -62,6 +64,13 @@ const FinancePage: React.FC = () => {
     if (window.confirm('Yakin ingin menghapus transaksi ini?')) {
       try {
         await financeAPI.delete(id)
+        await auditAPI.log({
+          module: 'finance',
+          action: 'delete_transaction',
+          entity_type: 'transaction',
+          entity_id: id,
+          details: { id }
+        })
         loadTransactions()
       } catch (error) {
         console.error('Error deleting transaction:', error)
@@ -72,6 +81,13 @@ const FinancePage: React.FC = () => {
   const handleStatusUpdate = async (id: string, newStatus: 'approved' | 'rejected') => {
     try {
       await financeAPI.update(id, { status: newStatus })
+      await auditAPI.log({
+        module: 'finance',
+        action: 'update_status',
+        entity_type: 'transaction',
+        entity_id: id,
+        details: { status: newStatus }
+      })
       loadTransactions()
     } catch (error) {
       console.error('Error updating status:', error)
@@ -211,7 +227,6 @@ const FinancePage: React.FC = () => {
   // Simple summary for the chart placeholder - using approved data
   const totalIncome = transactions.filter(t => t.type === 'income' && (t.status === 'approved')).reduce((sum, t) => sum + t.amount, 0)
   const totalExpense = transactions.filter(t => t.type === 'expense' && (t.status === 'approved')).reduce((sum, t) => sum + t.amount, 0)
-  const maxVal = Math.max(totalIncome, totalExpense) || 1
   const maxTrendValue = Math.max(...monthlyTrend.map((row) => Math.max(row.income, row.expense)), 1)
 
   return (
@@ -222,21 +237,21 @@ const FinancePage: React.FC = () => {
           <p className="text-slate-500 dark:text-slate-400">Kelola pemasukan dan pengeluaran organisasi</p>
         </div>
         <div className="flex gap-2 flex-wrap">
-          <button 
+          <button
             onClick={handleExportPdf}
             className="px-4 py-2 bg-white dark:bg-[#1E1E1E] border border-slate-200 dark:border-[#2A2A2A] text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 transition-colors flex items-center gap-2"
           >
             <Printer size={18} />
             <span>Export PDF</span>
           </button>
-          <button 
+          <button
             onClick={handleExport}
             className="px-4 py-2 bg-white dark:bg-[#1E1E1E] border border-slate-200 dark:border-[#2A2A2A] text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 transition-colors flex items-center gap-2"
           >
             <Download size={18} />
             <span className="hidden sm:inline">Export CSV</span>
           </button>
-          <button 
+          <button
             onClick={openCreateForm}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-lg shadow-blue-200 dark:shadow-none"
           >
@@ -246,35 +261,67 @@ const FinancePage: React.FC = () => {
         </div>
       </div>
 
-      {/* Mini Chart Summary */}
-      <div className="bg-white dark:bg-[#1E1E1E] p-6 rounded-xl border border-slate-200 dark:border-[#2A2A2A]">
-        <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-4">Ringkasan Bulan Ini</h3>
-        <div className="flex items-end gap-6 h-40">
-          {[
-            { label: 'Pemasukan', value: totalIncome, barColor: 'bg-emerald-500', shellColor: 'bg-emerald-100 dark:bg-emerald-900/20' },
-            { label: 'Pengeluaran', value: totalExpense, barColor: 'bg-rose-500', shellColor: 'bg-rose-100 dark:bg-rose-900/20' }
-          ].map((item) => {
-            const percent = maxVal === 0 ? 0 : (item.value / maxVal) * 100
-            const height = Math.max(percent, item.value > 0 ? 8 : 2)
-            return (
-              <div key={item.label} className="flex-1 flex flex-col items-center gap-3">
-                <div className="flex-1 flex flex-col justify-end w-full max-w-[90px]">
-                  <div className={`mx-auto w-full rounded-2xl p-1 ${item.shellColor}`}>
-                    <div
-                      className={`w-full rounded-xl ${item.barColor} transition-all duration-500`}
-                      style={{ height: `${height}%` }}
-                    ></div>
-                  </div>
-                </div>
-                <div className="text-center">
-                  <p className="text-xs text-slate-500">{item.label}</p>
-                  <p className="text-sm font-semibold text-slate-900 dark:text-white">{formatCurrency(item.value)}</p>
-                </div>
+      {/* Financial Overview Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Income Card */}
+        <div className="bg-white dark:bg-[#1E1E1E] p-6 rounded-xl border border-slate-200 dark:border-[#2A2A2A] relative overflow-hidden group">
+          <div className="absolute right-0 top-0 w-32 h-32 bg-emerald-50 dark:bg-emerald-900/10 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110"></div>
+          <div className="relative z-10">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                <ArrowUpRight size={20} />
               </div>
-            )
-          })}
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Total Pemasukan</p>
+            </div>
+            <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-1">{formatCurrency(totalIncome)}</h3>
+            <p className="text-xs text-emerald-600 flex items-center gap-1">
+              <CheckCircle size={12} />
+              <span>Terverifikasi</span>
+            </p>
+          </div>
+        </div>
+
+        {/* Expense Card */}
+        <div className="bg-white dark:bg-[#1E1E1E] p-6 rounded-xl border border-slate-200 dark:border-[#2A2A2A] relative overflow-hidden group">
+          <div className="absolute right-0 top-0 w-32 h-32 bg-rose-50 dark:bg-rose-900/10 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110"></div>
+          <div className="relative z-10">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 flex items-center justify-center">
+                <ArrowDownRight size={20} />
+              </div>
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Total Pengeluaran</p>
+            </div>
+            <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-1">{formatCurrency(totalExpense)}</h3>
+            <p className="text-xs text-rose-600 flex items-center gap-1">
+              <CheckCircle size={12} />
+              <span>Terverifikasi</span>
+            </p>
+          </div>
+        </div>
+
+        {/* Balance Card */}
+        <div className="bg-white dark:bg-[#1E1E1E] p-6 rounded-xl border border-slate-200 dark:border-[#2A2A2A] relative overflow-hidden group">
+          <div className="absolute right-0 top-0 w-32 h-32 bg-blue-50 dark:bg-blue-900/10 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110"></div>
+          <div className="relative z-10">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                <Wallet size={20} />
+              </div>
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Sisa Saldo</p>
+            </div>
+            <h3 className={`text-2xl font-bold mb-1 ${totalIncome - totalExpense >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-rose-600'}`}>
+              {formatCurrency(totalIncome - totalExpense)}
+            </h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1">
+              <Clock size={12} />
+              <span>Update Realtime</span>
+            </p>
+          </div>
         </div>
       </div>
+
+      {/* UPM Panel */}
+      <UPMPanel />
 
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-4 bg-white dark:bg-[#1E1E1E] p-4 rounded-xl border border-slate-200 dark:border-[#2A2A2A]">
@@ -291,31 +338,28 @@ const FinancePage: React.FC = () => {
         <div className="flex gap-2">
           <button
             onClick={() => setFilter('all')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              filter === 'all' 
-                ? 'bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800' 
-                : 'bg-white dark:bg-[#1E1E1E] text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-[#2A2A2A]'
-            }`}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${filter === 'all'
+              ? 'bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800'
+              : 'bg-white dark:bg-[#1E1E1E] text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-[#2A2A2A]'
+              }`}
           >
             Semua
           </button>
           <button
             onClick={() => setFilter('income')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              filter === 'income' 
-                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800' 
-                : 'bg-white dark:bg-[#1E1E1E] text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-[#2A2A2A]'
-            }`}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${filter === 'income'
+              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800'
+              : 'bg-white dark:bg-[#1E1E1E] text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-[#2A2A2A]'
+              }`}
           >
             Pemasukan
           </button>
           <button
             onClick={() => setFilter('expense')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              filter === 'expense' 
-                ? 'bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-900/20 dark:text-rose-400 dark:border-rose-800' 
-                : 'bg-white dark:bg-[#1E1E1E] text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-[#2A2A2A]'
-            }`}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${filter === 'expense'
+              ? 'bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-900/20 dark:text-rose-400 dark:border-rose-800'
+              : 'bg-white dark:bg-[#1E1E1E] text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-[#2A2A2A]'
+              }`}
           >
             Pengeluaran
           </button>
@@ -423,11 +467,10 @@ const FinancePage: React.FC = () => {
               <div key={t.id} className="p-4 hover:bg-slate-50 dark:hover:bg-[#232323] transition-colors group">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                      t.type === 'income' 
-                        ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400' 
-                        : 'bg-rose-100 text-rose-600 dark:bg-rose-900/20 dark:text-rose-400'
-                    }`}>
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${t.type === 'income'
+                      ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400'
+                      : 'bg-rose-100 text-rose-600 dark:bg-rose-900/20 dark:text-rose-400'
+                      }`}>
                       {t.type === 'income' ? <ArrowUpRight size={20} /> : <ArrowDownRight size={20} />}
                     </div>
                     <div>
@@ -461,9 +504,8 @@ const FinancePage: React.FC = () => {
                   </div>
                   <div className="flex items-center gap-4">
                     <div className="text-right">
-                      <p className={`font-bold ${
-                        t.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
-                      }`}>
+                      <p className={`font-bold ${t.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
+                        }`}>
                         {t.type === 'income' ? '+' : '-'}{formatCurrency(t.amount)}
                       </p>
                       {t.proof_url && (
@@ -472,19 +514,19 @@ const FinancePage: React.FC = () => {
                         </a>
                       )}
                     </div>
-                    
+
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
                       {/* Approval Actions for Pending Expense */}
                       {t.type === 'expense' && t.status === 'pending' && (
                         <>
-                          <button 
+                          <button
                             onClick={() => handleStatusUpdate(t.id, 'approved')}
                             className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg"
                             title="Setujui"
                           >
                             <CheckCircle size={18} />
                           </button>
-                          <button 
+                          <button
                             onClick={() => handleStatusUpdate(t.id, 'rejected')}
                             className="p-2 text-rose-600 hover:bg-rose-50 rounded-lg"
                             title="Tolak"
@@ -493,15 +535,15 @@ const FinancePage: React.FC = () => {
                           </button>
                         </>
                       )}
-                      
-                      <button 
+
+                      <button
                         onClick={() => openEditForm(t)}
                         className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg"
                         title="Edit"
                       >
                         <Edit3 size={18} />
                       </button>
-                      <button 
+                      <button
                         onClick={() => handleDelete(t.id)}
                         className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg"
                         title="Hapus"
@@ -527,14 +569,14 @@ const FinancePage: React.FC = () => {
       <MemberDuesPanel onFinanceUpdate={loadTransactions} />
 
       {showForm && (
-        <TransactionForm 
+        <TransactionForm
           mode={formMode}
           transaction={editingTransaction || undefined}
-          onClose={() => setShowForm(false)} 
+          onClose={() => setShowForm(false)}
           onSuccess={() => {
             loadTransactions()
             setShowForm(false)
-          }} 
+          }}
         />
       )}
     </div>

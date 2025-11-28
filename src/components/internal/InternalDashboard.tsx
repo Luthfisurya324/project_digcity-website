@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { financeAPI, attendanceAPI, documentsAPI, auditAPI, notificationsAPI, supabase, type InternalEvent, type FinanceTransaction, type Document, type NotificationItemDB } from '../../lib/supabase'
-import { 
-  Wallet, 
-  TrendingUp, 
-  TrendingDown, 
+import {
+  Wallet,
+  TrendingUp,
+  TrendingDown,
   ArrowRight,
   Plus,
   Calendar,
@@ -12,6 +12,7 @@ import {
   AlertTriangle,
   Bell
 } from 'lucide-react'
+import DashboardQRScanner from './DashboardQRScanner'
 import { Link } from 'react-router-dom'
 import { getInternalBasePath } from '../../utils/domainDetection'
 
@@ -44,7 +45,7 @@ const InternalDashboard: React.FC = () => {
   const loadDashboardData = async () => {
     try {
       const data = await financeAPI.getSummary()
-      
+
       // Ensure data updates even if balance is 0
       setSummary({
         totalIncome: data.totalIncome || 0,
@@ -58,7 +59,7 @@ const InternalDashboard: React.FC = () => {
           setUserName(user.user_metadata?.full_name || user.email || 'Pengurus DIGCITY')
           setUserRole((user.user_metadata?.internal_role || 'anggota').toString())
         }
-      } catch {}
+      } catch { }
 
       const [ev, txAll, docsAll, logs, notifs] = await Promise.all([
         attendanceAPI.getEvents(),
@@ -105,6 +106,9 @@ const InternalDashboard: React.FC = () => {
         <p className="text-blue-100 mt-1">Ringkasan aktivitas organisasi untuk Anda.</p>
       </div>
 
+      {/* QR Scanner Widget */}
+      <DashboardQRScanner />
+
       {/* Finance Cards */}
       <div>
         <div className="flex items-center justify-between mb-4">
@@ -113,7 +117,7 @@ const InternalDashboard: React.FC = () => {
             Lihat Detail <ArrowRight size={16} className="ml-1" />
           </Link>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Balance Card */}
           <div className="bg-white dark:bg-[#1E1E1E] rounded-xl p-6 border border-slate-200 dark:border-[#2A2A2A] shadow-sm">
@@ -127,8 +131,8 @@ const InternalDashboard: React.FC = () => {
               </div>
             </div>
             <div className="w-full bg-slate-100 dark:bg-[#2A2A2A] rounded-full h-2 mb-2">
-              <div 
-                className="bg-blue-500 h-2 rounded-full" 
+              <div
+                className="bg-blue-500 h-2 rounded-full"
                 style={{ width: `${Math.min((summary.balance / (summary.totalIncome || 1)) * 100, 100)}%` }}
               ></div>
             </div>
@@ -189,7 +193,7 @@ const InternalDashboard: React.FC = () => {
                   <Calendar size={16} className="text-blue-600" />
                   <div>
                     <p className="text-sm font-medium">{e.title}</p>
-                    <p className="text-xs text-slate-500">{e.division} • {new Date(e.date).toLocaleTimeString('id-ID',{ hour:'2-digit', minute:'2-digit' })} WIB</p>
+                    <p className="text-xs text-slate-500">{e.division} • {new Date(e.date).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} WIB</p>
                   </div>
                 </div>
                 <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">Hari ini</span>
@@ -201,7 +205,7 @@ const InternalDashboard: React.FC = () => {
                   <Clock size={16} className="text-emerald-600" />
                   <div>
                     <p className="text-sm font-medium">{e.title}</p>
-                    <p className="text-xs text-slate-500">{e.division} • {new Date(e.date).toLocaleDateString('id-ID',{ dateStyle:'medium'})}</p>
+                    <p className="text-xs text-slate-500">{e.division} • {new Date(e.date).toLocaleDateString('id-ID', { dateStyle: 'medium' })}</p>
                   </div>
                 </div>
                 <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">Mendatang</span>
@@ -221,19 +225,19 @@ const InternalDashboard: React.FC = () => {
             <Link to={`${basePath}/finance`} className="text-sm font-medium text-blue-600 hover:text-blue-700">Keuangan</Link>
           </div>
           <div className="space-y-2">
-            {pendingExpenses.slice(0,3).map((t) => (
+            {pendingExpenses.slice(0, 3).map((t) => (
               <div key={t.id} className="flex items-center justify-between p-3 rounded-lg bg-rose-50 dark:bg-rose-900/20">
                 <div className="flex items-center gap-3">
                   <AlertTriangle size={16} className="text-rose-600" />
                   <div>
                     <p className="text-sm font-medium">Pengeluaran {t.category}</p>
-                    <p className="text-xs text-slate-500">{new Date(t.date).toLocaleDateString('id-ID',{ dateStyle:'medium'})}</p>
+                    <p className="text-xs text-slate-500">{new Date(t.date).toLocaleDateString('id-ID', { dateStyle: 'medium' })}</p>
                   </div>
                 </div>
                 <span className="text-xs font-mono">Rp {Number(t.amount).toLocaleString('id-ID')}</span>
               </div>
             ))}
-            {pendingDocs.slice(0,3).map((d) => (
+            {pendingDocs.slice(0, 3).map((d) => (
               <div key={d.id} className="flex items-center justify-between p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20">
                 <div className="flex items-center gap-3">
                   <AlertTriangle size={16} className="text-amber-600" />
@@ -263,10 +267,10 @@ const InternalDashboard: React.FC = () => {
             <Link to={`${basePath}/activity`} className="text-sm font-medium text-blue-600 hover:text-blue-700">Log</Link>
           </div>
           <div className="space-y-2">
-            {memberActivities.slice(0,5).map((a) => (
+            {memberActivities.slice(0, 5).map((a) => (
               <div key={a.id} className="flex items-center justify-between p-3 rounded-lg border border-slate-100 dark:border-[#2A2A2A]">
-                <span className="text-sm font-medium capitalize">{a.action.replace(/_/g,' ')}</span>
-                <span className="text-xs text-slate-500">{new Date(a.created_at).toLocaleString('id-ID',{ dateStyle:'short', timeStyle:'short'})}</span>
+                <span className="text-sm font-medium capitalize">{a.action.replace(/_/g, ' ')}</span>
+                <span className="text-xs text-slate-500">{new Date(a.created_at).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' })}</span>
               </div>
             ))}
             {memberActivities.length === 0 && (
@@ -292,7 +296,7 @@ const InternalDashboard: React.FC = () => {
                     {n.message && <p className="text-xs text-slate-500">{n.message}</p>}
                   </div>
                 </div>
-                <span className="text-xs text-slate-400">{new Date(n.created_at).toLocaleTimeString('id-ID',{hour:'2-digit', minute:'2-digit'})}</span>
+                <span className="text-xs text-slate-400">{new Date(n.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</span>
               </div>
             ))}
             {notifications.length === 0 && (

@@ -16,11 +16,13 @@ import ThemeToggle from '../components/common/ThemeToggle'
 import { useReminders } from '../hooks/useReminders'
 import ReportsPage from '../components/internal/ReportsPage'
 import OrganizationSettings from '../components/internal/OrganizationSettings'
-import { 
-  LayoutDashboard, 
-  Wallet, 
-  Users, 
-  ClipboardList, 
+import WorkProgramsPage from '../components/internal/WorkProgramsPage'
+import InventoryPage from '../components/internal/InventoryPage'
+import {
+  LayoutDashboard,
+  Wallet,
+  Users,
+  ClipboardList,
   FileText,
   Clock,
   BarChart3,
@@ -29,8 +31,12 @@ import {
   ChevronRight,
   Globe,
   Shield,
-  Building2
+  Building2,
+  Briefcase,
+  Package
 } from 'lucide-react'
+
+
 
 interface User {
   id: string
@@ -62,6 +68,15 @@ const navigationItems: NavigationItem[] = [
     section: 'main'
   },
   {
+    id: 'work_programs',
+    name: 'Program Kerja',
+    description: 'Manajemen proker & RAB',
+    icon: Briefcase,
+    accent: 'from-violet-500 to-purple-500',
+    path: '/work-programs',
+    section: 'main'
+  },
+  {
     id: 'finance',
     name: 'Keuangan',
     description: 'Manajemen kas & transaksi',
@@ -86,6 +101,15 @@ const navigationItems: NavigationItem[] = [
     icon: ClipboardList,
     accent: 'from-purple-500 to-indigo-500',
     path: '/attendance',
+    section: 'management'
+  },
+  {
+    id: 'inventory',
+    name: 'Inventaris',
+    description: 'Aset & perlengkapan',
+    icon: Package,
+    accent: 'from-cyan-500 to-blue-500',
+    path: '/inventory',
     section: 'management'
   },
   {
@@ -171,9 +195,11 @@ const InternalPanel: React.FC = () => {
       if (path === '' || path === undefined) path = '/'
     }
     if (path === '/' || path === '') return 'dashboard'
+    if (path.startsWith('/work-programs')) return 'work_programs'
     if (path.startsWith('/finance')) return 'finance'
     if (path.startsWith('/members')) return 'members'
     if (path.startsWith('/attendance')) return 'attendance'
+    if (path.startsWith('/inventory')) return 'inventory'
     if (path.startsWith('/documents')) return 'documents'
     if (path.startsWith('/activity')) return 'activity'
     if (path.startsWith('/reports')) return 'reports'
@@ -231,13 +257,13 @@ const InternalPanel: React.FC = () => {
   }
 
   const toggleSidebar = () => setSidebarCollapsed((prev) => !prev)
-  
+
   const groupedNavigation = useMemo(() => {
     return navigationGroups
       .map((group) => ({
         label: group.label,
         items: navigationItems.filter((item) => item.section === group.section).filter((item) => {
-          const canManage = ['bph','admin','ketua','sekretaris','bendahara'].includes(internalRole.toLowerCase())
+          const canManage = ['bph', 'admin', 'ketua', 'sekretaris', 'bendahara'].includes(internalRole.toLowerCase())
           if (group.section === 'management') return canManage
           if (item.id === 'finance') return canManage
           return true
@@ -284,9 +310,8 @@ const InternalPanel: React.FC = () => {
     <div className="admin-container min-h-screen bg-slate-50 dark:bg-[#0e0e0e] transition-colors">
       <div className="flex">
         <aside
-          className={`hidden lg:flex flex-col border-r border-slate-200 dark:border-[#1F1F1F] bg-white dark:bg-[#101010] min-h-screen transition-all duration-300 fixed z-20 ${
-            sidebarCollapsed ? 'w-20' : 'w-72'
-          }`}
+          className={`hidden lg:flex flex-col border-r border-slate-200 dark:border-[#1F1F1F] bg-white dark:bg-[#101010] min-h-screen transition-all duration-300 fixed z-20 ${sidebarCollapsed ? 'w-20' : 'w-72'
+            }`}
         >
           <div className={`flex items-center ${sidebarCollapsed ? 'justify-center' : 'justify-between'} px-4 py-4 border-b border-slate-100 dark:border-[#1F1F1F]`}>
             {!sidebarCollapsed && (
@@ -307,7 +332,7 @@ const InternalPanel: React.FC = () => {
               {sidebarCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
             </button>
           </div>
-          
+
           <nav className={`flex-1 ${sidebarCollapsed ? 'px-2' : 'px-4'} py-6 overflow-y-auto space-y-6`}>
             {groupedNavigation.map((group) => (
               <div key={group.label}>
@@ -350,7 +375,7 @@ const InternalPanel: React.FC = () => {
               </div>
             ))}
           </nav>
-          
+
           <div className="p-4 border-t border-slate-100 dark:border-[#1F1F1F]">
             <div className={`flex items-center ${sidebarCollapsed ? 'justify-center' : 'gap-3'} mb-4`}>
               <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-bold">
@@ -395,14 +420,16 @@ const InternalPanel: React.FC = () => {
           <div className="p-6 max-w-7xl mx-auto">
             <Routes>
               <Route path="/" element={<InternalDashboard />} />
-              <Route path="/finance" element={['bph','admin','ketua','sekretaris','bendahara'].includes(internalRole.toLowerCase()) ? <FinancePage /> : <Navigate to="/" replace />} />
-              <Route path="/members" element={['bph','admin','ketua','sekretaris','bendahara'].includes(internalRole.toLowerCase()) ? <MembersPage /> : <Navigate to="/" replace />} />
+              <Route path="/work-programs" element={<WorkProgramsPage />} />
+              <Route path="/finance" element={['bph', 'admin', 'ketua', 'sekretaris', 'bendahara'].includes(internalRole.toLowerCase()) ? <FinancePage /> : <Navigate to="/" replace />} />
+              <Route path="/members" element={['bph', 'admin', 'ketua', 'sekretaris', 'bendahara'].includes(internalRole.toLowerCase()) ? <MembersPage /> : <Navigate to="/" replace />} />
               <Route path="/attendance" element={<AttendancePage />} />
+              <Route path="/inventory" element={<InventoryPage />} />
               <Route path="/checkin" element={<CheckInPage />} />
-              <Route path="/documents" element={['bph','admin','ketua','sekretaris','bendahara'].includes(internalRole.toLowerCase()) ? <DocumentsPage /> : <Navigate to="/" replace />} />
-              <Route path="/activity" element={['bph','admin','ketua','sekretaris','bendahara'].includes(internalRole.toLowerCase()) ? <ActivityPage /> : <Navigate to="/" replace />} />
-              <Route path="/reports" element={['bph','admin','ketua','sekretaris','bendahara'].includes(internalRole.toLowerCase()) ? <ReportsPage /> : <Navigate to="/" replace />} />
-              <Route path="/org" element={['bph','admin','ketua','sekretaris','bendahara'].includes(internalRole.toLowerCase()) ? <OrganizationSettings /> : <Navigate to="/" replace />} />
+              <Route path="/documents" element={['bph', 'admin', 'ketua', 'sekretaris', 'bendahara'].includes(internalRole.toLowerCase()) ? <DocumentsPage /> : <Navigate to="/" replace />} />
+              <Route path="/activity" element={['bph', 'admin', 'ketua', 'sekretaris', 'bendahara'].includes(internalRole.toLowerCase()) ? <ActivityPage /> : <Navigate to="/" replace />} />
+              <Route path="/reports" element={['bph', 'admin', 'ketua', 'sekretaris', 'bendahara'].includes(internalRole.toLowerCase()) ? <ReportsPage /> : <Navigate to="/" replace />} />
+              <Route path="/org" element={['bph', 'admin', 'ketua', 'sekretaris', 'bendahara'].includes(internalRole.toLowerCase()) ? <OrganizationSettings /> : <Navigate to="/" replace />} />
               <Route path="/settings" element={<AccountSettings />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>

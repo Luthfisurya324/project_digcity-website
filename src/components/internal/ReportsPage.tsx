@@ -13,7 +13,7 @@ const ReportsPage: React.FC = () => {
   const [transactions, setTransactions] = useState<FinanceTransaction[]>([])
   const [records, setRecords] = useState<Attendance[]>([])
   const [docs, setDocs] = useState<Document[]>([])
-  const [range, setRange] = useState<DateRange>({ start: new Date(new Date().getFullYear(), 0, 1).toISOString().slice(0,10), end: new Date().toISOString().slice(0,10) })
+  const [range, setRange] = useState<DateRange>({ start: new Date(new Date().getFullYear(), 0, 1).toISOString().slice(0, 10), end: new Date().toISOString().slice(0, 10) })
   const [category, setCategory] = useState<string>('all')
   const [searchTerm, setSearchTerm] = useState('')
 
@@ -49,8 +49,8 @@ const ReportsPage: React.FC = () => {
     return transactions.filter((t) => inRange(t.date) && (category === 'all' || t.category === category) && (searchTerm === '' || (t.description || '').toLowerCase().includes(searchTerm.toLowerCase())))
   }, [transactions, range, category, searchTerm])
 
-  const incomeTotal = useMemo(() => filteredTx.filter(t => t.type === 'income').reduce((a,b)=>a+b.amount,0), [filteredTx])
-  const expenseTotal = useMemo(() => filteredTx.filter(t => t.type === 'expense').reduce((a,b)=>a+b.amount,0), [filteredTx])
+  const incomeTotal = useMemo(() => filteredTx.filter(t => t.type === 'income').reduce((a, b) => a + b.amount, 0), [filteredTx])
+  const expenseTotal = useMemo(() => filteredTx.filter(t => t.type === 'expense').reduce((a, b) => a + b.amount, 0), [filteredTx])
   const balance = useMemo(() => incomeTotal - expenseTotal, [incomeTotal, expenseTotal])
 
   const byCategory = useMemo(() => {
@@ -87,7 +87,7 @@ const ReportsPage: React.FC = () => {
   }, [filteredDocs])
 
   const exportCSV = (rows: string[][], filename: string) => {
-    const csv = rows.map(r => r.map(v => '"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\r\n')
+    const csv = rows.map(r => r.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',')).join('\r\n')
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
     const a = document.createElement('a')
     a.href = URL.createObjectURL(blob)
@@ -98,19 +98,19 @@ const ReportsPage: React.FC = () => {
   }
 
   const handleExportFinanceCSV = () => {
-    const headers = ['Tanggal','Tipe','Kategori','Deskripsi','Nominal']
+    const headers = ['Tanggal', 'Tipe', 'Kategori', 'Deskripsi', 'Nominal']
     const rows = filteredTx.map(t => [t.date, t.type, t.category, t.description || '', t.amount.toString()])
     exportCSV([headers, ...rows], `finance-report-${range.start}_to_${range.end}.csv`)
   }
 
   const handleExportAttendanceCSV = () => {
-    const headers = ['Tanggal','Event','Nama','Status']
+    const headers = ['Tanggal', 'Event', 'Nama', 'Status']
     const rows = filteredAttendance.map(r => [r.check_in_time, r.event_id, r.name, r.status])
     exportCSV([headers, ...rows], `attendance-report-${range.start}_to_${range.end}.csv`)
   }
 
   const handleExportDocumentsCSV = () => {
-    const headers = ['Tanggal','Nomor','Judul','Tipe','Status']
+    const headers = ['Tanggal', 'Nomor', 'Judul', 'Tipe', 'Status']
     const rows = filteredDocs.map(d => [d.date, d.ticket_number, d.title, d.type, d.status])
     exportCSV([headers, ...rows], `documents-report-${range.start}_to_${range.end}.csv`)
   }
@@ -131,31 +131,31 @@ const ReportsPage: React.FC = () => {
         <div className="flex flex-wrap gap-2">
           <div className="relative">
             <Calendar size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input type="date" value={range.start} onChange={(e)=>setRange(r=>({ ...r, start: e.target.value }))} className="pl-10 pr-4 py-2 border border-slate-200 dark:border-[#2A2A2A] rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-[#1A1A1A] dark:text-white" />
+            <input type="date" value={range.start} onChange={(e) => setRange(r => ({ ...r, start: e.target.value }))} className="pl-10 pr-4 py-2 border border-slate-200 dark:border-[#2A2A2A] rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-[#1A1A1A] dark:text-white" />
           </div>
           <div className="relative">
             <Calendar size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input type="date" value={range.end} onChange={(e)=>setRange(r=>({ ...r, end: e.target.value }))} className="pl-10 pr-4 py-2 border border-slate-200 dark:border-[#2A2A2A] rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-[#1A1A1A] dark:text-white" />
+            <input type="date" value={range.end} onChange={(e) => setRange(r => ({ ...r, end: e.target.value }))} className="pl-10 pr-4 py-2 border border-slate-200 dark:border-[#2A2A2A] rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-[#1A1A1A] dark:text-white" />
           </div>
           <div className="relative">
             <Filter size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <select value={category} onChange={(e)=>setCategory(e.target.value)} className="pl-10 pr-4 py-2 border border-slate-200 dark:border-[#2A2A2A] rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-[#1A1A1A] dark:text-white">
+            <select value={category} onChange={(e) => setCategory(e.target.value)} className="pl-10 pr-4 py-2 border border-slate-200 dark:border-[#2A2A2A] rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-[#1A1A1A] dark:text-white">
               <option value="all">Semua Kategori</option>
-              {Array.from(new Set(transactions.map(t=>t.category))).map((c)=> (
+              {Array.from(new Set(transactions.map(t => t.category))).map((c) => (
                 <option key={c} value={c}>{c}</option>
               ))}
             </select>
           </div>
           <div className="relative">
             <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input type="text" placeholder="Cari deskripsi transaksi" value={searchTerm} onChange={(e)=>setSearchTerm(e.target.value)} className="pl-10 pr-4 py-2 border border-slate-200 dark:border-[#2A2A2A] rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-[#1A1A1A] dark:text-white" />
+            <input type="text" placeholder="Cari deskripsi transaksi" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10 pr-4 py-2 border border-slate-200 dark:border-[#2A2A2A] rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-[#1A1A1A] dark:text-white" />
           </div>
         </div>
       </div>
 
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {[0,1,2].map(i => (
+          {[0, 1, 2].map(i => (
             <div key={i} className="bg-white dark:bg-[#1E1E1E] p-4 rounded-xl border border-slate-200 dark:border-[#2A2A2A] animate-pulse">
               <div className="h-5 w-24 bg-slate-100 dark:bg-[#232323] rounded mb-2"></div>
               <div className="h-6 w-40 bg-slate-200 dark:bg-[#2A2A2A] rounded"></div>
