@@ -5,7 +5,6 @@
   "installCommand": "npm install",
   "framework": "vite",
   "trailingSlash": false,
-
   "rewrites": [
     {
       "source": "/blog/:slug",
@@ -13,7 +12,7 @@
         {
           "type": "header",
           "key": "user-agent",
-          "value": ".*(facebookexternalhit|WhatsApp|TelegramBot|twitterbot|LinkedInBot|Slackbot|Discordbot|googlebot|bingbot).*"
+          "value": ".*(facebookexternalhit|WhatsApp|TelegramBot|twitterbot|LinkedInBot|Slackbot|Discordbot).*"
         }
       ],
       "destination": "/api/blog-og?slug=:slug"
@@ -23,25 +22,6 @@
       "destination": "/index.html"
     }
   ],
-
-  "redirects": [
-    {
-      "source": "/admin",
-      "destination": "/admin/",
-      "permanent": false
-    },
-    {
-      "source": "/news",
-      "destination": "/news/",
-      "permanent": false
-    },
-    {
-      "source": "/events",
-      "destination": "/events/",
-      "permanent": false
-    }
-  ],
-
   "headers": [
     {
       "source": "/linktree",

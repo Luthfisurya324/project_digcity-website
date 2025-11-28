@@ -6,7 +6,7 @@
   <!-- Blog Main Page -->
   <url>
     <loc>https://digcity.my.id/blog</loc>
-    <lastmod>2025-07-01</lastmod>
+    <lastmod>2025-11-27</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
     <news:news>
@@ -14,7 +14,7 @@
         <news:name>DIGCITY Blog</news:name>
         <news:language>id</news:language>
       </news:publication>
-      <news:publication_date>2025-07-01T00:00:00+07:00</news:publication_date>
+      <news:publication_date>2025-11-27T00:00:00+07:00</news:publication_date>
       <news:title>Blog DIGCITY - Artikel dan Berita Terkini</news:title>
       <news:keywords>blog, artikel, berita, bisnis digital, teknologi, DIGCITY</news:keywords>
       <news:stock_tickers>DIGCITY</news:stock_tickers>
@@ -24,7 +24,7 @@
   <!-- Sample Blog Articles (akan di-generate secara dinamis) -->
   <url>
     <loc>https://digcity.my.id/blog/pengenalan-bisnis-digital</loc>
-    <lastmod>2025-07-01</lastmod>
+    <lastmod>2025-11-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <news:news>
@@ -32,7 +32,7 @@
         <news:name>DIGCITY Blog</news:name>
         <news:language>id</news:language>
       </news:publication>
-      <news:publication_date>2025-07-01T00:00:00+07:00</news:publication_date>
+      <news:publication_date>2025-11-27T00:00:00+07:00</news:publication_date>
       <news:title>Pengenalan Bisnis Digital: Memulai Perjalanan di Era Digital</news:title>
       <news:keywords>bisnis digital, teknologi, startup, entrepreneurship</news:keywords>
       <news:stock_tickers>DIGCITY</news:stock_tickers>
@@ -46,7 +46,7 @@
 
   <url>
     <loc>https://digcity.my.id/blog/teknologi-blockchain</loc>
-    <lastmod>2025-07-01</lastmod>
+    <lastmod>2025-11-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <news:news>
@@ -54,7 +54,7 @@
         <news:name>DIGCITY Blog</news:name>
         <news:language>id</news:language>
       </news:publication>
-      <news:publication_date>2025-07-01T00:00:00+07:00</news:publication_date>
+      <news:publication_date>2025-11-27T00:00:00+07:00</news:publication_date>
       <news:title>Teknologi Blockchain: Masa Depan Transaksi Digital</news:title>
       <news:keywords>blockchain, cryptocurrency, teknologi, fintech</news:keywords>
       <news:stock_tickers>DIGCITY</news:stock_tickers>
@@ -68,7 +68,7 @@
 
   <url>
     <loc>https://digcity.my.id/blog/startup-indonesia</loc>
-    <lastmod>2025-07-01</lastmod>
+    <lastmod>2025-11-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <news:news>
@@ -76,7 +76,7 @@
         <news:name>DIGCITY Blog</news:name>
         <news:language>id</news:language>
       </news:publication>
-      <news:publication_date>2025-07-01T00:00:00+07:00</news:publication_date>
+      <news:publication_date>2025-11-27T00:00:00+07:00</news:publication_date>
       <news:title>Startup Indonesia: Potensi dan Tantangan di Era Digital</news:title>
       <news:keywords>startup, Indonesia, bisnis digital, entrepreneurship</news:keywords>
       <news:stock_tickers>DIGCITY</news:stock_tickers>
@@ -90,7 +90,7 @@
 
   <url>
     <loc>https://digcity.my.id/blog/ai-machine-learning</loc>
-    <lastmod>2025-07-01</lastmod>
+    <lastmod>2025-11-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <news:news>
@@ -98,7 +98,7 @@
         <news:name>DIGCITY Blog</news:name>
         <news:language>id</news:language>
       </news:publication>
-      <news:publication_date>2025-07-01T00:00:00+07:00</news:publication_date>
+      <news:publication_date>2025-11-27T00:00:00+07:00</news:publication_date>
       <news:title>AI dan Machine Learning: Transformasi Bisnis di Era Digital</news:title>
       <news:keywords>AI, machine learning, artificial intelligence, teknologi</news:keywords>
       <news:stock_tickers>DIGCITY</news:stock_tickers>
@@ -112,7 +112,7 @@
 
   <url>
     <loc>https://digcity.my.id/blog/digital-marketing</loc>
-    <lastmod>2025-07-01</lastmod>
+    <lastmod>2025-11-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <news:news>
@@ -120,7 +120,7 @@
         <news:name>DIGCITY Blog</news:name>
         <news:language>id</news:language>
       </news:publication>
-      <news:publication_date>2025-07-01T00:00:00+07:00</news:publication_date>
+      <news:publication_date>2025-11-27T00:00:00+07:00</news:publication_date>
       <news:title>Digital Marketing: Strategi Pemasaran di Era Digital</news:title>
       <news:keywords>digital marketing, pemasaran, social media, SEO</news:keywords>
       <news:stock_tickers>DIGCITY</news:stock_tickers>

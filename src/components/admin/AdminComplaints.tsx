@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { complaintsAPI, type Complaint } from '../../lib/supabase'
-import { AlertCircle, Filter, RefreshCw, Calendar, FolderOpen, Download, FileText, FileSpreadsheet } from 'lucide-react'
+import { AlertCircle, Filter, RefreshCw, Calendar, FolderOpen, Download, FileText, FileSpreadsheet, ChevronDown, ChevronUp, Copy, X } from 'lucide-react'
 import * as XLSX from 'xlsx'
 
 const CATEGORIES = [
@@ -22,6 +22,7 @@ const AdminComplaints: React.FC = () => {
   const [from, setFrom] = useState<string>('')
   const [to, setTo] = useState<string>('')
   const [updatingId, setUpdatingId] = useState<string | null>(null)
+  const [expandedId, setExpandedId] = useState<string | null>(null)
 
   const load = async () => {
     setLoading(true)
@@ -138,6 +139,19 @@ const AdminComplaints: React.FC = () => {
     XLSX.writeFile(wb, `complaints-report-${yyyy}${mm}${dd}.xlsx`)
   }
 
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text)
+    } catch {
+      const ta = document.createElement('textarea')
+      ta.value = text
+      document.body.appendChild(ta)
+      ta.select()
+      document.execCommand('copy')
+      document.body.removeChild(ta)
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-end gap-4">
@@ -207,52 +221,156 @@ const AdminComplaints: React.FC = () => {
         <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">{error}</div>
       )}
 
-      <div className="bg-white rounded-2xl border border-secondary-200 overflow-x-auto">
-        <table className="min-w-full text-sm">
+      <div className="bg-white rounded-2xl border border-secondary-200 overflow-x-hidden">
+        <table className="min-w-full w-full text-sm table-fixed">
           <thead>
             <tr className="text-left text-secondary-600">
-              <th className="px-4 py-3">Tanggal</th>
-              <th className="px-4 py-3">Tiket</th>
-              <th className="px-4 py-3">Kategori</th>
-              <th className="px-4 py-3">Identitas</th>
-              <th className="px-4 py-3">Deskripsi</th>
-              <th className="px-4 py-3">Lampiran</th>
-              <th className="px-4 py-3">Status</th>
+              <th className="px-4 py-3 sticky top-0 bg-white w-40">Tanggal</th>
+              <th className="px-4 py-3 sticky top-0 bg-white w-44">Tiket</th>
+              <th className="px-4 py-3 sticky top-0 bg-white w-40">Kategori</th>
+              <th className="px-4 py-3 sticky top-0 bg-white w-48 hidden sm:table-cell">Identitas</th>
+              <th className="px-4 py-3 sticky top-0 bg-white w-[320px] hidden md:table-cell">Deskripsi</th>
+              <th className="px-4 py-3 sticky top-0 bg-white w-32 hidden sm:table-cell">Lampiran</th>
+              <th className="px-4 py-3 sticky top-0 bg-white w-40">Status</th>
+              <th className="px-4 py-3 sticky top-0 bg-white w-28">Aksi</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={7} className="px-4 py-6 text-center text-secondary-600">Memuat...</td></tr>
+              <tr><td colSpan={8} className="px-4 py-6 text-center text-secondary-600">Memuat...</td></tr>
             ) : items.length === 0 ? (
-              <tr><td colSpan={7} className="px-4 py-6 text-center text-secondary-600">Tidak ada data</td></tr>
+              <tr><td colSpan={8} className="px-4 py-6 text-center text-secondary-600">Tidak ada data</td></tr>
             ) : (
               items.map((it) => (
-                <tr key={it.id} className="border-t border-secondary-100">
-                  <td className="px-4 py-3 whitespace-nowrap"><div className="flex items-center gap-2"><Calendar size={14} /><span>{new Date(it.created_at).toLocaleString()}</span></div></td>
-                  <td className="px-4 py-3 font-mono whitespace-nowrap">{it.ticket_number}</td>
-                  <td className="px-4 py-3 whitespace-nowrap">{it.category}</td>
-                  <td className="px-4 py-3 whitespace-nowrap">{it.anonymous ? 'Anonim' : `${it.name || '-'} / ${it.npm || '-'}`}</td>
-                  <td className="px-4 py-3 max-w-[380px]"><div className="line-clamp-3">{it.description}</div></td>
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    {it.attachments && it.attachments.length > 0 ? (
-                      <a href={it.attachments[0]} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-primary-700 hover:underline"><FolderOpen size={14} />Lihat</a>
-                    ) : (
-                      <span className="text-secondary-500">-</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    <select
-                      value={it.status}
-                      onChange={(e) => updateStatus(it.id, e.target.value as Complaint['status'])}
-                      disabled={updatingId === it.id}
-                      className="rounded-lg border border-secondary-300 bg-white px-2 py-1 text-xs"
-                    >
-                      {STATUSES.map((s) => (
-                        <option key={s} value={s}>{s}</option>
-                      ))}
-                    </select>
-                  </td>
-                </tr>
+                <React.Fragment key={it.id}>
+                  <tr
+                    className="border-t border-secondary-100 hover:bg-secondary-50 cursor-pointer"
+                    onClick={(e) => {
+                      const el = e.target as HTMLElement
+                      if (el.closest('select, a, button')) return
+                      setExpandedId(expandedId === it.id ? null : it.id)
+                    }}
+                  >
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2" title={new Date(it.created_at).toLocaleString()}>
+                        <Calendar size={14} />
+                        <div className="leading-tight">
+                          <div className="text-xs">{new Date(it.created_at).toLocaleDateString()}</div>
+                          <div className="text-[11px] text-secondary-600">{new Date(it.created_at).toLocaleTimeString()}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 font-mono truncate max-w-[160px] overflow-hidden" title={it.ticket_number}>{it.ticket_number}</td>
+                    <td className="px-4 py-3 break-words">{it.category}</td>
+                    <td className="px-4 py-3 break-words hidden sm:table-cell">{it.anonymous ? 'Anonim' : `${it.name || '-'} / ${it.npm || '-'}`}</td>
+                    <td className="px-4 py-3 max-w-[320px] hidden md:table-cell"><div className="line-clamp-2">{it.description}</div></td>
+                    <td className="px-4 py-3 whitespace-nowrap hidden sm:table-cell">
+                      {it.attachments && it.attachments.length > 0 ? (
+                        <a href={it.attachments[0]} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-primary-700 hover:underline"><FolderOpen size={14} />Lihat</a>
+                      ) : (
+                        <span className="text-secondary-500">-</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <select
+                        value={it.status}
+                        onChange={(e) => updateStatus(it.id, e.target.value as Complaint['status'])}
+                        disabled={updatingId === it.id}
+                        className="rounded-lg border border-secondary-300 bg-white px-2 py-1 text-xs"
+                      >
+                        {STATUSES.map((s) => (
+                          <option key={s} value={s}>{s}</option>
+                        ))}
+                      </select>
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <button
+                        onClick={() => setExpandedId(expandedId === it.id ? null : it.id)}
+                        className="inline-flex items-center gap-1 px-2 py-1 rounded-lg border border-secondary-300 text-secondary-700 hover:bg-secondary-100 text-xs"
+                      >
+                        {expandedId === it.id ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                        {expandedId === it.id ? 'Tutup' : 'Buka'}
+                      </button>
+                    </td>
+                  </tr>
+                  {expandedId === it.id && (
+                    <tr className="bg-secondary-50">
+                      <td colSpan={8} className="px-4 py-4 overflow-visible">
+                        <div className="flex flex-col gap-4">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="text-xs text-secondary-600">Tiket:</span>
+                            <span className="font-mono text-sm">{it.ticket_number}</span>
+                            <button
+                              onClick={() => copyToClipboard(it.ticket_number)}
+                              className="inline-flex items-center gap-1 px-2 py-1 rounded border border-secondary-300 text-secondary-700 hover:bg-secondary-100 text-xs"
+                            >
+                              <Copy size={12} /> Salin
+                            </button>
+                            <button
+                              onClick={() => setExpandedId(null)}
+                              className="ml-auto inline-flex items-center gap-1 px-2 py-1 rounded border border-secondary-300 text-secondary-700 hover:bg-secondary-100 text-xs"
+                            >
+                              <X size={12} /> Tutup Detil
+                            </button>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-2 min-w-0">
+                              <div className="text-secondary-600 text-xs">Kategori</div>
+                              <div className="text-sm">{it.category}</div>
+                              <div className="text-secondary-600 text-xs mt-3">Waktu</div>
+                              <div className="text-sm">{new Date(it.created_at).toLocaleString()}</div>
+                              <div className="text-secondary-600 text-xs mt-3">Status</div>
+                              <div>
+                                <select
+                                  value={it.status}
+                                  onChange={(e) => updateStatus(it.id, e.target.value as Complaint['status'])}
+                                  disabled={updatingId === it.id}
+                                  className="rounded-lg border border-secondary-300 bg-white px-2 py-1 text-xs"
+                                >
+                                  {STATUSES.map((s) => (
+                                    <option key={s} value={s}>{s}</option>
+                                  ))}
+                                </select>
+                              </div>
+                              <div className="text-secondary-600 text-xs mt-3">Identitas</div>
+                              <div className="text-sm">
+                                {it.anonymous ? 'Anonim' : (
+                                  <div className="space-y-1">
+                                    <div>{it.name || '-'}</div>
+                                    <div>{it.npm || '-'}</div>
+                                    <div>
+                                      {it.contact_email ? (
+                                        <a href={`mailto:${it.contact_email}`} className="text-primary-700 hover:underline">{it.contact_email}</a>
+                                      ) : (
+                                        '-' 
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            <div className="space-y-2 min-w-0">
+                              <div className="text-secondary-600 text-xs">Deskripsi</div>
+                              <div className="text-sm whitespace-pre-wrap break-all md:break-words w-full max-w-full pr-2">{it.description}</div>
+                              <div className="text-secondary-600 text-xs mt-3">Lampiran</div>
+                              <div className="flex flex-wrap gap-2">
+                                {Array.isArray(it.attachments) && it.attachments.length > 0 ? (
+                                  it.attachments.map((url, idx) => (
+                                    <a key={url} href={url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 px-2 py-1 rounded border border-secondary-300 text-primary-700 hover:bg-secondary-100 text-xs">
+                                      <FolderOpen size={12} /> Lampiran {idx + 1}
+                                    </a>
+                                  ))
+                                ) : (
+                                  <span className="text-secondary-500 text-sm">Tidak ada lampiran</span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </React.Fragment>
               ))
             )}
           </tbody>
