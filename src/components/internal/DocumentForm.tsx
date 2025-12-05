@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Document, documentsAPI, supabase } from '../../lib/supabase'
 import { X, Upload, Check, FileText, Wand2 } from 'lucide-react'
 
@@ -52,17 +53,31 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ onClose, onSuccess, documen
   const [driveLink, setDriveLink] = useState(document?.drive_link || '')
   const [ticketNumber, setTicketNumber] = useState(document?.ticket_number || '')
   const [version, setVersion] = useState<number>(document?.version || 1)
+
+  // New fields
+  const [sender, setSender] = useState(document?.sender || '')
+  const [recipient, setRecipient] = useState(document?.recipient || '')
+  const [dateReceived, setDateReceived] = useState(document?.date_received ? document.date_received.slice(0, 10) : '')
   const [uploading, setUploading] = useState(false)
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     let isMounted = true
-    if (!document && mode === 'create') {
-      const ticket = documentsAPI.generateTicketNumber()
-      if (isMounted) {
-        setTicketNumber(ticket)
+    const fetchTicket = async () => {
+      if (!document && mode === 'create') {
+        if (type !== 'incoming') {
+          const ticket = await documentsAPI.getNextTicketNumber()
+          if (isMounted) {
+            setTicketNumber(ticket)
+          }
+        } else {
+          if (isMounted) setTicketNumber('')
+        }
       }
     }
+
+    fetchTicket()
+
     if (isRevisionMode && document) {
       setTicketNumber(document.ticket_number)
       setVersion((document.version || 1) + 1)
@@ -70,7 +85,7 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ onClose, onSuccess, documen
     return () => {
       isMounted = false
     }
-  }, [document, mode, isRevisionMode])
+  }, [document, mode, isRevisionMode, type])
 
   const typeOptions = [
     { value: 'incoming', label: 'Surat Masuk' },
@@ -89,7 +104,7 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ onClose, onSuccess, documen
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return
-    
+
     setUploading(true)
     try {
       const file = e.target.files[0]
@@ -120,27 +135,42 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ onClose, onSuccess, documen
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('User not authenticated')
 
+      const commonData = {
+        title,
+        type,
+        category,
+        date,
+        description,
+        file_url: fileUrl,
+        drive_link: driveLink,
+        sender: type === 'incoming' ? sender : undefined,
+        recipient: type === 'outgoing' ? recipient : undefined,
+        date_received: type === 'incoming' ? dateReceived : undefined,
+      }
+
       if (isEditMode && document) {
         await documentsAPI.update(document.id, {
-          title,
-          type,
-          category,
-          date,
-          description,
-          file_url: fileUrl,
-          drive_link: driveLink
+          ...commonData,
+          // If editing incoming, allow updating ticket number if needed, 
+          // but usually ticket number is fixed. For now let's allow updating it if it's incoming.
+          ticket_number: type === 'incoming' ? ticketNumber : document.ticket_number
         })
       } else {
-        const payloadTicket = isRevisionMode && document ? document.ticket_number : ticketNumber || documentsAPI.generateTicketNumber()
+        // For incoming, use the manually entered ticket number
+        // For outgoing, use generated or existing (if revision)
+        let payloadTicket = ticketNumber
+        if (type !== 'incoming' && (!payloadTicket || payloadTicket === '')) {
+          payloadTicket = documentsAPI.generateTicketNumber()
+        }
+
+        if (isRevisionMode && document) {
+          payloadTicket = document.ticket_number
+        }
+
         const payloadVersion = isRevisionMode && document ? version : 1
+
         await documentsAPI.create({
-          title,
-          type,
-          category,
-          date,
-          description,
-          file_url: fileUrl,
-          drive_link: driveLink,
+          ...commonData,
           version: payloadVersion,
           status: 'draft',
           created_by: user.id,
@@ -158,8 +188,8 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ onClose, onSuccess, documen
     }
   }
 
-  return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+  return createPortal(
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
       <div className="bg-white dark:bg-[#1E1E1E] rounded-2xl w-full max-w-2xl overflow-hidden shadow-xl transform transition-all flex flex-col max-h-[90vh]">
         <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-[#2A2A2A]">
           <h3 className="text-lg font-bold text-slate-900 dark:text-white">{formTitle}</h3>
@@ -170,9 +200,25 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ onClose, onSuccess, documen
 
         <div className="p-6 overflow-y-auto">
           <form onSubmit={handleSubmit} className="space-y-5">
+
+            {/* Type Selection First */}
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Jenis Dokumen</label>
+              <select
+                required
+                value={type}
+                onChange={(e) => setType(e.target.value as any)}
+                className="w-full px-4 py-2 border border-slate-200 dark:border-[#2A2A2A] rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-[#1A1A1A] dark:text-white"
+              >
+                {typeOptions.map((option) => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
+              </select>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Judul Dokumen</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Judul / Perihal</label>
                 <input
                   type="text"
                   required
@@ -187,18 +233,65 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ onClose, onSuccess, documen
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nomor Surat</label>
                 <input
                   type="text"
-                  disabled
+                  required={type === 'incoming'}
+                  disabled={type !== 'incoming'}
                   value={ticketNumber}
-                  className="w-full px-4 py-2 border border-slate-200 dark:border-[#2A2A2A] rounded-lg bg-slate-50 dark:bg-[#232323] text-slate-500 cursor-not-allowed"
-                  placeholder="Otomatis (ORG/SEK/...)"
+                  onChange={(e) => setTicketNumber(e.target.value)}
+                  className={`w-full px-4 py-2 border border-slate-200 dark:border-[#2A2A2A] rounded-lg ${type !== 'incoming' ? 'bg-slate-50 dark:bg-[#232323] text-slate-500 cursor-not-allowed' : 'focus:ring-2 focus:ring-blue-500 dark:bg-[#1A1A1A] dark:text-white'}`}
+                  placeholder={type === 'incoming' ? "Masukkan Nomor Surat Masuk" : "Otomatis (ORG/SEK/...)"}
                 />
                 <p className="text-xs text-slate-500 mt-1">
-                  {isRevisionMode ? 'Menggunakan nomor surat yang sama, versi terbaru akan disimpan.' : 'Nomor surat digenerate otomatis mengikuti format ORG/SEK/...'}
+                  {type === 'incoming'
+                    ? 'Masukkan nomor surat sesuai yang tertera pada dokumen fisik.'
+                    : isRevisionMode
+                      ? 'Menggunakan nomor surat yang sama.'
+                      : 'Nomor surat digenerate otomatis.'}
                 </p>
               </div>
             </div>
 
-            {!isEditMode && (
+            {/* Conditional Fields based on Type */}
+            {type === 'incoming' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 bg-blue-50 dark:bg-blue-900/10 p-4 rounded-xl border border-blue-100 dark:border-blue-800/30">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Pengirim</label>
+                  <input
+                    type="text"
+                    required
+                    value={sender}
+                    onChange={(e) => setSender(e.target.value)}
+                    className="w-full px-4 py-2 border border-slate-200 dark:border-[#2A2A2A] rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-[#1A1A1A] dark:text-white"
+                    placeholder="Nama Instansi / Pengirim"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Tanggal Diterima</label>
+                  <input
+                    type="date"
+                    required
+                    value={dateReceived}
+                    onChange={(e) => setDateReceived(e.target.value)}
+                    className="w-full px-4 py-2 border border-slate-200 dark:border-[#2A2A2A] rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-[#1A1A1A] dark:text-white"
+                  />
+                </div>
+              </div>
+            )}
+
+            {type === 'outgoing' && (
+              <div className="bg-purple-50 dark:bg-purple-900/10 p-4 rounded-xl border border-purple-100 dark:border-purple-800/30">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Penerima / Tujuan</label>
+                <input
+                  type="text"
+                  required
+                  value={recipient}
+                  onChange={(e) => setRecipient(e.target.value)}
+                  className="w-full px-4 py-2 border border-slate-200 dark:border-[#2A2A2A] rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-[#1A1A1A] dark:text-white"
+                  placeholder="Nama Instansi / Penerima"
+                />
+              </div>
+            )}
+
+            {!isEditMode && type !== 'incoming' && (
               <div className="border border-dashed border-slate-200 dark:border-[#2A2A2A] rounded-xl p-4">
                 <p className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-3 flex items-center gap-2">
                   <Wand2 size={16} className="text-blue-500" />
@@ -221,20 +314,6 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ onClose, onSuccess, documen
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Jenis Dokumen</label>
-                <select
-                  required
-                  value={type}
-                  onChange={(e) => setType(e.target.value as any)}
-                  className="w-full px-4 py-2 border border-slate-200 dark:border-[#2A2A2A] rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-[#1A1A1A] dark:text-white"
-                >
-                  {typeOptions.map((option) => (
-                    <option key={option.value} value={option.value}>{option.label}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Kategori</label>
                 <input
                   list="categories"
@@ -250,17 +329,17 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ onClose, onSuccess, documen
                   ))}
                 </datalist>
               </div>
-            </div>
 
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Tanggal Dokumen</label>
-              <input
-                type="date"
-                required
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className="w-full px-4 py-2 border border-slate-200 dark:border-[#2A2A2A] rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-[#1A1A1A] dark:text-white"
-              />
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Tanggal Surat</label>
+                <input
+                  type="date"
+                  required
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  className="w-full px-4 py-2 border border-slate-200 dark:border-[#2A2A2A] rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-[#1A1A1A] dark:text-white"
+                />
+              </div>
             </div>
 
             <div>
@@ -276,7 +355,7 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ onClose, onSuccess, documen
 
             <div className="border-t border-slate-100 dark:border-[#2A2A2A] pt-4">
               <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-3">Lampiran & Tautan</h4>
-              
+
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Upload File</label>
@@ -347,7 +426,8 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ onClose, onSuccess, documen
           </form>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 

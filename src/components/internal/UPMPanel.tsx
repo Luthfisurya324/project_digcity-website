@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { upmAPI, UPMAllocation, UPMRequest, attendanceAPI, InternalEvent } from '../../lib/supabase'
+import ApprovalModal from '../common/ApprovalModal'
+import ConfirmationModal from '../common/ConfirmationModal'
 import {
     Plus,
     CheckCircle,
@@ -7,7 +10,8 @@ import {
     Clock,
     ChevronDown,
     ChevronUp,
-    Landmark
+    Landmark,
+    Trash2
 } from 'lucide-react'
 
 const UPMPanel: React.FC = () => {
@@ -18,6 +22,15 @@ const UPMPanel: React.FC = () => {
     const [showAllocationForm, setShowAllocationForm] = useState(false)
     const [programs, setPrograms] = useState<InternalEvent[]>([])
     const [isExpanded, setIsExpanded] = useState(false)
+
+    // Modal States
+    const [showApprovalModal, setShowApprovalModal] = useState(false)
+    const [selectedRequest, setSelectedRequest] = useState<UPMRequest | null>(null)
+    const [isProcessing, setIsProcessing] = useState(false)
+
+    // Delete/Reject Confirmation State
+    const [showConfirmModal, setShowConfirmModal] = useState(false)
+    const [confirmAction, setConfirmAction] = useState<'reject' | 'disburse' | 'delete' | null>(null)
 
     // Form states
     const [formData, setFormData] = useState({
@@ -99,17 +112,54 @@ const UPMPanel: React.FC = () => {
     }
 
     const handleStatusUpdate = async (id: string, status: UPMRequest['status'], amount?: number) => {
+        setIsProcessing(true)
         try {
+            // Update UPM Request status
             await upmAPI.updateRequestStatus(
                 id,
                 status,
                 amount,
                 status === 'disbursed' ? new Date().toISOString().split('T')[0] : undefined
             )
+
             loadData()
+            setShowApprovalModal(false)
+            setShowConfirmModal(false)
+            setSelectedRequest(null)
+            setConfirmAction(null)
         } catch (error) {
             console.error('Error updating status:', error)
+            alert('Gagal memperbarui status')
+        } finally {
+            setIsProcessing(false)
         }
+    }
+
+    const handleDeleteRequest = async (id: string) => {
+        setIsProcessing(true)
+        try {
+            await upmAPI.deleteRequest(id)
+            loadData()
+            setShowConfirmModal(false)
+            setSelectedRequest(null)
+            setConfirmAction(null)
+        } catch (error) {
+            console.error('Error deleting request:', error)
+            alert('Gagal menghapus pengajuan')
+        } finally {
+            setIsProcessing(false)
+        }
+    }
+
+    const openApprovalModal = (req: UPMRequest) => {
+        setSelectedRequest(req)
+        setShowApprovalModal(true)
+    }
+
+    const openConfirmModal = (req: UPMRequest, action: 'reject' | 'disburse' | 'delete') => {
+        setSelectedRequest(req)
+        setConfirmAction(action)
+        setShowConfirmModal(true)
     }
 
     const formatCurrency = (amount: number) => {
@@ -239,9 +289,9 @@ const UPMPanel: React.FC = () => {
                                                             </td>
                                                             <td className="px-4 py-3">
                                                                 <span className={`px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1 w-fit ${req.status === 'disbursed' ? 'bg-emerald-100 text-emerald-700' :
-                                                                        req.status === 'approved' ? 'bg-blue-100 text-blue-700' :
-                                                                            req.status === 'rejected' ? 'bg-rose-100 text-rose-700' :
-                                                                                'bg-amber-100 text-amber-700'
+                                                                    req.status === 'approved' ? 'bg-blue-100 text-blue-700' :
+                                                                        req.status === 'rejected' ? 'bg-rose-100 text-rose-700' :
+                                                                            'bg-amber-100 text-amber-700'
                                                                     }`}>
                                                                     {req.status === 'disbursed' && <CheckCircle size={12} />}
                                                                     {req.status === 'approved' && <CheckCircle size={12} />}
@@ -253,39 +303,41 @@ const UPMPanel: React.FC = () => {
                                                                 </span>
                                                             </td>
                                                             <td className="px-4 py-3 text-right">
-                                                                {req.status === 'pending' && (
-                                                                    <div className="flex justify-end gap-2">
+                                                                <div className="flex justify-end gap-2 items-center">
+                                                                    {req.status === 'pending' && (
+                                                                        <>
+                                                                            <button
+                                                                                onClick={() => openApprovalModal(req)}
+                                                                                className="p-1 text-emerald-600 hover:bg-emerald-50 rounded"
+                                                                                title="Setujui"
+                                                                            >
+                                                                                <CheckCircle size={16} />
+                                                                            </button>
+                                                                            <button
+                                                                                onClick={() => openConfirmModal(req, 'reject')}
+                                                                                className="p-1 text-rose-600 hover:bg-rose-50 rounded"
+                                                                                title="Tolak"
+                                                                            >
+                                                                                <XCircle size={16} />
+                                                                            </button>
+                                                                        </>
+                                                                    )}
+                                                                    {req.status === 'approved' && (
                                                                         <button
-                                                                            onClick={() => {
-                                                                                const amount = prompt('Masukkan jumlah yang disetujui:', req.amount_proposed.toString())
-                                                                                if (amount) handleStatusUpdate(req.id, 'approved', parseInt(amount))
-                                                                            }}
-                                                                            className="p-1 text-emerald-600 hover:bg-emerald-50 rounded"
-                                                                            title="Setujui"
+                                                                            onClick={() => openConfirmModal(req, 'disburse')}
+                                                                            className="px-3 py-1 bg-emerald-600 text-white text-xs rounded hover:bg-emerald-700 transition-colors"
                                                                         >
-                                                                            <CheckCircle size={16} />
+                                                                            Cairkan Dana
                                                                         </button>
-                                                                        <button
-                                                                            onClick={() => {
-                                                                                if (confirm('Tolak pengajuan ini?')) handleStatusUpdate(req.id, 'rejected')
-                                                                            }}
-                                                                            className="p-1 text-rose-600 hover:bg-rose-50 rounded"
-                                                                            title="Tolak"
-                                                                        >
-                                                                            <XCircle size={16} />
-                                                                        </button>
-                                                                    </div>
-                                                                )}
-                                                                {req.status === 'approved' && (
+                                                                    )}
                                                                     <button
-                                                                        onClick={() => {
-                                                                            if (confirm('Tandai sebagai sudah cair?')) handleStatusUpdate(req.id, 'disbursed')
-                                                                        }}
-                                                                        className="px-3 py-1 bg-emerald-600 text-white text-xs rounded hover:bg-emerald-700 transition-colors"
+                                                                        onClick={() => openConfirmModal(req, 'delete')}
+                                                                        className="p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded"
+                                                                        title="Hapus"
                                                                     >
-                                                                        Cairkan Dana
+                                                                        <Trash2 size={16} />
                                                                     </button>
-                                                                )}
+                                                                </div>
                                                             </td>
                                                         </tr>
                                                     ))
@@ -301,8 +353,8 @@ const UPMPanel: React.FC = () => {
             )}
 
             {/* Allocation Form Modal */}
-            {showAllocationForm && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            {showAllocationForm && createPortal(
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999] p-4">
                     <div className="bg-white dark:bg-[#1E1E1E] rounded-xl w-full max-w-md p-6">
                         <h3 className="text-lg font-bold mb-4 text-slate-900 dark:text-white">Pengaturan Alokasi UPM</h3>
                         <form onSubmit={handleCreateAllocation} className="space-y-4">
@@ -345,12 +397,13 @@ const UPMPanel: React.FC = () => {
                             </div>
                         </form>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
 
             {/* Request Form Modal */}
-            {showForm && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            {showForm && createPortal(
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999] p-4">
                     <div className="bg-white dark:bg-[#1E1E1E] rounded-xl w-full max-w-md p-6">
                         <h3 className="text-lg font-bold mb-4 text-slate-900 dark:text-white">Buat Pengajuan UPM</h3>
                         <form onSubmit={handleSubmitRequest} className="space-y-4">
@@ -406,7 +459,53 @@ const UPMPanel: React.FC = () => {
                             </div>
                         </form>
                     </div>
-                </div>
+                </div>,
+                document.body
+            )}
+
+            {/* Approval Modal */}
+            {selectedRequest && (
+                <ApprovalModal
+                    isOpen={showApprovalModal}
+                    onClose={() => setShowApprovalModal(false)}
+                    onConfirm={(amount) => handleStatusUpdate(selectedRequest.id, 'approved', amount)}
+                    title="Setujui Pengajuan"
+                    message={`Masukkan jumlah dana yang disetujui untuk "${selectedRequest.description}".`}
+                    initialAmount={selectedRequest.amount_proposed}
+                    loading={isProcessing}
+                />
+            )}
+
+            {/* Confirmation Modal for Reject/Disburse */}
+            {selectedRequest && (
+                <ConfirmationModal
+                    isOpen={showConfirmModal}
+                    onClose={() => setShowConfirmModal(false)}
+                    onConfirm={() => {
+                        if (confirmAction === 'reject') handleStatusUpdate(selectedRequest.id, 'rejected')
+                        if (confirmAction === 'disburse') handleStatusUpdate(selectedRequest.id, 'disbursed')
+                        if (confirmAction === 'delete') handleDeleteRequest(selectedRequest.id)
+                    }}
+                    title={
+                        confirmAction === 'reject' ? 'Tolak Pengajuan' :
+                            confirmAction === 'disburse' ? 'Cairkan Dana' :
+                                'Hapus Pengajuan'
+                    }
+                    message={
+                        confirmAction === 'reject'
+                            ? 'Apakah Anda yakin ingin menolak pengajuan ini?'
+                            : confirmAction === 'disburse'
+                                ? 'Apakah Anda yakin ingin menandai dana ini sebagai sudah cair? Tindakan ini akan mencatat tanggal pencairan.'
+                                : 'Apakah Anda yakin ingin menghapus pengajuan ini? Tindakan ini tidak dapat dibatalkan.'
+                    }
+                    confirmText={
+                        confirmAction === 'reject' ? 'Tolak' :
+                            confirmAction === 'disburse' ? 'Cairkan' :
+                                'Hapus'
+                    }
+                    type={confirmAction === 'disburse' ? 'info' : 'danger'}
+                    loading={isProcessing}
+                />
             )}
         </div>
     )

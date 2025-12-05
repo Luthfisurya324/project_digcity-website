@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { attendanceAPI, Attendance, InternalEvent } from '../../lib/supabase'
 import { X, UserCheck, Clock, Download, FileText, UserPlus, Filter } from 'lucide-react'
 import ManualAttendanceForm from './ManualAttendanceForm'
@@ -101,8 +102,8 @@ const AttendanceDetail: React.FC<AttendanceDetailProps> = ({ event, onClose }) =
     ? Math.round(((statusSummary.present + statusSummary.late) / attendanceList.length) * 100)
     : 0
 
-  return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+  return createPortal(
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
       <div className="bg-white dark:bg-[#1E1E1E] rounded-2xl w-full max-w-3xl overflow-hidden shadow-xl flex flex-col max-h-[90vh]">
         <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-[#2A2A2A]">
           <div>
@@ -192,23 +193,22 @@ const AttendanceDetail: React.FC<AttendanceDetailProps> = ({ event, onClose }) =
                   </div>
                   <div className="flex items-center gap-4">
                     <span
-                      className={`text-xs font-semibold px-3 py-1 rounded-full ${
-                        record.status === 'present'
+                      className={`text-xs font-semibold px-3 py-1 rounded-full ${record.status === 'present'
                           ? 'bg-emerald-100 text-emerald-700'
                           : record.status === 'late'
-                          ? 'bg-amber-100 text-amber-700'
-                          : record.status === 'excused'
-                          ? 'bg-sky-100 text-sky-700'
-                          : 'bg-rose-100 text-rose-700'
-                      }`}
+                            ? 'bg-amber-100 text-amber-700'
+                            : record.status === 'excused'
+                              ? 'bg-sky-100 text-sky-700'
+                              : 'bg-rose-100 text-rose-700'
+                        }`}
                     >
                       {record.status === 'present'
                         ? 'Hadir'
                         : record.status === 'late'
-                        ? 'Terlambat'
-                        : record.status === 'excused'
-                        ? 'Izin'
-                        : 'Tidak Hadir'}
+                          ? 'Terlambat'
+                          : record.status === 'excused'
+                            ? 'Izin'
+                            : 'Tidak Hadir'}
                     </span>
                     <div className="text-right text-xs text-slate-500">
                       <p className="flex items-center gap-1 justify-end">
@@ -244,7 +244,8 @@ const AttendanceDetail: React.FC<AttendanceDetailProps> = ({ event, onClose }) =
           onSuccess={loadAttendance}
         />
       )}
-    </div>
+    </div>,
+    document.body
   )
 }
 

@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { financeAPI, supabase, FinanceTransaction, auditAPI } from '../../lib/supabase'
 import { X, Upload, Check } from 'lucide-react'
 
@@ -22,7 +23,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onClose, onSuccess, m
   const [loading, setLoading] = useState(false)
 
   const categories = useMemo(() => ({
-    income: ['Uang Kas', 'Sponsorship', 'Donasi', 'Penjualan Merchandise', 'Iuran Anggota', 'Lainnya'],
+    income: ['Uang Kas', 'Sponsorship', 'Donasi', 'Penjualan Merchandise', 'Lainnya'],
     expense: ['Konsumsi', 'Transportasi', 'Perlengkapan', 'Sewa Tempat', 'Operasional Divisi', 'Lainnya']
   }), [])
 
@@ -137,8 +138,8 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onClose, onSuccess, m
     }
   }
 
-  return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+  return createPortal(
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
       <div className="bg-white dark:bg-[#1E1E1E] rounded-2xl w-full max-w-lg overflow-hidden shadow-xl transform transition-all">
         <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-[#2A2A2A]">
           <h3 className="text-lg font-bold text-slate-900 dark:text-white">
@@ -297,7 +298,8 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onClose, onSuccess, m
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 

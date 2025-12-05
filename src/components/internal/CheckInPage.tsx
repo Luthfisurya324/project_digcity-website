@@ -8,7 +8,7 @@ const CheckInPage: React.FC = () => {
   const navigate = useNavigate()
   const eventId = searchParams.get('event')
   const tokenParam = searchParams.get('token')
-  
+
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
   const [message, setMessage] = useState('Memverifikasi data...')
   const [eventDetails, setEventDetails] = useState<any>(null)
@@ -67,6 +67,7 @@ const CheckInPage: React.FC = () => {
         .from('attendance')
         .select('id, member_id, name')
         .eq('event_id', eventId)
+        .limit(10000)
 
       const alreadyChecked = (existing || []).some((record) => {
         if (member?.id && record.member_id === member.id) return true
@@ -160,7 +161,7 @@ const CheckInPage: React.FC = () => {
         )}
 
         <div className="p-4 bg-slate-50 dark:bg-[#232323] border-t border-slate-100 dark:border-[#2A2A2A] flex justify-center">
-          <button 
+          <button
             onClick={() => navigate('/internal/attendance')}
             className="text-blue-600 hover:text-blue-700 font-medium text-sm"
           >

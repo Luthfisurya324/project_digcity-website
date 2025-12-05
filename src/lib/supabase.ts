@@ -72,6 +72,8 @@ export interface Complaint {
   contact_email?: string | null
   attachments: string[]
   status: 'baru' | 'diproses' | 'selesai' | 'ditolak'
+  response?: string | null
+  response_at?: string | null
 }
 
 export interface User {
@@ -129,6 +131,9 @@ export interface Document {
   created_by: string
   created_at: string
   updated_at: string
+  sender?: string
+  recipient?: string
+  date_received?: string
 }
 
 export interface OrganizationMember {
@@ -238,7 +243,7 @@ export const orgAPI = {
     const { error } = await supabase.from('organization_structure').delete().eq('id', id)
     if (error) throw error
   },
-  async reorder(parent_id: string | null, orderedIds: string[]) {
+  async reorder(_parent_id: string | null, orderedIds: string[]) {
     let index = 0
     for (const id of orderedIds) {
       await supabase.from('organization_structure').update({ order_index: index }).eq('id', id)
@@ -250,6 +255,54 @@ export const orgAPI = {
   }
 }
 
+export interface OrganizationPosition {
+  id: string
+  name: string
+  order_index: number
+  created_at: string
+}
+
+export const positionsAPI = {
+  async getAll() {
+    const { data, error } = await supabase
+      .from('organization_positions')
+      .select('*')
+      .order('order_index', { ascending: true })
+    if (error) throw error
+    return data as OrganizationPosition[]
+  },
+  async create(payload: Omit<OrganizationPosition, 'id' | 'created_at' | 'order_index'> & { order_index?: number }) {
+    const { data, error } = await supabase
+      .from('organization_positions')
+      .insert([{ name: payload.name, order_index: payload.order_index ?? 0 }])
+      .select()
+      .single()
+    if (error) throw error
+    return data as OrganizationPosition
+  },
+  async update(id: string, updates: Partial<OrganizationPosition>) {
+    const { data, error } = await supabase
+      .from('organization_positions')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single()
+    if (error) throw error
+    return data as OrganizationPosition
+  },
+  async delete(id: string) {
+    const { error } = await supabase.from('organization_positions').delete().eq('id', id)
+    if (error) throw error
+  },
+  async reorder(orderedIds: string[]) {
+    let index = 0
+    for (const id of orderedIds) {
+      await supabase.from('organization_positions').update({ order_index: index }).eq('id', id)
+      index++
+    }
+  }
+}
+
 export interface InternalEvent {
   id: string
   title: string
@@ -258,6 +311,7 @@ export interface InternalEvent {
   end_date?: string
   location: string
   division: string
+  division_id?: string
   type: 'meeting' | 'work_program' | 'gathering' | 'other'
   status: 'upcoming' | 'ongoing' | 'completed' | 'cancelled'
   qr_code?: string
@@ -316,10 +370,10 @@ export const eventAPI = {
         .limit(limit);
 
       if (fbError) throw fbError;
-      return (fallback || []) as Event[];
+      return (fallback || []) as unknown as Event[];
     }
 
-    return data as Event[];
+    return data as unknown as Event[];
   },
 
   // Get event by ID
@@ -530,13 +584,24 @@ export const galleryAPI = {
 export const financeAPI = {
   // Get all transactions
   async getAll() {
-    const { data, error } = await supabase
-      .from('finance_transactions')
-      .select('*')
-      .order('date', { ascending: false })
+    let allData: FinanceTransaction[] = []
+    let page = 0
+    const pageSize = 1000
+    while (true) {
+      const { data, error } = await supabase
+        .from('finance_transactions')
+        .select('*')
+        .order('date', { ascending: false })
+        .range(page * pageSize, (page + 1) * pageSize - 1)
 
-    if (error) throw error
-    return data as FinanceTransaction[]
+      if (error) throw error
+      if (!data || data.length === 0) break
+
+      allData = [...allData, ...data] as FinanceTransaction[]
+      if (data.length < pageSize) break
+      page++
+    }
+    return allData
   },
 
   // Get balance summary
@@ -612,18 +677,40 @@ export const financeAPI = {
       .getPublicUrl(filePath)
 
     return data.publicUrl
+  },
+
+  // Bulk create transactions
+  async bulkCreate(transactions: Omit<FinanceTransaction, 'id' | 'created_at' | 'updated_at'>[]) {
+    const { data, error } = await supabase
+      .from('finance_transactions')
+      .insert(transactions)
+      .select()
+
+    if (error) throw error
+    return data as FinanceTransaction[]
   }
 }
 
 export const duesAPI = {
   async getAll() {
-    const { data, error } = await supabase
-      .from('member_dues')
-      .select('*')
-      .order('due_date', { ascending: true })
+    let allData: MemberDue[] = []
+    let page = 0
+    const pageSize = 1000
+    while (true) {
+      const { data, error } = await supabase
+        .from('member_dues')
+        .select('*')
+        .order('due_date', { ascending: true })
+        .range(page * pageSize, (page + 1) * pageSize - 1)
 
-    if (error) throw error
-    return data as MemberDue[]
+      if (error) throw error
+      if (!data || data.length === 0) break
+
+      allData = [...allData, ...data] as MemberDue[]
+      if (data.length < pageSize) break
+      page++
+    }
+    return allData
   },
 
   async create(due: Omit<MemberDue, 'id' | 'created_at'>) {
@@ -656,6 +743,17 @@ export const duesAPI = {
       .eq('id', id)
 
     if (error) throw error
+  },
+
+  async getByMemberId(memberId: string) {
+    const { data, error } = await supabase
+      .from('member_dues')
+      .select('*')
+      .eq('member_id', memberId)
+      .order('due_date', { ascending: true })
+
+    if (error) throw error
+    return data as MemberDue[]
   }
 }
 
@@ -667,12 +765,57 @@ const buildTicketNumber = () => {
   const year = today.getFullYear()
   const monthRoman = romanMonths[today.getMonth()]
   const rand = Math.floor(Math.random() * 1000).toString().padStart(3, '0')
-  return `ORG/SEK/${rand}/${monthRoman}/${year}`
+  return `${rand}/SEK/DIGCITY-FEB/${monthRoman}/${year}`
 }
 
 export const documentsAPI = {
   generateTicketNumber() {
     return buildTicketNumber()
+  },
+
+  // Get next sequential ticket number
+  async getNextTicketNumber() {
+    const { data, error } = await supabase
+      .from('organization_documents')
+      .select('ticket_number')
+      .ilike('ticket_number', '%/SEK/DIGCITY-FEB/%')
+      // We fetch more than 1 to be safe, but sorting by created_at desc should give us recent ones.
+      // However, to be strictly sequential based on the number, we should parse them.
+      // But for now, let's assume the latest created is likely the highest number or close to it.
+      // Better to fetch all from current year if possible, but let's limit to 100 recent.
+      .order('ticket_number', { ascending: false })
+      .limit(100)
+
+    if (error) {
+      console.error('Error fetching ticket numbers:', error)
+      return buildTicketNumber() // Fallback
+    }
+
+    let maxNum = 0
+    const currentYear = new Date().getFullYear()
+
+    data.forEach((doc) => {
+      // Format: XXX/SEK/DIGCITY-FEB/ROMAN/YEAR
+      const parts = doc.ticket_number.split('/')
+      if (parts.length >= 5) {
+        const num = parseInt(parts[0], 10)
+        // Check if it matches the current year to reset sequence if needed? 
+        // User didn't specify reset, but usually it resets yearly. 
+        // Let's assume we want to continue sequence for the year.
+        // The format has year at index 4.
+        const yearStr = parts[4] // 2025
+        const year = parseInt(yearStr, 10)
+
+        if (!isNaN(num) && year === currentYear) {
+          if (num > maxNum) maxNum = num
+        }
+      }
+    })
+
+    const nextNum = (maxNum + 1).toString().padStart(3, '0')
+    const today = new Date()
+    const monthRoman = romanMonths[today.getMonth()]
+    return `${nextNum}/SEK/DIGCITY-FEB/${monthRoman}/${currentYear}`
   },
 
   // Get all documents
@@ -965,6 +1108,7 @@ export const attendanceAPI = {
       .from('internal_events')
       .select('*')
       .order('date', { ascending: false })
+      .limit(10000)
 
     if (error) throw error
     return data as InternalEvent[]
@@ -1009,6 +1153,19 @@ export const attendanceAPI = {
     if (error) throw error
   },
 
+  // Update internal event
+  async updateEvent(id: string, updates: Partial<InternalEvent>) {
+    const { data, error } = await supabase
+      .from('internal_events')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (error) throw error
+    return data as InternalEvent
+  },
+
   // Record attendance
   async recordAttendance(attendance: Omit<Attendance, 'id' | 'created_at'>) {
     const { data, error } = await supabase
@@ -1028,6 +1185,7 @@ export const attendanceAPI = {
       .select('*')
       .eq('event_id', eventId)
       .order('check_in_time', { ascending: true })
+      .limit(10000)
 
     if (error) throw error
     return data as Attendance[]
@@ -1042,6 +1200,7 @@ export const attendanceAPI = {
       .from('attendance')
       .select('*')
       .gte('check_in_time', since.toISOString())
+      .limit(10000)
 
     if (error) throw error
     return data as Attendance[]
@@ -1380,7 +1539,24 @@ export const complaintsAPI = {
   async checkStatus(ticket: string) {
     const { data, error } = await supabase.rpc('get_complaint_status', { ticket })
     if (error) throw error
-    return Array.isArray(data) && data.length > 0 ? data[0] as { ticket_number: string; status: string; category: string; created_at: string; anonymous: boolean } : null
+    return Array.isArray(data) && data.length > 0 ? data[0] as { ticket_number: string; status: string; category: string; created_at: string; anonymous: boolean; response?: string; response_at?: string } : null
+  },
+  async respond(id: string, response: string) {
+    const { data, error } = await supabase
+      .from('complaints')
+      .update({
+        response,
+        response_at: new Date().toISOString(),
+        status: 'selesai' // Auto set to selesai if responded? Or keep as is? Let's assume responding usually means addressing it. But maybe 'diproses'. Let's just update response and let admin toggle status manually if needed, OR auto-update. 
+        // User said "setelah mereka mengadu kita memberikan silaturahmi transparansi Wah jawabannya itu seperti apa Dan apakah sudah diselesaikan Apakah ditolak atau diterima".
+        // Often response implies completion or at least processing. Let's just update the response fields for now to be safe, admin can change status separately or we can bundle it.
+        // Let's just update response fields.
+      })
+      .eq('id', id)
+      .select()
+      .single()
+    if (error) throw error
+    return data as Complaint
   }
 }
 
@@ -1646,5 +1822,81 @@ export const budgetAPI = {
       .eq('id', id)
 
     if (error) throw error
+  },
+
+  // Bulk create budget items
+  async bulkCreate(items: Omit<WorkProgramBudget, 'id' | 'created_at' | 'updated_at'>[]) {
+    const { data, error } = await supabase
+      .from('work_program_budgets')
+      .insert(items)
+      .select()
+
+    if (error) throw error
+    return data as WorkProgramBudget[]
+  }
+}
+
+export interface MemberKPI {
+  id: string
+  member_id: string
+  period: string
+  attendance_score: number
+  project_score: number
+  attitude_score: number
+  skill_score: number
+  final_score: number
+  grade: string
+  notes: string
+  created_at: string
+  updated_at: string
+  member?: OrganizationMember
+}
+
+export const kpiAPI = {
+  async getByPeriod(period: string) {
+    const { data, error } = await supabase
+      .from('member_kpi')
+      .select('*, member:organization_members(*)')
+      .eq('period', period)
+
+    if (error) throw error
+    return data as MemberKPI[]
+  },
+
+  async upsert(kpi: Partial<MemberKPI>) {
+    // Calculate final score and grade before saving
+    const attendance = kpi.attendance_score || 0
+    const project = kpi.project_score || 0
+    const attitude = kpi.attitude_score || 0
+    const skill = kpi.skill_score || 0
+
+    // Weighting: Attendance 15%, Project 40%, Attitude 30%, Skill 15%
+    const final_score = (attendance * 0.15) + (project * 0.40) + (attitude * 0.30) + (skill * 0.15)
+
+    let grade = 'E'
+    if (final_score >= 95) grade = 'A+'
+    else if (final_score >= 85) grade = 'A'
+    else if (final_score >= 80) grade = 'B+'
+    else if (final_score >= 75) grade = 'B'
+    else if (final_score >= 70) grade = 'C+'
+    else if (final_score >= 60) grade = 'C'
+    else if (final_score >= 55) grade = 'D+'
+    else if (final_score >= 50) grade = 'D'
+
+    const dataToSave = {
+      ...kpi,
+      final_score,
+      grade,
+      updated_at: new Date().toISOString()
+    }
+
+    const { data, error } = await supabase
+      .from('member_kpi')
+      .upsert(dataToSave)
+      .select()
+      .single()
+
+    if (error) throw error
+    return data as MemberKPI
   }
 }

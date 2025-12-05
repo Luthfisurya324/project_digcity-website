@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import { financeAPI, attendanceAPI, documentsAPI, auditAPI, notificationsAPI, supabase, type InternalEvent, type FinanceTransaction, type Document, type NotificationItemDB } from '../../lib/supabase'
+import { financeAPI, attendanceAPI, documentsAPI, notificationsAPI, supabase, membersAPI, duesAPI, type FinanceTransaction, type Document, type NotificationItemDB } from '../../lib/supabase'
 import {
   Wallet,
   TrendingUp,
@@ -7,10 +7,12 @@ import {
   ArrowRight,
   Plus,
   Calendar,
-  Clock,
   CheckCircle,
   AlertTriangle,
-  Bell
+  Bell,
+  Users,
+  Briefcase,
+  FileText
 } from 'lucide-react'
 import DashboardQRScanner from './DashboardQRScanner'
 import { Link } from 'react-router-dom'
@@ -32,11 +34,13 @@ const InternalDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true)
   const [userName, setUserName] = useState<string>('Pengurus DIGCITY')
   const [userRole, setUserRole] = useState<string>('Anggota')
-  const [events, setEvents] = useState<InternalEvent[]>([])
   const [pendingExpenses, setPendingExpenses] = useState<FinanceTransaction[]>([])
   const [pendingDocs, setPendingDocs] = useState<Document[]>([])
-  const [memberActivities, setMemberActivities] = useState<{ id: string, action: string, created_at: string, details?: Record<string, unknown> }[]>([])
   const [notifications, setNotifications] = useState<NotificationItemDB[]>([])
+  const [memberCount, setMemberCount] = useState(0)
+  const [activeProgramsCount, setActiveProgramsCount] = useState(0)
+
+  const [isDefaultPassword, setIsDefaultPassword] = useState(false)
 
   useEffect(() => {
     loadDashboardData()
@@ -58,21 +62,24 @@ const InternalDashboard: React.FC = () => {
         if (user) {
           setUserName(user.user_metadata?.full_name || user.email || 'Pengurus DIGCITY')
           setUserRole((user.user_metadata?.internal_role || 'anggota').toString())
+          setIsDefaultPassword(!!user.user_metadata?.is_default_password)
         }
       } catch { }
 
-      const [ev, txAll, docsAll, logs, notifs] = await Promise.all([
+      const [ev, txAll, docsAll, notifs, members] = await Promise.all([
         attendanceAPI.getEvents(),
         financeAPI.getAll(),
         documentsAPI.getAll(),
-        auditAPI.list({ module: 'members', limit: 10 }),
-        notificationsAPI.list({ unreadOnly: true, limit: 5 })
+        notificationsAPI.list({ unreadOnly: true, limit: 5 }),
+        membersAPI.getAll()
       ])
-      setEvents(ev)
+
+      setActiveProgramsCount(ev.filter(e => e.type === 'work_program' && e.status !== 'cancelled').length)
       setPendingExpenses((txAll as FinanceTransaction[]).filter(t => t.status === 'pending').slice(0, 5))
       setPendingDocs((docsAll as Document[]).filter(d => d.status === 'pending_review').slice(0, 5))
-      setMemberActivities(logs.map(l => ({ id: l.id, action: l.action, created_at: l.created_at, details: l.details || {} })))
       setNotifications(notifs)
+      setMemberCount(members.length)
+
     } catch (error) {
       console.error('Error loading dashboard data:', error)
     } finally {
@@ -99,212 +106,207 @@ const InternalDashboard: React.FC = () => {
 
   return (
     <div className="space-y-8">
+      {/* Default Password Warning */}
+      {isDefaultPassword && (
+        <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/30 rounded-xl p-4 flex items-start gap-3">
+          <AlertTriangle className="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" size={20} />
+          <div className="flex-1">
+            <h3 className="text-sm font-bold text-amber-800 dark:text-amber-200 mb-1">Keamanan Akun</h3>
+            <p className="text-sm text-amber-700 dark:text-amber-300 mb-2">
+              Anda masih menggunakan password default. Demi keamanan, silakan ganti password Anda segera.
+            </p>
+            <Link to={`${basePath}/settings`} className="text-sm font-medium text-amber-900 dark:text-amber-100 underline hover:no-underline">
+              Ganti Password Sekarang &rarr;
+            </Link>
+          </div>
+        </div>
+      )}
+
       {/* Welcome Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-cyan-600 rounded-2xl p-8 text-white shadow-lg shadow-blue-200 dark:shadow-none">
-        <h1 className="text-2xl font-bold mb-1">Halo, {userName}! 👋</h1>
-        <p className="text-blue-100 text-sm">Peran: {userRole.toUpperCase()}</p>
-        <p className="text-blue-100 mt-1">Ringkasan aktivitas organisasi untuk Anda.</p>
+      <div className="bg-gradient-to-r from-blue-600 to-cyan-600 rounded-2xl p-8 text-white shadow-lg shadow-blue-200 dark:shadow-none relative overflow-hidden">
+        <div className="relative z-10">
+          <h1 className="text-2xl font-bold mb-1">Halo, {userName}! 👋</h1>
+          <p className="text-blue-100 text-sm">Peran: {userRole.toUpperCase()}</p>
+          <p className="text-blue-100 mt-1">Selamat datang di dashboard transparansi DIGCITY.</p>
+        </div>
+        <div className="absolute right-0 top-0 h-full w-1/3 bg-gradient-to-l from-white/10 to-transparent pointer-events-none"></div>
       </div>
 
-      {/* QR Scanner Widget */}
-      <DashboardQRScanner />
-
-      {/* Finance Cards */}
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold text-slate-900 dark:text-white">Keuangan Organisasi</h2>
-          <Link to={`${basePath}/finance`} className="text-sm font-medium text-blue-600 hover:text-blue-700 flex items-center dark:text-blue-400">
-            Lihat Detail <ArrowRight size={16} className="ml-1" />
-          </Link>
+      {/* Key Metrics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Balance Card */}
+        <div className="bg-white dark:bg-[#1E1E1E] rounded-xl p-6 border border-slate-200 dark:border-[#2A2A2A] shadow-sm flex items-center gap-4">
+          <div className="w-12 h-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center shrink-0">
+            <Wallet size={24} className="text-blue-600 dark:text-blue-400" />
+          </div>
+          <div>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Saldo Kas</p>
+            <h3 className="text-2xl font-bold text-slate-900 dark:text-white">{formatCurrency(summary.balance)}</h3>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Balance Card */}
-          <div className="bg-white dark:bg-[#1E1E1E] rounded-xl p-6 border border-slate-200 dark:border-[#2A2A2A] shadow-sm">
-            <div className="flex items-center space-x-4 mb-4">
-              <div className="w-12 h-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center">
-                <Wallet size={24} className="text-blue-600 dark:text-blue-400" />
-              </div>
-              <div>
-                <p className="text-sm text-slate-500 dark:text-slate-400">Total Saldo Kas</p>
-                <h3 className="text-2xl font-bold text-slate-900 dark:text-white">{formatCurrency(summary.balance)}</h3>
-              </div>
-            </div>
-            <div className="w-full bg-slate-100 dark:bg-[#2A2A2A] rounded-full h-2 mb-2">
-              <div
-                className="bg-blue-500 h-2 rounded-full"
-                style={{ width: `${Math.min((summary.balance / (summary.totalIncome || 1)) * 100, 100)}%` }}
-              ></div>
-            </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Saldo saat ini aman
-            </p>
+        {/* Active Members Card */}
+        <div className="bg-white dark:bg-[#1E1E1E] rounded-xl p-6 border border-slate-200 dark:border-[#2A2A2A] shadow-sm flex items-center gap-4">
+          <div className="w-12 h-12 bg-orange-50 dark:bg-orange-900/20 rounded-xl flex items-center justify-center shrink-0">
+            <Users size={24} className="text-orange-600 dark:text-orange-400" />
           </div>
-
-          {/* Income Card */}
-          <div className="bg-white dark:bg-[#1E1E1E] rounded-xl p-6 border border-slate-200 dark:border-[#2A2A2A] shadow-sm">
-            <div className="flex items-center space-x-4 mb-4">
-              <div className="w-12 h-12 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl flex items-center justify-center">
-                <TrendingUp size={24} className="text-emerald-600 dark:text-emerald-400" />
-              </div>
-              <div>
-                <p className="text-sm text-slate-500 dark:text-slate-400">Pemasukan</p>
-                <h3 className="text-2xl font-bold text-slate-900 dark:text-white">{formatCurrency(summary.totalIncome)}</h3>
-              </div>
-            </div>
-            <p className="text-xs text-emerald-600 dark:text-emerald-400 flex items-center font-medium">
-              <Plus size={12} className="mr-1" />
-              Total pemasukan tercatat
-            </p>
+          <div>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Anggota Aktif</p>
+            <h3 className="text-2xl font-bold text-slate-900 dark:text-white">{memberCount}</h3>
           </div>
+        </div>
 
-          {/* Expense Card */}
-          <div className="bg-white dark:bg-[#1E1E1E] rounded-xl p-6 border border-slate-200 dark:border-[#2A2A2A] shadow-sm">
-            <div className="flex items-center space-x-4 mb-4">
-              <div className="w-12 h-12 bg-rose-50 dark:bg-rose-900/20 rounded-xl flex items-center justify-center">
-                <TrendingDown size={24} className="text-rose-600 dark:text-rose-400" />
-              </div>
-              <div>
-                <p className="text-sm text-slate-500 dark:text-slate-400">Pengeluaran</p>
-                <h3 className="text-2xl font-bold text-slate-900 dark:text-white">{formatCurrency(summary.totalExpense)}</h3>
-              </div>
-            </div>
-            <p className="text-xs text-rose-600 dark:text-rose-400 flex items-center font-medium">
-              Total pengeluaran tercatat
-            </p>
+        {/* Active Programs Card */}
+        <div className="bg-white dark:bg-[#1E1E1E] rounded-xl p-6 border border-slate-200 dark:border-[#2A2A2A] shadow-sm flex items-center gap-4">
+          <div className="w-12 h-12 bg-purple-50 dark:bg-purple-900/20 rounded-xl flex items-center justify-center shrink-0">
+            <Briefcase size={24} className="text-purple-600 dark:text-purple-400" />
+          </div>
+          <div>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Total Program</p>
+            <h3 className="text-2xl font-bold text-slate-900 dark:text-white">{activeProgramsCount}</h3>
           </div>
         </div>
       </div>
 
-      {/* Agenda & Approvals */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-white dark:bg-[#1E1E1E] rounded-xl p-6 border border-slate-200 dark:border-[#2A2A2A] shadow-sm">
-          <div className="flex items-center justify-between mb-3">
-            <div>
-              <p className="text-xs uppercase tracking-wider text-slate-400">Agenda</p>
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white">Hari ini & Mendatang</h3>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Left Column: Transparency Feed & Financial Overview */}
+        <div className="lg:col-span-2 space-y-8">
+
+
+
+          {/* Financial Overview */}
+          <div className="bg-white dark:bg-[#1E1E1E] rounded-xl border border-slate-200 dark:border-[#2A2A2A] shadow-sm p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="font-bold text-slate-900 dark:text-white">Ringkasan Keuangan</h3>
+              <Link to={`${basePath}/finance`} className="text-sm font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1">
+                Detail <ArrowRight size={16} />
+              </Link>
             </div>
-            <Link to={`${basePath}/attendance`} className="text-sm font-medium text-blue-600 hover:text-blue-700 flex items-center"><ArrowRight size={16} className="mr-1" /> Lihat semua</Link>
-          </div>
-          <div className="space-y-2">
-            {events.filter(e => new Date(e.date).toDateString() === new Date().toDateString()).slice(0, 3).map((e) => (
-              <div key={e.id} className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-[#232323]">
-                <div className="flex items-center gap-3">
-                  <Calendar size={16} className="text-blue-600" />
-                  <div>
-                    <p className="text-sm font-medium">{e.title}</p>
-                    <p className="text-xs text-slate-500">{e.division} • {new Date(e.date).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} WIB</p>
-                  </div>
-                </div>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">Hari ini</span>
+            <div className="space-y-4">
+              <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-900/30">
+                <p className="text-sm text-emerald-600 dark:text-emerald-400 font-medium mb-1">Total Pemasukan</p>
+                <h4 className="text-xl font-bold text-emerald-700 dark:text-emerald-300">{formatCurrency(summary.totalIncome)}</h4>
               </div>
-            ))}
-            {events.filter(e => new Date(e.date) > new Date()).slice(0, 5).map((e) => (
-              <div key={e.id} className="flex items-center justify-between p-3 rounded-lg border border-slate-100 dark:border-[#2A2A2A]">
-                <div className="flex items-center gap-3">
-                  <Clock size={16} className="text-emerald-600" />
-                  <div>
-                    <p className="text-sm font-medium">{e.title}</p>
-                    <p className="text-xs text-slate-500">{e.division} • {new Date(e.date).toLocaleDateString('id-ID', { dateStyle: 'medium' })}</p>
-                  </div>
-                </div>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">Mendatang</span>
+              <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-900/30">
+                <p className="text-sm text-rose-600 dark:text-rose-400 font-medium mb-1">Total Pengeluaran</p>
+                <h4 className="text-xl font-bold text-rose-700 dark:text-rose-300">{formatCurrency(summary.totalExpense)}</h4>
               </div>
-            ))}
-            {events.length === 0 && (
-              <p className="text-sm text-slate-500">Belum ada agenda terjadwal.</p>
-            )}
+            </div>
           </div>
         </div>
-        <div className="bg-white dark:bg-[#1E1E1E] rounded-xl p-6 border border-slate-200 dark:border-[#2A2A2A] shadow-sm">
-          <div className="flex items-center justify-between mb-3">
-            <div>
-              <p className="text-xs uppercase tracking-wider text-slate-400">Approval</p>
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white">Pending</h3>
-            </div>
-            <Link to={`${basePath}/finance`} className="text-sm font-medium text-blue-600 hover:text-blue-700">Keuangan</Link>
-          </div>
-          <div className="space-y-2">
-            {pendingExpenses.slice(0, 3).map((t) => (
-              <div key={t.id} className="flex items-center justify-between p-3 rounded-lg bg-rose-50 dark:bg-rose-900/20">
-                <div className="flex items-center gap-3">
-                  <AlertTriangle size={16} className="text-rose-600" />
-                  <div>
-                    <p className="text-sm font-medium">Pengeluaran {t.category}</p>
-                    <p className="text-xs text-slate-500">{new Date(t.date).toLocaleDateString('id-ID', { dateStyle: 'medium' })}</p>
-                  </div>
-                </div>
-                <span className="text-xs font-mono">Rp {Number(t.amount).toLocaleString('id-ID')}</span>
+
+        {/* Right Column: Personal & Quick Actions */}
+        <div className="space-y-8">
+          {/* QR Scanner */}
+          <DashboardQRScanner />
+
+          {/* Personal Dues Widget */}
+          <MemberDuesWidget />
+
+          {/* Pending Approvals (Admin/BPH Only) */}
+          {(pendingExpenses.length > 0 || pendingDocs.length > 0) && (
+            <div className="bg-white dark:bg-[#1E1E1E] rounded-xl border border-slate-200 dark:border-[#2A2A2A] shadow-sm overflow-hidden">
+              <div className="p-4 border-b border-slate-100 dark:border-[#2A2A2A] bg-amber-50 dark:bg-amber-900/20">
+                <h3 className="font-bold text-amber-800 dark:text-amber-200 flex items-center gap-2">
+                  <AlertTriangle size={18} />
+                  Perlu Persetujuan
+                </h3>
               </div>
-            ))}
-            {pendingDocs.slice(0, 3).map((d) => (
-              <div key={d.id} className="flex items-center justify-between p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20">
-                <div className="flex items-center gap-3">
-                  <AlertTriangle size={16} className="text-amber-600" />
-                  <div>
-                    <p className="text-sm font-medium">Surat: {d.title}</p>
+              <div className="divide-y divide-slate-100 dark:divide-[#2A2A2A]">
+                {pendingExpenses.slice(0, 3).map((t) => (
+                  <div key={t.id} className="p-3 hover:bg-slate-50 dark:hover:bg-[#232323]">
+                    <p className="text-sm font-medium text-slate-900 dark:text-white">Pengeluaran: {t.category}</p>
+                    <p className="text-xs text-slate-500">{formatCurrency(t.amount)} • {new Date(t.date).toLocaleDateString('id-ID')}</p>
+                  </div>
+                ))}
+                {pendingDocs.slice(0, 3).map((d) => (
+                  <div key={d.id} className="p-3 hover:bg-slate-50 dark:hover:bg-[#232323]">
+                    <p className="text-sm font-medium text-slate-900 dark:text-white">Surat: {d.title}</p>
                     <p className="text-xs text-slate-500">{d.ticket_number}</p>
                   </div>
-                </div>
-                <span className="text-xs">Pending review</span>
+                ))}
               </div>
-            ))}
-            {pendingExpenses.length === 0 && pendingDocs.length === 0 && (
-              <p className="text-sm text-slate-500">Tidak ada approval pending.</p>
-            )}
-          </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const MemberDuesWidget: React.FC = () => {
+  const [dues, setDues] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [totalOutstanding, setTotalOutstanding] = useState(0)
+
+  useEffect(() => {
+    const loadDues = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user || !user.email) return
+
+        const member = await membersAPI.getMemberByEmail(user.email)
+        if (member) {
+          const myDues = await duesAPI.getByMemberId(member.id)
+          const unpaid = myDues.filter((d: any) => d.status !== 'paid')
+          setDues(unpaid)
+          setTotalOutstanding(unpaid.reduce((sum: number, d: any) => sum + d.amount, 0))
+        }
+      } catch (error) {
+        console.error('Failed to load member dues:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadDues()
+  }, [])
+
+  if (loading) return null
+
+  return (
+    <div className="bg-white dark:bg-[#1E1E1E] rounded-xl p-6 border border-slate-200 dark:border-[#2A2A2A] shadow-sm">
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <p className="text-xs uppercase tracking-wider text-slate-400">Keuangan Pribadi</p>
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white">Tagihan Saya</h3>
+        </div>
+        <div className="text-right">
+          <p className={`text-lg font-bold ${totalOutstanding > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
+            {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(totalOutstanding)}
+          </p>
         </div>
       </div>
 
-      {/* Aktivitas anggota & Notifikasi */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white dark:bg-[#1E1E1E] rounded-xl p-6 border border-slate-200 dark:border-[#2A2A2A] shadow-sm">
-          <div className="flex items-center justify-between mb-3">
-            <div>
-              <p className="text-xs uppercase tracking-wider text-slate-400">Aktivitas</p>
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white">Anggota terbaru</h3>
-            </div>
-            <Link to={`${basePath}/activity`} className="text-sm font-medium text-blue-600 hover:text-blue-700">Log</Link>
-          </div>
-          <div className="space-y-2">
-            {memberActivities.slice(0, 5).map((a) => (
-              <div key={a.id} className="flex items-center justify-between p-3 rounded-lg border border-slate-100 dark:border-[#2A2A2A]">
-                <span className="text-sm font-medium capitalize">{a.action.replace(/_/g, ' ')}</span>
-                <span className="text-xs text-slate-500">{new Date(a.created_at).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' })}</span>
-              </div>
-            ))}
-            {memberActivities.length === 0 && (
-              <p className="text-sm text-slate-500">Belum ada aktivitas anggota.</p>
-            )}
-          </div>
+      {dues.length === 0 ? (
+        <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg flex items-center gap-3 text-emerald-700 dark:text-emerald-400">
+          <CheckCircle size={20} />
+          <span className="text-sm font-medium">Lunas! Tidak ada tagihan.</span>
         </div>
-        <div className="bg-white dark:bg-[#1E1E1E] rounded-xl p-6 border border-slate-200 dark:border-[#2A2A2A] shadow-sm">
-          <div className="flex items-center justify-between mb-3">
-            <div>
-              <p className="text-xs uppercase tracking-wider text-slate-400">Notifikasi</p>
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white">Reminder cepat</h3>
-            </div>
-            <Link to={`${basePath}/activity`} className="text-sm font-medium text-blue-600 hover:text-blue-700">Semua</Link>
-          </div>
-          <div className="space-y-2">
-            {notifications.map((n) => (
-              <div key={n.id} className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-[#232323]">
-                <div className="flex items-center gap-3">
-                  <Bell size={16} className={n.type === 'warning' ? 'text-amber-600' : n.type === 'error' ? 'text-rose-600' : n.type === 'success' ? 'text-emerald-600' : 'text-blue-600'} />
-                  <div>
-                    <p className="text-sm font-medium">{n.title}</p>
-                    {n.message && <p className="text-xs text-slate-500">{n.message}</p>}
-                  </div>
+      ) : (
+        <div className="space-y-3">
+          {dues.slice(0, 3).map((due) => (
+            <div key={due.id} className="flex items-center justify-between p-3 rounded-lg border border-slate-100 dark:border-[#2A2A2A] hover:bg-slate-50 dark:hover:bg-[#232323] transition-colors">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-rose-100 dark:bg-rose-900/20 flex items-center justify-center text-rose-600">
+                  <AlertTriangle size={14} />
                 </div>
-                <span className="text-xs text-slate-400">{new Date(n.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</span>
+                <div>
+                  <p className="text-sm font-medium text-slate-900 dark:text-white">{due.invoice_number}</p>
+                  <p className="text-xs text-slate-500">{new Date(due.due_date).toLocaleDateString('id-ID')}</p>
+                </div>
               </div>
-            ))}
-            {notifications.length === 0 && (
-              <p className="text-sm text-slate-500">Tidak ada notifikasi baru.</p>
-            )}
-          </div>
+              <div className="text-right">
+                <p className="text-sm font-bold text-slate-900 dark:text-white">
+                  {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(due.amount)}
+                </p>
+              </div>
+            </div>
+          ))}
+          {dues.length > 3 && (
+            <p className="text-xs text-center text-slate-500">+{dues.length - 3} tagihan lainnya</p>
+          )}
         </div>
-      </div>
+      )}
     </div>
   )
 }

@@ -124,6 +124,7 @@ const DashboardQRScanner: React.FC = () => {
                 .from('attendance')
                 .select('id, member_id, name')
                 .eq('event_id', eventId)
+                .limit(10000)
 
             const alreadyChecked = (existing || []).some((record) => {
                 if (member?.id && record.member_id === member.id) return true

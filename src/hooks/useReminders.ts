@@ -16,10 +16,12 @@ const isWithinDays = (iso: string, days: number) => {
   return diff > 0 && diff <= days * 24 * 60 * 60 * 1000
 }
 
-export const useReminders = () => {
+export const useReminders = (enabled: boolean) => {
   const { notify } = useNotifications()
 
   useEffect(() => {
+    if (!enabled) return
+
     const run = async () => {
       try {
         const events = await attendanceAPI.getEvents()
@@ -29,7 +31,7 @@ export const useReminders = () => {
           const dateStr = new Date(next.date).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })
           notify({ type: 'info', title: 'Reminder Event', message: `${next.title} • ${dateStr}` })
         }
-      } catch {}
+      } catch { }
 
       try {
         const dues = await duesAPI.getAll()
@@ -40,9 +42,9 @@ export const useReminders = () => {
         } else if (upcoming.length > 0) {
           notify({ type: 'info', title: 'Reminder iuran', message: `${upcoming.length} tagihan mendekati jatuh tempo` })
         }
-      } catch {}
+      } catch { }
     }
     run()
-  }, [notify])
+  }, [notify, enabled])
 }
 

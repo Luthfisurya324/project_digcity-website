@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react'
 import { supabase, membersAPI, auditAPI } from '../../lib/supabase'
+import { getInternalBasePath } from '../../utils/domainDetection'
 import { useNavigate } from 'react-router-dom'
 import { Building2, Mail, ArrowRight } from 'lucide-react'
 
@@ -49,16 +50,37 @@ const InternalLogin: React.FC = () => {
       }
 
       let { data, error: signInError } = await supabase.auth.signInWithPassword({ email: loginEmail, password })
-      if (signInError) {
+
+      // SECURITY FIX: Only attempt auto-provisioning if the user provided the default password.
+      // This prevents "login as anyone" attacks where a wrong password triggers account creation.
+      const defaultPassword = 'digcity123'
+
+      if (signInError && password === defaultPassword) {
         const mem = await membersAPI.getMemberByEmail(loginEmail)
-        if (!mem) throw signInError
-        const defaultPassword = 'digcity123'
-        const signUpRes = await supabase.auth.signUp({ email: loginEmail, password: defaultPassword })
-        if (signUpRes.error) throw signUpRes.error
-        await supabase.auth.updateUser({ data: { internal_role: (mem.division.toLowerCase().includes('bph') ? 'bph' : 'anggota') } })
-        const signIn2 = await supabase.auth.signInWithPassword({ email: loginEmail, password: defaultPassword })
-        if (signIn2.error) throw signIn2.error
-        data = signIn2.data
+        if (mem) {
+          // Try to sign up (will fail if user already exists)
+          // Mark as using default password so we can warn them later
+          const signUpRes = await supabase.auth.signUp({
+            email: loginEmail,
+            password: defaultPassword,
+            options: {
+              data: {
+                is_default_password: true
+              }
+            }
+          })
+
+          // If signup succeeded (or returned user without session), try signing in again
+          if (!signUpRes.error) {
+            await supabase.auth.updateUser({ data: { internal_role: (mem.division.toLowerCase().includes('bph') ? 'bph' : 'anggota') } })
+            const signIn2 = await supabase.auth.signInWithPassword({ email: loginEmail, password: defaultPassword })
+
+            if (!signIn2.error) {
+              data = signIn2.data
+              signInError = null // Clear error
+            }
+          }
+        }
       }
       try {
         const ua = navigator.userAgent
@@ -71,6 +93,11 @@ const InternalLogin: React.FC = () => {
       if (signInError) throw signInError
 
       if (data.user) {
+        // Check if using default password and flag it
+        if (password === 'digcity123') {
+          await supabase.auth.updateUser({ data: { is_default_password: true } })
+        }
+
         // Log activity
         await auditAPI.log({
           module: 'system',
@@ -82,7 +109,8 @@ const InternalLogin: React.FC = () => {
         // For now, basic authentication is sufficient
 
         // Force a hard reload to ensure all auth states are updated properly
-        window.location.href = '/internal';
+        const basePath = getInternalBasePath()
+        window.location.href = basePath || '/';
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Login failed. Please check your credentials.'

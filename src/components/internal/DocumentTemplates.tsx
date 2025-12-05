@@ -1,4 +1,5 @@
 import React from 'react'
+import { createPortal } from 'react-dom'
 import { X, Download, FileText } from 'lucide-react'
 
 interface DocumentTemplatesProps {
@@ -61,8 +62,8 @@ const DocumentTemplates: React.FC<DocumentTemplatesProps> = ({ onClose }) => {
     URL.revokeObjectURL(url)
   }
 
-  return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+  return createPortal(
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
       <div className="bg-white dark:bg-[#1E1E1E] rounded-2xl w-full max-w-3xl overflow-hidden shadow-xl transform transition-all flex flex-col max-h-[85vh]">
         <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-[#2A2A2A]">
           <div>
@@ -76,8 +77,8 @@ const DocumentTemplates: React.FC<DocumentTemplatesProps> = ({ onClose }) => {
 
         <div className="p-6 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-4">
           {templates.map((template) => (
-            <div 
-              key={template.id} 
+            <div
+              key={template.id}
               className="p-4 border border-slate-200 dark:border-[#2A2A2A] rounded-xl hover:border-blue-300 hover:shadow-md transition-all group bg-white dark:bg-[#232323]"
             >
               <div className="flex items-start justify-between mb-3">
@@ -88,13 +89,13 @@ const DocumentTemplates: React.FC<DocumentTemplatesProps> = ({ onClose }) => {
                   {template.format}
                 </span>
               </div>
-              
+
               <h4 className="font-semibold text-slate-900 dark:text-white mb-1">{template.title}</h4>
               <p className="text-xs text-slate-500 dark:text-slate-400 mb-4 line-clamp-2">
                 {template.description}
               </p>
-              
-              <button 
+
+              <button
                 onClick={() => handleDownload(template)}
                 className="w-full py-2 flex items-center justify-center gap-2 bg-slate-50 dark:bg-[#1A1A1A] text-slate-700 dark:text-slate-300 rounded-lg hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/30 dark:hover:text-blue-400 transition-colors text-sm font-medium"
               >
@@ -105,7 +106,8 @@ const DocumentTemplates: React.FC<DocumentTemplatesProps> = ({ onClose }) => {
           ))}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 

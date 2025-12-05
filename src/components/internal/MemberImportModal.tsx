@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react'
-import { X, Upload, Check, AlertCircle, ArrowRight, ArrowLeft, FileSpreadsheet } from 'lucide-react'
+import { createPortal } from 'react-dom'
+import { X, Upload, Check, AlertCircle, ArrowRight, ArrowLeft, FileSpreadsheet, Download } from 'lucide-react'
 import * as XLSX from 'xlsx'
 import { membersAPI, type OrganizationMember, auditAPI, memberSanctionsAPI } from '../../lib/supabase'
 import { useNotifications } from '../common/NotificationCenter'
@@ -103,6 +104,14 @@ const MemberImportModal: React.FC<MemberImportModalProps> = ({ onClose, onImport
       }
     })
     setColumnMapping(mapping)
+  }
+
+  const downloadTemplate = () => {
+    const headers = DB_FIELDS.map(f => f.label)
+    const ws = XLSX.utils.aoa_to_sheet([headers])
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, 'Template Anggota')
+    XLSX.writeFile(wb, 'template_import_anggota.xlsx')
   }
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -284,8 +293,8 @@ const MemberImportModal: React.FC<MemberImportModalProps> = ({ onClose, onImport
     }
   }
 
-  return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+  return createPortal(
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
       <div className="bg-white dark:bg-[#1E1E1E] rounded-2xl w-full max-w-4xl overflow-hidden shadow-xl flex flex-col max-h-[90vh]">
         <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-[#2A2A2A]">
           <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -315,10 +324,20 @@ const MemberImportModal: React.FC<MemberImportModalProps> = ({ onClose, onImport
               <Upload size={48} className="text-slate-300 mb-4" />
               <p className="text-slate-600 dark:text-slate-300 font-medium mb-2">Upload file Excel atau CSV</p>
               <p className="text-sm text-slate-400 mb-6">Format .xlsx, .xls, atau .csv</p>
-              <label className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg cursor-pointer transition-colors font-medium">
-                Pilih File
-                <input type="file" accept=".csv,.xlsx,.xls" className="hidden" onChange={handleFile} />
-              </label>
+              <div className="flex gap-3">
+                <label className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg cursor-pointer transition-colors font-medium flex items-center gap-2">
+                  <Upload size={18} />
+                  Pilih File
+                  <input type="file" accept=".csv,.xlsx,.xls" className="hidden" onChange={handleFile} />
+                </label>
+                <button
+                  onClick={downloadTemplate}
+                  className="px-6 py-2.5 bg-white dark:bg-[#2A2A2A] border border-slate-200 dark:border-[#333] text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-[#333] transition-colors font-medium flex items-center gap-2"
+                >
+                  <Download size={18} />
+                  Download Template
+                </button>
+              </div>
             </div>
           )}
 
@@ -451,7 +470,8 @@ const MemberImportModal: React.FC<MemberImportModalProps> = ({ onClose, onImport
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 

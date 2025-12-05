@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
-import { membersAPI, type OrganizationMember, auditAPI, orgAPI, type OrganizationDivision } from '../../lib/supabase'
+import { createPortal } from 'react-dom'
+import { membersAPI, type OrganizationMember, auditAPI, orgAPI, type OrganizationDivision, positionsAPI, type OrganizationPosition } from '../../lib/supabase'
 import { useNotifications } from '../common/NotificationCenter'
 import { X, Upload, Check, User } from 'lucide-react'
 
@@ -30,31 +31,31 @@ const MemberForm: React.FC<MemberFormProps> = ({ onClose, onSuccess }) => {
   const [loading, setLoading] = useState(false)
 
   const [divisionOptions, setDivisionOptions] = useState<string[]>([])
+  const [positionOptions, setPositionOptions] = useState<string[]>([])
+
   useEffect(() => {
-    const loadDivisions = async () => {
+    const loadData = async () => {
       try {
-        const list = await orgAPI.getStructure(null)
-        setDivisionOptions(list.map((d: OrganizationDivision) => d.name))
+        const divList = await orgAPI.getStructure(null)
+        setDivisionOptions(divList.map((d: OrganizationDivision) => d.name))
       } catch (e) {
         setDivisionOptions(['Badan Pengurus Harian'])
       }
-    }
-    loadDivisions()
-  }, [])
 
-  const positions = [
-    'Ketua Himpunan',
-    'Wakil Ketua',
-    'Sekretaris',
-    'Bendahara',
-    'Ketua Divisi',
-    'Staff Ahli',
-    'Staff Muda'
-  ]
+      try {
+        const posList = await positionsAPI.getAll()
+        setPositionOptions(posList.map((p: OrganizationPosition) => p.name))
+      } catch (e) {
+        // Fallback if fetch fails
+        setPositionOptions(['Anggota', 'Bendahara', 'Kepala Divisi', 'Ketua Himpunan', 'Sekretaris', 'Sekretaris Divisi', 'Wakil Ketua Himpunan'])
+      }
+    }
+    loadData()
+  }, [])
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return
-    
+
     setUploading(true)
     try {
       const file = e.target.files[0]
@@ -109,8 +110,8 @@ const MemberForm: React.FC<MemberFormProps> = ({ onClose, onSuccess }) => {
     }
   }
 
-  return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+  return createPortal(
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
       <div className="bg-white dark:bg-[#1E1E1E] rounded-2xl w-full max-w-3xl overflow-hidden shadow-xl transform transition-all flex flex-col max-h-[90vh]">
         <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-[#2A2A2A]">
           <h3 className="text-lg font-bold text-slate-900 dark:text-white">Tambah Anggota Baru</h3>
@@ -134,8 +135,8 @@ const MemberForm: React.FC<MemberFormProps> = ({ onClose, onSuccess }) => {
                   )}
                   <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity cursor-pointer">
                     <Upload className="text-white" size={24} />
-                    <input 
-                      type="file" 
+                    <input
+                      type="file"
                       accept="image/*"
                       onChange={handleFileChange}
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
@@ -144,7 +145,7 @@ const MemberForm: React.FC<MemberFormProps> = ({ onClose, onSuccess }) => {
                   </div>
                 </div>
                 <p className="text-xs text-slate-500 text-center">
-                  Upload foto formal<br/>(Max 2MB, JPG/PNG)
+                  Upload foto formal<br />(Max 2MB, JPG/PNG)
                 </p>
               </div>
 
@@ -239,7 +240,7 @@ const MemberForm: React.FC<MemberFormProps> = ({ onClose, onSuccess }) => {
                     className="w-full px-4 py-2 border border-slate-200 dark:border-[#2A2A2A] rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-[#1A1A1A] dark:text-white"
                   >
                     <option value="">Pilih Jabatan</option>
-                    {positions.map((pos) => (
+                    {positionOptions.map((pos) => (
                       <option key={pos} value={pos}>{pos}</option>
                     ))}
                   </select>
@@ -375,7 +376,8 @@ const MemberForm: React.FC<MemberFormProps> = ({ onClose, onSuccess }) => {
           </form>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 

@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { X, Search, Calendar, MapPin, Image as ImageIcon, ChevronDown } from 'lucide-react'
 import type { Event } from '../../lib/supabase'
 import { eventAPI } from '../../lib/supabase'
@@ -77,8 +78,8 @@ const EventImagePicker: React.FC<EventImagePickerProps> = ({ isOpen, onClose, on
 
   if (!isOpen) return null
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
       <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full max-h-[90vh] flex flex-col border border-secondary-100">
         <div className="px-6 py-4 border-b border-secondary-100 flex items-center justify-between">
           <div>
@@ -217,7 +218,8 @@ const EventImagePicker: React.FC<EventImagePickerProps> = ({ isOpen, onClose, on
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 

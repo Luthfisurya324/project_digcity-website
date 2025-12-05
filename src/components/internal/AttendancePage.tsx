@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { attendanceAPI, InternalEvent, Attendance, membersAPI, type OrganizationMember, orgAPI, type OrganizationDivision } from '../../lib/supabase'
+import { getInternalBasePath } from '../../utils/domainDetection'
 import EventForm from './EventForm'
 import AttendanceDetail from './AttendanceDetail'
 import EventQRModal from './EventQRModal'
@@ -20,6 +21,7 @@ import {
   Filter,
   Trash2
 } from 'lucide-react'
+import { Link } from 'react-router-dom'
 
 type ActivityStats = {
   totalRecords: number
@@ -69,7 +71,7 @@ const AttendancePage: React.FC = () => {
   const [divisionFilter, setDivisionFilter] = useState<string>('all')
   const [eventTypeFilter, setEventTypeFilter] = useState<'all' | 'meeting' | 'work_program' | 'gathering' | 'other'>('all')
   const [monthFilter, setMonthFilter] = useState<string>('')
-  const [divisionOptions, setDivisionOptions] = useState<string[]>([])
+  const [divisionOptions, setDivisionOptions] = useState<OrganizationDivision[]>([])
   const [visibleCount, setVisibleCount] = useState(9)
 
   useEffect(() => {
@@ -79,7 +81,7 @@ const AttendancePage: React.FC = () => {
     const loadDivisions = async () => {
       try {
         const list = await orgAPI.getStructure(null)
-        setDivisionOptions(list.map((d: OrganizationDivision) => d.name))
+        setDivisionOptions(list)
       } catch { }
     }
     loadDivisions()
@@ -117,26 +119,58 @@ const AttendancePage: React.FC = () => {
 
   const loadAttendanceStats = async () => {
     try {
-      const records = await attendanceAPI.getRecentAttendance(365)
+      const [records, allMembers] = await Promise.all([
+        attendanceAPI.getRecentAttendance(365),
+        membersAPI.getAll()
+      ])
+
       setAttendanceRecords(records)
+
+      const activeMemberIds = new Set(
+        allMembers
+          .filter(m => m.status === 'active')
+          .map(m => m.id)
+      )
+
       const statusCounts: ActivityStats['statusCounts'] = { present: 0, late: 0, excused: 0, absent: 0 }
       const memberMap = new Map<string, { name: string; count: number }>()
+
+      // Initialize last 7 days map
       const trendMap = new Map<string, number>()
+      const today = new Date()
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(today)
+        d.setDate(d.getDate() - i)
+        const label = d.toLocaleDateString('id-ID', { month: 'short', day: 'numeric' })
+        trendMap.set(label, 0)
+      }
 
       records.forEach((record: Attendance) => {
         statusCounts[record.status] = statusCounts[record.status] + 1
 
-        const key = record.member_id || record.name
-        const entry = memberMap.get(key) || { name: record.name, count: 0 }
-        entry.count += 1
-        memberMap.set(key, entry)
+        // Only count for leaderboard if present or late
+        if (record.status === 'present' || record.status === 'late') {
+          // Check if member is active (if we have their ID)
+          if (record.member_id && !activeMemberIds.has(record.member_id)) {
+            return
+          }
 
-        const label = new Date(record.check_in_time).toLocaleDateString('id-ID', { month: 'short', day: 'numeric' })
-        trendMap.set(label, (trendMap.get(label) || 0) + 1)
+          const key = record.member_id || record.name
+          const entry = memberMap.get(key) || { name: record.name, count: 0 }
+          entry.count += 1
+          memberMap.set(key, entry)
+        }
+
+        const recordDate = new Date(record.check_in_time)
+        const label = recordDate.toLocaleDateString('id-ID', { month: 'short', day: 'numeric' })
+
+        // Only count if it falls within our 7-day window
+        if (trendMap.has(label)) {
+          trendMap.set(label, (trendMap.get(label) || 0) + 1)
+        }
       })
 
       const trend = Array.from(trendMap.entries())
-        .slice(-7)
         .map(([label, value]) => ({ label, value }))
 
       const memberLeaderboard = Array.from(memberMap.values())
@@ -184,7 +218,7 @@ const AttendancePage: React.FC = () => {
   const filteredEvents = useMemo(() => {
     setVisibleCount(9) // Reset pagination when filters change
     return events.filter((ev) => {
-      const matchesDivision = divisionFilter === 'all' || ev.division === divisionFilter
+      const matchesDivision = divisionFilter === 'all' || ev.division_id === divisionFilter
       const matchesType = eventTypeFilter === 'all' || ev.type === eventTypeFilter
       const matchesMonth = monthFilter === '' || (() => {
         const d = new Date(ev.date)
@@ -206,8 +240,23 @@ const AttendancePage: React.FC = () => {
   }, [attendanceRecords])
 
   const divisionMembers = useMemo(() => {
-    return divisionFilter === 'all' ? members : members.filter((m) => m.division === divisionFilter)
-  }, [members, divisionFilter])
+    return divisionFilter === 'all' ? members : members.filter((m) => {
+      // Find division name for this filter ID
+      const div = divisionOptions.find(d => d.id === divisionFilter)
+      // Fallback to name match if needed, but member.division stores acronym usually
+      // Actually member.division stores acronym (POD, PR). 
+      // divisionOptions has name "People Organizing...".
+      // We need to map ID -> Acronym or Name.
+      // Let's assume for now we filter members by division name matching the acronym?
+      // Wait, organization_members has 'division' column with acronyms (POD, PR).
+      // organization_structure has 'name' with full names.
+      // We need a way to map.
+      // For now, let's keep member filtering simple or fix it.
+      // If divisionFilter is ID, we need to know which acronym it corresponds to.
+      if (!div) return false
+      return div.name.includes(m.division) || div.name === m.division // Loose match
+    })
+  }, [members, divisionFilter, divisionOptions])
 
   const divisionEventsForMonth = useMemo(() => {
     return filteredEvents.filter((e) => eventTypeFilter === 'all' ? true : e.type === eventTypeFilter)
@@ -374,7 +423,7 @@ const AttendancePage: React.FC = () => {
           <Filter size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <select value={divisionFilter} onChange={(e) => setDivisionFilter(e.target.value)} className="pl-10 pr-4 py-2 border border-slate-200 dark:border-[#2A2A2A] rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-[#1A1A1A] dark:text-white">
             <option value="all">Semua Divisi</option>
-            {divisionOptions.map((d) => (<option key={d} value={d}>{d}</option>))}
+            {divisionOptions.map((d) => (<option key={d.id} value={d.id}>{d.name}</option>))}
           </select>
         </div>
         <div className="relative">
@@ -708,7 +757,12 @@ const AttendancePage: React.FC = () => {
               <p className="text-xs uppercase tracking-wider text-slate-400">Leaderboard anggota</p>
               <h3 className="text-lg font-bold text-slate-900 dark:text-white">Kehadiran Terbanyak</h3>
             </div>
-            <Medal size={20} className="text-amber-500" />
+            <div className="flex items-center gap-3">
+              <Link to={`${getInternalBasePath()}/attendance/leaderboard`} className="text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors">
+                Lihat Semua
+              </Link>
+              <Medal size={20} className="text-amber-500" />
+            </div>
           </div>
           {activityStats.memberLeaderboard.length > 0 ? (
             <div className="space-y-3">

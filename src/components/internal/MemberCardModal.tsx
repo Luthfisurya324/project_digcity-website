@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react'
+import { createPortal } from 'react-dom'
 import { X, Download, QrCode, Mail, Phone } from 'lucide-react'
 import type { OrganizationMember } from '../../lib/supabase'
 
@@ -40,8 +41,8 @@ const MemberCardModal: React.FC<MemberCardModalProps> = ({ member, onClose }) =>
     }
   }
 
-  return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+  return createPortal(
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
       <div className="bg-white dark:bg-[#1E1E1E] rounded-3xl w-full max-w-md overflow-hidden shadow-2xl">
         <div className="relative bg-gradient-to-br from-blue-600 to-cyan-600 p-6 text-white">
           <button onClick={onClose} className="absolute top-4 right-4 p-1 bg-white/20 rounded-full hover:bg-white/30 transition-colors">
@@ -83,13 +84,13 @@ const MemberCardModal: React.FC<MemberCardModalProps> = ({ member, onClose }) =>
           </div>
 
           <div className="flex gap-3 mt-4">
-            <button 
+            <button
               onClick={handleDownload}
               className="flex-1 py-2.5 bg-slate-100 dark:bg-[#2A2A2A] text-slate-700 dark:text-slate-300 rounded-xl font-medium text-sm hover:bg-slate-200 transition-colors flex items-center justify-center gap-2"
             >
               <Download size={16} /> Simpan QR
             </button>
-            <button 
+            <button
               onClick={() => window.print()}
               className="flex-1 py-2.5 bg-blue-600 text-white rounded-xl font-medium text-sm hover:bg-blue-700 transition-colors"
             >
@@ -98,7 +99,8 @@ const MemberCardModal: React.FC<MemberCardModalProps> = ({ member, onClose }) =>
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 

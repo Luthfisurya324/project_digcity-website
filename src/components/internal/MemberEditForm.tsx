@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
+import { createPortal } from 'react-dom'
 import { X, Upload, Check, Trash2, User } from 'lucide-react'
-import { membersAPI, type OrganizationMember, auditAPI, memberSanctionsAPI, type MemberSanction, orgAPI, type OrganizationDivision } from '../../lib/supabase'
+import { membersAPI, type OrganizationMember, auditAPI, memberSanctionsAPI, type MemberSanction, orgAPI, type OrganizationDivision, positionsAPI, type OrganizationPosition } from '../../lib/supabase'
 import { useNotifications } from '../common/NotificationCenter'
 
 interface MemberEditFormProps {
@@ -41,26 +42,24 @@ const MemberEditForm: React.FC<MemberEditFormProps> = ({ member, onClose, onUpda
     member.division
   ]
   const [divisionOptions, setDivisionOptions] = useState<string[]>([...divisions])
+  const [positionOptions, setPositionOptions] = useState<string[]>([member.position])
+
   React.useEffect(() => {
-    const loadDivisions = async () => {
+    const loadData = async () => {
       try {
         const list = await orgAPI.getStructure(null)
         const names = list.map((d: OrganizationDivision) => d.name)
         setDivisionOptions(Array.from(new Set([member.division, ...names].filter(Boolean))))
-      } catch {}
-    }
-    loadDivisions()
-  }, [member.division])
+      } catch { }
 
-  const positions = [
-    'Ketua Himpunan',
-    'Wakil Ketua',
-    'Sekretaris',
-    'Bendahara',
-    'Ketua Divisi',
-    'Staff Ahli',
-    'Staff Muda'
-  ]
+      try {
+        const posList = await positionsAPI.getAll()
+        const posNames = posList.map((p: OrganizationPosition) => p.name)
+        setPositionOptions(Array.from(new Set([member.position, ...posNames].filter(Boolean))))
+      } catch { }
+    }
+    loadData()
+  }, [member.division, member.position])
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return
@@ -138,8 +137,20 @@ const MemberEditForm: React.FC<MemberEditFormProps> = ({ member, onClose, onUpda
     }
   }
 
-  return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+  const [mounted, setMounted] = useState(false)
+
+  React.useEffect(() => {
+    setMounted(true)
+    return () => setMounted(false)
+  }, [])
+
+  if (!mounted) return null
+
+  const container = document.getElementById('root') || document.body
+  if (!container) return null
+
+  return createPortal(
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
       <div className="bg-white dark:bg-[#1E1E1E] rounded-2xl w-full max-w-3xl overflow-hidden shadow-xl transform transition-all flex flex-col max-h-[90vh]">
         <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-[#2A2A2A]">
           <h3 className="text-lg font-bold text-slate-900 dark:text-white">Edit Profil Anggota</h3>
@@ -162,8 +173,8 @@ const MemberEditForm: React.FC<MemberEditFormProps> = ({ member, onClose, onUpda
                   )}
                   <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity cursor-pointer">
                     <Upload className="text-white" size={24} />
-                    <input 
-                      type="file" 
+                    <input
+                      type="file"
                       accept="image/*"
                       onChange={handleFileChange}
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
@@ -171,7 +182,7 @@ const MemberEditForm: React.FC<MemberEditFormProps> = ({ member, onClose, onUpda
                     />
                   </div>
                 </div>
-                <p className="text-xs text-slate-500 text-center">Upload foto formal<br/>(Max 2MB, JPG/PNG)</p>
+                <p className="text-xs text-slate-500 text-center">Upload foto formal<br />(Max 2MB, JPG/PNG)</p>
               </div>
 
               <div className="w-full md:w-2/3 space-y-4">
@@ -213,7 +224,7 @@ const MemberEditForm: React.FC<MemberEditFormProps> = ({ member, onClose, onUpda
                     <input
                       type="email"
                       required
-                      value={email}
+                      value={email || ''}
                       onChange={(e) => setEmail(e.target.value)}
                       className="w-full px-4 py-2 border border-slate-200 dark:border-[#2A2A2A] rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-[#1A1A1A] dark:text-white"
                     />
@@ -255,7 +266,7 @@ const MemberEditForm: React.FC<MemberEditFormProps> = ({ member, onClose, onUpda
                     onChange={(e) => setPosition(e.target.value)}
                     className="w-full px-4 py-2 border border-slate-200 dark:border-[#2A2A2A] rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-[#1A1A1A] dark:text-white"
                   >
-                    {positions.map((pos) => (
+                    {positionOptions.map((pos) => (
                       <option key={pos} value={pos}>{pos}</option>
                     ))}
                   </select>
@@ -336,7 +347,7 @@ const MemberEditForm: React.FC<MemberEditFormProps> = ({ member, onClose, onUpda
 
             <div className="border-t border-slate-100 dark:border-[#2A2A2A] pt-4">
               <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-3">Riwayat Sanksi</h4>
-              <SanctionsSection 
+              <SanctionsSection
                 memberId={member.id}
                 sanctions={sanctions}
                 setSanctions={setSanctions}
@@ -415,13 +426,14 @@ const MemberEditForm: React.FC<MemberEditFormProps> = ({ member, onClose, onUpda
           </form>
         </div>
       </div>
-    </div>
+    </div>,
+    container
   )
 }
 
 export default MemberEditForm
 
-const SanctionsSection: React.FC<{ 
+const SanctionsSection: React.FC<{
   memberId: string;
   sanctions: MemberSanction[];
   setSanctions: (s: MemberSanction[]) => void;
@@ -457,9 +469,9 @@ const SanctionsSection: React.FC<{
       const created = await memberSanctionsAPI.create({
         member_id: memberId,
         sanction_status: sanctionStatus,
-        sanction_date: sanctionDate ? new Date(sanctionDate).toISOString().slice(0,10) : undefined,
+        sanction_date: sanctionDate ? new Date(sanctionDate).toISOString().slice(0, 10) : undefined,
         reason: sanctionReason || undefined,
-        fix_date: fixDate ? new Date(fixDate).toISOString().slice(0,10) : undefined,
+        fix_date: fixDate ? new Date(fixDate).toISOString().slice(0, 10) : undefined,
         fix_action: fixAction || undefined,
         followup_status: followupStatus || undefined
       })
@@ -477,7 +489,7 @@ const SanctionsSection: React.FC<{
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
           <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Status Sanksi</label>
-          <select value={sanctionStatus} onChange={(e)=>setSanctionStatus(e.target.value as MemberSanction['sanction_status'])} className="w-full px-4 py-2 border border-slate-200 dark:border-[#2A2A2A] rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-[#1A1A1A] dark:text-white">
+          <select value={sanctionStatus} onChange={(e) => setSanctionStatus(e.target.value as MemberSanction['sanction_status'])} className="w-full px-4 py-2 border border-slate-200 dark:border-[#2A2A2A] rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-[#1A1A1A] dark:text-white">
             <option value="baik">Baik</option>
             <option value="warning">Warning</option>
             <option value="probation">Probation</option>
@@ -487,25 +499,25 @@ const SanctionsSection: React.FC<{
         </div>
         <div>
           <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Tanggal Sanksi</label>
-          <input type="date" value={sanctionDate} onChange={(e)=>setSanctionDate(e.target.value)} className="w-full px-4 py-2 border border-slate-200 dark:border-[#2A2A2A] rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-[#1A1A1A] dark:text-white" />
+          <input type="date" value={sanctionDate} onChange={(e) => setSanctionDate(e.target.value)} className="w-full px-4 py-2 border border-slate-200 dark:border-[#2A2A2A] rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-[#1A1A1A] dark:text-white" />
         </div>
         <div>
           <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Alasan</label>
-          <input type="text" value={sanctionReason} onChange={(e)=>setSanctionReason(e.target.value)} className="w-full px-4 py-2 border border-slate-200 dark:border-[#2A2A2A] rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-[#1A1A1A] dark:text-white" />
+          <input type="text" value={sanctionReason} onChange={(e) => setSanctionReason(e.target.value)} className="w-full px-4 py-2 border border-slate-200 dark:border-[#2A2A2A] rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-[#1A1A1A] dark:text-white" />
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
           <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Tanggal Perbaikan</label>
-          <input type="date" value={fixDate} onChange={(e)=>setFixDate(e.target.value)} className="w-full px-4 py-2 border border-slate-200 dark:border-[#2A2A2A] rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-[#1A1A1A] dark:text-white" />
+          <input type="date" value={fixDate} onChange={(e) => setFixDate(e.target.value)} className="w-full px-4 py-2 border border-slate-200 dark:border-[#2A2A2A] rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-[#1A1A1A] dark:text-white" />
         </div>
         <div>
           <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Tindakan Perbaikan</label>
-          <input type="text" value={fixAction} onChange={(e)=>setFixAction(e.target.value)} className="w-full px-4 py-2 border border-slate-200 dark:border-[#2A2A2A] rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-[#1A1A1A] dark:text-white" />
+          <input type="text" value={fixAction} onChange={(e) => setFixAction(e.target.value)} className="w-full px-4 py-2 border border-slate-200 dark:border-[#2A2A2A] rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-[#1A1A1A] dark:text-white" />
         </div>
         <div>
           <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Status Tindak Lanjut</label>
-          <input type="text" value={followupStatus} onChange={(e)=>setFollowupStatus(e.target.value)} className="w-full px-4 py-2 border border-slate-200 dark:border-[#2A2A2A] rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-[#1A1A1A] dark:text-white" />
+          <input type="text" value={followupStatus} onChange={(e) => setFollowupStatus(e.target.value)} className="w-full px-4 py-2 border border-slate-200 dark:border-[#2A2A2A] rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-[#1A1A1A] dark:text-white" />
         </div>
       </div>
       <div className="flex justify-end">

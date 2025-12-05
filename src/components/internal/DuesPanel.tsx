@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { CheckCircle2, AlertCircle, Wallet, Calendar, Plus, Pencil, Trash2, Download } from 'lucide-react'
-import { duesAPI, financeAPI, membersAPI, MemberDue, OrganizationMember, supabase, auditAPI, orgAPI, type OrganizationDivision } from '../../lib/supabase'
+import { createPortal } from 'react-dom'
+import { CheckCircle2, AlertCircle, Wallet, Calendar, Plus, Pencil, Trash2, Download, TrendingUp } from 'lucide-react'
+import { duesAPI, membersAPI, MemberDue, OrganizationMember, supabase, auditAPI, orgAPI, type OrganizationDivision } from '../../lib/supabase'
 import { useNotifications } from '../common/NotificationCenter'
 
 interface DuesPanelProps {
@@ -87,6 +88,35 @@ const MemberDuesForm: React.FC<{
     e.preventDefault()
     setLoading(true)
     try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('User not found')
+
+      // Generate invoice number for new dues
+      const invoiceNumber = due?.invoice_number || generateInvoiceNumber()
+
+      // Handle Transaction Logic - REMOVED as per request
+      // if (status === 'paid') {
+      //   if (!transactionId) {
+      //     // Create transaction if becoming paid and no transaction exists
+      //     const tx = await financeAPI.create({
+      //       type: 'income',
+      //       amount: Number(amount),
+      //       category: 'Iuran Anggota',
+      //       description: `Pembayaran ${memberName} (${invoiceNumber})`,
+      //       date: new Date().toISOString().slice(0, 10),
+      //       sub_account: `Kas ${division}`,
+      //       created_by: user.id
+      //     })
+      //     transactionId = tx.id
+      //   }
+      // } else {
+      //   if (transactionId) {
+      //     // Delete transaction if becoming unpaid/partial
+      //     await financeAPI.delete(transactionId)
+      //     transactionId = null
+      //   }
+      // }
+
       if (due) {
         await duesAPI.update(due.id, {
           member_id: memberId || null,
@@ -95,7 +125,8 @@ const MemberDuesForm: React.FC<{
           amount: Number(amount),
           due_date: dueDate,
           status,
-          notes
+          notes,
+          transaction_id: null // Ensure transaction_id is cleared or ignored
         })
         notify({ type: 'success', title: 'Iuran diperbarui', message: `${memberName} • Rp ${Number(amount).toLocaleString('id-ID')}` })
         await auditAPI.log({ module: 'finance', action: 'update_due', entity_type: 'member_due', entity_id: due.id, details: { status, amount: Number(amount) } })
@@ -107,8 +138,9 @@ const MemberDuesForm: React.FC<{
           amount: Number(amount),
           due_date: dueDate,
           status,
-          invoice_number: generateInvoiceNumber(),
-          notes
+          invoice_number: invoiceNumber,
+          notes,
+          transaction_id: null
         })
         notify({ type: 'info', title: 'Tagihan iuran dibuat', message: `${memberName || 'Tanpa Nama'} • Rp ${Number(amount).toLocaleString('id-ID')}` })
         await auditAPI.log({ module: 'finance', action: 'create_due', entity_type: 'member_due', details: { division, amount: Number(amount), due_date: dueDate } })
@@ -123,8 +155,8 @@ const MemberDuesForm: React.FC<{
     }
   }
 
-  return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+  return createPortal(
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
       <div className="bg-white dark:bg-[#1E1E1E] rounded-2xl w-full max-w-lg overflow-hidden shadow-xl">
         <div className="flex items-center justify-between p-5 border-b border-slate-100 dark:border-[#2A2A2A]">
           <h3 className="text-lg font-bold text-slate-900 dark:text-white">{due ? 'Edit Iuran' : 'Buat Tagihan Iuran'}</h3>
@@ -157,15 +189,15 @@ const MemberDuesForm: React.FC<{
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Divisi</label>
-          <select
-            value={division}
-            onChange={(e) => setDivision(e.target.value)}
-            className="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-[#2A2A2A] dark:bg-[#1A1A1A]"
-          >
+            <select
+              value={division}
+              onChange={(e) => setDivision(e.target.value)}
+              className="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-[#2A2A2A] dark:bg-[#1A1A1A]"
+            >
               {divisionOptions.map((div) => (
                 <option key={div} value={div}>{div}</option>
               ))}
-          </select>
+            </select>
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nominal (Rp)</label>
@@ -220,7 +252,8 @@ const MemberDuesForm: React.FC<{
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 
@@ -271,25 +304,12 @@ const MemberDuesPanel: React.FC<DuesPanelProps> = ({ onFinanceUpdate }) => {
   const handleStatusChange = async (due: MemberDue, status: MemberDue['status']) => {
     try {
       const updates: Partial<MemberDue> = { status }
-      if (status === 'paid' && !due.transaction_id) {
-        const { data: { user } } = await supabase.auth.getUser()
-        if (!user) throw new Error('Pengguna tidak ditemukan')
-        const transaction = await financeAPI.create({
-          type: 'income',
-          amount: due.amount,
-          category: 'Iuran Anggota',
-          description: `Pembayaran ${due.member_name} (${due.invoice_number})`,
-          date: new Date().toISOString().slice(0, 10),
-          proof_url: '',
-          sub_account: `Kas ${due.division}`,
-          created_by: user.id
-        })
-        updates.transaction_id = transaction.id
-        await onFinanceUpdate()
-      }
-      if (status !== 'paid') {
-        updates.transaction_id = null
-      }
+      // Removed automatic finance transaction creation/deletion
+      // if (status === 'paid' && !due.transaction_id) {
+      //   ...
+      // } else if (status !== 'paid' && due.transaction_id) {
+      //   ...
+      // }
       await duesAPI.update(due.id, updates)
       await loadDues()
     } catch (error) {
@@ -301,6 +321,11 @@ const MemberDuesPanel: React.FC<DuesPanelProps> = ({ onFinanceUpdate }) => {
   const handleDelete = async (due: MemberDue) => {
     if (!window.confirm('Hapus iuran ini?')) return
     try {
+      // Removed automatic finance transaction deletion
+      // if (due.transaction_id) {
+      //   await financeAPI.delete(due.transaction_id)
+      //   await onFinanceUpdate()
+      // }
       await duesAPI.delete(due.id)
       await loadDues()
     } catch (error) {
@@ -378,22 +403,66 @@ const MemberDuesPanel: React.FC<DuesPanelProps> = ({ onFinanceUpdate }) => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-        <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#1E1E1E] border border-slate-100 dark:border-[#2A2A2A]">
-          <p className="text-xs text-slate-500">Total Invoice</p>
-          <p className="text-2xl font-bold text-slate-900 dark:text-white">{summary.total}</p>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="bg-white dark:bg-[#1E1E1E] rounded-xl p-6 border border-slate-200 dark:border-[#2A2A2A]">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-lg">
+              <Wallet size={20} />
+            </div>
+            <span className="text-slate-500 dark:text-slate-400 font-medium">Total Invoice</span>
+          </div>
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
+            {summary.total}
+          </h2>
+          <p className="text-xs text-slate-500 flex items-center gap-1">
+            <span>Tagihan diterbitkan</span>
+          </p>
         </div>
-        <div className="p-4 rounded-xl bg-rose-50 border border-rose-100 dark:bg-rose-900/20">
-          <p className="text-xs text-rose-700">Belum Lunas</p>
-          <p className="text-2xl font-bold text-rose-700">{summary.outstanding}</p>
+
+        <div className="bg-white dark:bg-[#1E1E1E] rounded-xl p-6 border border-slate-200 dark:border-[#2A2A2A]">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 rounded-lg">
+              <AlertCircle size={20} />
+            </div>
+            <span className="text-slate-500 dark:text-slate-400 font-medium">Belum Lunas</span>
+          </div>
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
+            {summary.outstanding}
+          </h2>
+          <p className="text-xs text-rose-600 flex items-center gap-1">
+            <span>Tagihan outstanding</span>
+          </p>
         </div>
-        <div className="p-4 rounded-xl bg-amber-50 border border-amber-100 dark:bg-amber-900/20">
-          <p className="text-xs text-amber-700">Piutang</p>
-          <p className="text-lg font-bold text-amber-700">Rp {new Intl.NumberFormat('id-ID').format(summary.totalOutstanding)}</p>
+
+        <div className="bg-white dark:bg-[#1E1E1E] rounded-xl p-6 border border-slate-200 dark:border-[#2A2A2A]">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-lg">
+              <Wallet size={20} />
+            </div>
+            <span className="text-slate-500 dark:text-slate-400 font-medium">Piutang</span>
+          </div>
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
+            Rp {new Intl.NumberFormat('id-ID').format(summary.totalOutstanding)}
+          </h2>
+          <p className="text-xs text-amber-600 flex items-center gap-1">
+            <span>Potensi pemasukan</span>
+          </p>
         </div>
-        <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-100 dark:bg-emerald-900/20">
-          <p className="text-xs text-emerald-700">Kas Masuk</p>
-          <p className="text-lg font-bold text-emerald-700">Rp {new Intl.NumberFormat('id-ID').format(summary.paidAmount)}</p>
+
+        <div className="bg-white dark:bg-[#1E1E1E] rounded-xl p-6 border border-slate-200 dark:border-[#2A2A2A]">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg">
+              <Wallet size={20} />
+            </div>
+            <span className="text-slate-500 dark:text-slate-400 font-medium">Kas Masuk</span>
+          </div>
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-1">
+            Rp {new Intl.NumberFormat('id-ID').format(summary.paidAmount)}
+          </h2>
+          <p className="text-xs text-indigo-600 flex items-center gap-1">
+            <TrendingUp size={12} />
+            <span>Dari Anggota</span>
+          </p>
         </div>
       </div>
 
@@ -408,29 +477,28 @@ const MemberDuesPanel: React.FC<DuesPanelProps> = ({ onFinanceUpdate }) => {
           <button
             key={item.id}
             onClick={() => setFilter(item.id as typeof filter)}
-            className={`px-3 py-1.5 rounded-full border text-xs font-semibold ${
-              filter === item.id
-                ? 'bg-blue-50 border-blue-200 text-blue-600'
-                : 'bg-white dark:bg-[#1E1E1E] border-slate-200 dark:border-[#2A2A2A] text-slate-600'
-            }`}
+            className={`px-3 py-1.5 rounded-full border text-xs font-semibold ${filter === item.id
+              ? 'bg-blue-50 border-blue-200 text-blue-600'
+              : 'bg-white dark:bg-[#1E1E1E] border-slate-200 dark:border-[#2A2A2A] text-slate-600'
+              }`}
           >
             {item.label}
           </button>
         ))}
       </div>
 
-      <div className="bg-white dark:bg-[#1E1E1E] rounded-xl border border-slate-200 dark:border-[#2A2A2A] overflow-hidden">
+      <div className="bg-white dark:bg-[#1E1E1E] rounded-xl border border-slate-200 dark:border-[#2A2A2A] overflow-hidden flex flex-col max-h-[600px]">
         {filteredDues.length === 0 ? (
           <div className="p-8 text-center text-slate-500">
             <AlertCircle className="mx-auto mb-2 text-slate-400" />
             Tidak ada invoice pada filter ini.
           </div>
         ) : (
-          <div className="divide-y divide-slate-100 dark:divide-[#2A2A2A]">
+          <div className="divide-y divide-slate-100 dark:divide-[#2A2A2A] overflow-y-auto">
             {filteredDues.map((due) => {
               const overdue = due.status !== 'paid' && due.due_date < new Date().toISOString().slice(0, 10)
               return (
-                <div key={due.id} className="p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div key={due.id} className="p-3 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                   <div className="flex items-start gap-3">
                     <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center">
                       <Wallet size={18} className="text-slate-600" />
@@ -496,4 +564,3 @@ const MemberDuesPanel: React.FC<DuesPanelProps> = ({ onFinanceUpdate }) => {
 }
 
 export default MemberDuesPanel
-

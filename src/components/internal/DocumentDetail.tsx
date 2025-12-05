@@ -1,4 +1,5 @@
 import React from 'react'
+import { createPortal } from 'react-dom'
 import { Document } from '../../lib/supabase'
 import {
   X,
@@ -68,8 +69,8 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
     { label: 'Kembalikan Draft', status: 'draft' as Document['status'], icon: ShieldCheck, show: canManage && document.status !== 'draft' }
   ]
 
-  return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+  return createPortal(
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
       <div className="bg-white dark:bg-[#111111] rounded-3xl w-full max-w-4xl overflow-hidden shadow-2xl flex flex-col max-h-[92vh]">
         <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-[#1F1F1F]">
           <div>
@@ -118,6 +119,27 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
                   <Clock size={16} className="text-orange-500 mt-0.5" />
                   <span>Dibuat pada {new Date(document.created_at).toLocaleString('id-ID')}</span>
                 </div>
+
+                {document.sender && (
+                  <div className="flex items-center gap-3">
+                    <span className="text-slate-400 w-4 flex justify-center">From</span>
+                    <span className="font-medium">{document.sender}</span>
+                  </div>
+                )}
+
+                {document.recipient && (
+                  <div className="flex items-center gap-3">
+                    <span className="text-slate-400 w-4 flex justify-center">To</span>
+                    <span className="font-medium">{document.recipient}</span>
+                  </div>
+                )}
+
+                {document.date_received && (
+                  <div className="flex items-center gap-3">
+                    <span className="text-slate-400 w-4 flex justify-center">Recv</span>
+                    <span>Diterima: {new Date(document.date_received).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                  </div>
+                )}
                 {document.description && (
                   <div className="mt-4">
                     <p className="text-xs text-slate-400 uppercase font-semibold mb-1">Ringkasan</p>
@@ -180,11 +202,10 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
                     .map((item) => (
                       <div
                         key={item.id}
-                        className={`flex items-center justify-between p-3 rounded-xl border text-sm ${
-                          item.id === document.id
-                            ? 'bg-blue-50 border-blue-100 dark:bg-blue-900/20 dark:border-blue-800 text-blue-700 dark:text-blue-300'
-                            : 'bg-slate-50 border-slate-200 dark:bg-[#1E1E1E] dark:border-[#1F1F1F] text-slate-600'
-                        }`}
+                        className={`flex items-center justify-between p-3 rounded-xl border text-sm ${item.id === document.id
+                          ? 'bg-blue-50 border-blue-100 dark:bg-blue-900/20 dark:border-blue-800 text-blue-700 dark:text-blue-300'
+                          : 'bg-slate-50 border-slate-200 dark:bg-[#1E1E1E] dark:border-[#1F1F1F] text-slate-600'
+                          }`}
                       >
                         <div>
                           <p className="font-semibold">Versi {item.version}</p>
@@ -250,7 +271,8 @@ const DocumentDetail: React.FC<DocumentDetailProps> = ({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 

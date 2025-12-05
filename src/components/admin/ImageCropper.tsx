@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import { Crop, RotateCcw, Save, X, ZoomIn, ZoomOut, Move } from 'lucide-react'
 
 interface ImageCropperProps {
@@ -26,7 +27,7 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
   imageUrl,
   onCrop,
   onCancel,
-  aspectRatio = 16/9,
+  aspectRatio = 16 / 9,
   targetWidth = 800,
   targetHeight = 450
 }) => {
@@ -40,7 +41,7 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
   const [previewUrl, setPreviewUrl] = useState<string>('')
   const [imageLoaded, setImageLoaded] = useState(false)
   const [error, setError] = useState<string>('')
-  
+
   const imageRef = useRef<HTMLImageElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -50,17 +51,17 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
     return new Promise((resolve, reject) => {
       const img = new Image()
       img.crossOrigin = 'anonymous'
-      
+
       img.onload = () => {
         setImageLoaded(true)
         resolve(img)
       }
-      
+
       img.onerror = () => {
         setError('Failed to load image. Please try again.')
         reject(new Error('Image load failed'))
       }
-      
+
       // Try to load with CORS
       img.src = url
     })
@@ -95,7 +96,7 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
               height: 80
             }
           }
-          
+
           setCrop(newCrop)
         })
         .catch((err) => {
@@ -115,7 +116,7 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
       if (!ctx) return
 
       const img = imageRef.current
-      
+
       // Check if image is loaded and has dimensions
       if (img.naturalWidth === 0 || img.naturalHeight === 0) {
         console.warn('Image not fully loaded yet')
@@ -195,25 +196,25 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
   // Handle mouse events for crop area dragging with precise positioning
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!containerRef.current || !imageLoaded) return
-    
+
     const rect = containerRef.current.getBoundingClientRect()
     const x = ((e.clientX - rect.left) / rect.width) * 100
     const y = ((e.clientY - rect.top) / rect.height) * 100
-    
+
     // Check if click is on resize handles with precise detection
     const handleSize = 2.5 // 2.5% of container for more precise detection
     const isOnHandle = checkResizeHandle(x, y, handleSize)
-    
+
     if (isOnHandle) {
       setIsResizing(true)
       setResizeDirection(isOnHandle)
       setDragStart({ x, y })
       return
     }
-    
+
     // Check if click is inside crop area with precise boundaries
-    if (x >= crop.x && x <= crop.x + crop.width && 
-        y >= crop.y && y <= crop.y + crop.height) {
+    if (x >= crop.x && x <= crop.x + crop.width &&
+      y >= crop.y && y <= crop.y + crop.height) {
       setIsDragging(true)
       setDragStart({ x: x - crop.x, y: y - crop.y })
     }
@@ -221,66 +222,66 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
 
   const checkResizeHandle = (x: number, y: number, handleSize: number): string => {
     // Top-left
-    if (x >= crop.x - handleSize && x <= crop.x + handleSize && 
-        y >= crop.y - handleSize && y <= crop.y + handleSize) {
+    if (x >= crop.x - handleSize && x <= crop.x + handleSize &&
+      y >= crop.y - handleSize && y <= crop.y + handleSize) {
       return 'nw'
     }
     // Top-right
-    if (x >= crop.x + crop.width - handleSize && x <= crop.x + crop.width + handleSize && 
-        y >= crop.y - handleSize && y <= crop.y + handleSize) {
+    if (x >= crop.x + crop.width - handleSize && x <= crop.x + crop.width + handleSize &&
+      y >= crop.y - handleSize && y <= crop.y + handleSize) {
       return 'ne'
     }
     // Bottom-left
-    if (x >= crop.x - handleSize && x <= crop.x + handleSize && 
-        y >= crop.y + crop.height - handleSize && y <= crop.y + crop.height + handleSize) {
+    if (x >= crop.x - handleSize && x <= crop.x + handleSize &&
+      y >= crop.y + crop.height - handleSize && y <= crop.y + crop.height + handleSize) {
       return 'sw'
     }
     // Bottom-right
-    if (x >= crop.x + crop.width - handleSize && x <= crop.x + crop.width + handleSize && 
-        y >= crop.y + crop.height - handleSize && y <= crop.y + crop.height + handleSize) {
+    if (x >= crop.x + crop.width - handleSize && x <= crop.x + crop.width + handleSize &&
+      y >= crop.y + crop.height - handleSize && y <= crop.y + crop.height + handleSize) {
       return 'se'
     }
     // Left edge
-    if (x >= crop.x - handleSize && x <= crop.x + handleSize && 
-        y >= crop.y && y <= crop.y + crop.height) {
+    if (x >= crop.x - handleSize && x <= crop.x + handleSize &&
+      y >= crop.y && y <= crop.y + crop.height) {
       return 'w'
     }
     // Right edge
-    if (x >= crop.x + crop.width - handleSize && x <= crop.x + crop.width + handleSize && 
-        y >= crop.y && y <= crop.y + crop.height) {
+    if (x >= crop.x + crop.width - handleSize && x <= crop.x + crop.width + handleSize &&
+      y >= crop.y && y <= crop.y + crop.height) {
       return 'e'
     }
     // Top edge
-    if (y >= crop.y - handleSize && y <= crop.y + handleSize && 
-        x >= crop.x && x <= crop.x + crop.width) {
+    if (y >= crop.y - handleSize && y <= crop.y + handleSize &&
+      x >= crop.x && x <= crop.x + crop.width) {
       return 'n'
     }
     // Bottom edge
-    if (y >= crop.y + crop.height - handleSize && y <= crop.y + crop.height + handleSize && 
-        x >= crop.x && x <= crop.x + crop.width) {
+    if (y >= crop.y + crop.height - handleSize && y <= crop.y + crop.height + handleSize &&
+      x >= crop.x && x <= crop.x + crop.width) {
       return 's'
     }
-    
+
     return ''
   }
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!containerRef.current || !imageLoaded) return
-    
+
     const rect = containerRef.current.getBoundingClientRect()
     const x = ((e.clientX - rect.left) / rect.width) * 100
     const y = ((e.clientY - rect.top) / rect.height) * 100
-    
+
     if (isDragging) {
       // Precise positioning with boundary limits
       const newX = Math.max(0, Math.min(100 - crop.width, x - dragStart.x))
       const newY = Math.max(0, Math.min(100 - crop.height, y - dragStart.y))
-      
+
       // Round to 2 decimal places for precise positioning
-      const newCrop = { 
-        ...crop, 
-        x: Math.round(newX * 100) / 100, 
-        y: Math.round(newY * 100) / 100 
+      const newCrop = {
+        ...crop,
+        x: Math.round(newX * 100) / 100,
+        y: Math.round(newY * 100) / 100
       }
       setCrop(newCrop)
     } else if (isResizing) {
@@ -428,7 +429,7 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
           height: 80
         }
       }
-      
+
       setCrop(newCrop)
       setRotation(0)
       setScale(1)
@@ -437,14 +438,14 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
 
   const getCursorStyle = (x: number, y: number): string => {
     if (!containerRef.current) return 'default'
-    
+
     const rect = containerRef.current.getBoundingClientRect()
     const xPercent = ((x - rect.left) / rect.width) * 100
     const yPercent = ((y - rect.top) / rect.height) * 100
-    
+
     const handleSize = 2.5
     const isOnHandle = checkResizeHandle(xPercent, yPercent, handleSize)
-    
+
     switch (isOnHandle) {
       case 'nw':
       case 'se':
@@ -459,8 +460,8 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
       case 'w':
         return 'ew-resize'
       default:
-        if (xPercent >= crop.x && xPercent <= crop.x + crop.width && 
-            yPercent >= crop.y && yPercent <= crop.y + crop.height) {
+        if (xPercent >= crop.x && xPercent <= crop.x + crop.width &&
+          yPercent >= crop.y && yPercent <= crop.y + crop.height) {
           return 'move'
         }
         return 'default'
@@ -469,8 +470,8 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
 
   // Show error message if there's an issue
   if (error) {
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+    return createPortal(
+      <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[9999] p-4">
         <div className="bg-white rounded-xl max-w-md w-full p-6 text-center">
           <h2 className="text-xl font-semibold text-secondary-900 mb-2">Error Loading Image</h2>
           <p className="text-secondary-600 mb-4">{error}</p>
@@ -492,12 +493,13 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
             </button>
           </div>
         </div>
-      </div>
+      </div>,
+      document.body
     )
   }
 
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+  return createPortal(
+    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[9999] p-4">
       <div className="bg-white rounded-xl max-w-7xl w-full max-h-[95vh] overflow-y-auto">
         <div className="p-6 border-b border-gray-200">
           <h2 className="text-xl font-semibold text-secondary-900">Edit Image</h2>
@@ -510,7 +512,7 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
             {/* Image Editor */}
             <div className="xl:col-span-2">
-              <div 
+              <div
                 ref={containerRef}
                 className="relative bg-gray-100 rounded-lg overflow-hidden"
                 onMouseDown={handleMouseDown}
@@ -530,7 +532,7 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
                   }}
                   crossOrigin="anonymous"
                 />
-                
+
                 {/* Crop Overlay */}
                 <div className="absolute inset-0 pointer-events-none">
                   {/* Crop Area */}
@@ -544,7 +546,7 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
                       position: 'absolute'
                     }}
                   />
-                  
+
                   {/* Resize Handles - Top Left */}
                   <div
                     className="absolute w-5 h-5 bg-white border-2 border-blue-500 rounded-full cursor-nw-resize pointer-events-auto shadow-lg"
@@ -553,7 +555,7 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
                       top: `${crop.y - 2.5}%`
                     }}
                   />
-                  
+
                   {/* Resize Handles - Top Right */}
                   <div
                     className="absolute w-5 h-5 bg-white border-2 border-blue-500 rounded-full cursor-ne-resize pointer-events-auto shadow-lg"
@@ -562,7 +564,7 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
                       top: `${crop.y - 2.5}%`
                     }}
                   />
-                  
+
                   {/* Resize Handles - Bottom Left */}
                   <div
                     className="absolute w-5 h-5 bg-white border-2 border-blue-500 rounded-full cursor-sw-resize pointer-events-auto shadow-lg"
@@ -571,7 +573,7 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
                       top: `${crop.y + crop.height - 2.5}%`
                     }}
                   />
-                  
+
                   {/* Resize Handles - Bottom Right */}
                   <div
                     className="absolute w-5 h-5 bg-white border-2 border-blue-500 rounded-full cursor-se-resize pointer-events-auto shadow-lg"
@@ -580,39 +582,39 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
                       top: `${crop.y + crop.height - 2.5}%`
                     }}
                   />
-                  
+
                   {/* Edge Handles - Left */}
                   <div
                     className="absolute w-3 h-6 bg-white border border-blue-500 rounded cursor-ew-resize pointer-events-auto shadow-lg"
                     style={{
                       left: `${crop.x - 1.5}%`,
-                      top: `${crop.y + crop.height/2 - 3}%`
+                      top: `${crop.y + crop.height / 2 - 3}%`
                     }}
                   />
-                  
+
                   {/* Edge Handles - Right */}
                   <div
                     className="absolute w-3 h-6 bg-white border border-blue-500 rounded cursor-ew-resize pointer-events-auto shadow-lg"
                     style={{
                       left: `${crop.x + crop.width - 1.5}%`,
-                      top: `${crop.y + crop.height/2 - 3}%`
+                      top: `${crop.y + crop.height / 2 - 3}%`
                     }}
                   />
-                  
+
                   {/* Edge Handles - Top */}
                   <div
                     className="absolute w-6 h-3 bg-white border border-blue-500 rounded cursor-ns-resize pointer-events-auto shadow-lg"
                     style={{
-                      left: `${crop.x + crop.width/2 - 3}%`,
+                      left: `${crop.x + crop.width / 2 - 3}%`,
                       top: `${crop.y - 1.5}%`
                     }}
                   />
-                  
+
                   {/* Edge Handles - Bottom */}
                   <div
                     className="absolute w-6 h-3 bg-white border border-blue-500 rounded cursor-ns-resize pointer-events-auto shadow-lg"
                     style={{
-                      left: `${crop.x + crop.width/2 - 3}%`,
+                      left: `${crop.x + crop.width / 2 - 3}%`,
                       top: `${crop.y + crop.height - 1.5}%`
                     }}
                   />
@@ -656,7 +658,7 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
                     <RotateCcw size={16} />
                     Rotate 90°
                   </button>
-                  
+
                   <button
                     onClick={resetCrop}
                     className="flex items-center gap-2 px-4 py-2 bg-secondary-100 text-secondary-700 rounded-lg hover:bg-secondary-200 transition-colors"
@@ -693,7 +695,7 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
                 {/* Real-time Preview */}
                 <div className="bg-secondary-50 rounded-lg p-4">
                   <h3 className="font-medium text-secondary-900 mb-2">Live Preview</h3>
-                  <div 
+                  <div
                     className="bg-white rounded border overflow-hidden"
                     style={{
                       width: '100%',
@@ -790,7 +792,8 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
 
       {/* Hidden canvas for processing */}
       <canvas ref={canvasRef} style={{ display: 'none' }} />
-    </div>
+    </div>,
+    document.body
   )
 }
 

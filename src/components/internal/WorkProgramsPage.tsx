@@ -3,13 +3,20 @@ import { attendanceAPI, InternalEvent, budgetAPI } from '../../lib/supabase'
 import { Calendar, MapPin, DollarSign, ArrowRight, Plus, Trash2 } from 'lucide-react'
 import EventForm from './EventForm'
 import WorkProgramDetail from './WorkProgramDetail'
+import ConfirmationModal from '../common/ConfirmationModal'
 
 const WorkProgramsPage: React.FC = () => {
     const [programs, setPrograms] = useState<InternalEvent[]>([])
     const [loading, setLoading] = useState(true)
     const [showForm, setShowForm] = useState(false)
     const [selectedProgram, setSelectedProgram] = useState<InternalEvent | null>(null)
+    const [editingProgram, setEditingProgram] = useState<InternalEvent | null>(null)
     const [budgets, setBudgets] = useState<Record<string, number>>({})
+
+    // Delete Modal State
+    const [showDeleteModal, setShowDeleteModal] = useState(false)
+    const [programToDelete, setProgramToDelete] = useState<string | null>(null)
+    const [isDeleting, setIsDeleting] = useState(false)
 
     useEffect(() => {
         loadPrograms()
@@ -20,6 +27,27 @@ const WorkProgramsPage: React.FC = () => {
         try {
             const allEvents = await attendanceAPI.getEvents()
             const workPrograms = allEvents.filter(e => e.type === 'work_program')
+
+            // Check for past events that are still upcoming
+            const today = new Date()
+            today.setHours(0, 0, 0, 0)
+
+            const updates = workPrograms.map(async (program) => {
+                if (program.status === 'upcoming') {
+                    const eventDate = new Date(program.end_date || program.date)
+                    if (eventDate < today) {
+                        try {
+                            await attendanceAPI.updateEvent(program.id, { status: 'completed' })
+                            program.status = 'completed' // Update local state immediately
+                        } catch (err) {
+                            console.error(`Failed to auto-complete program ${program.title}`, err)
+                        }
+                    }
+                }
+                return program
+            })
+
+            await Promise.all(updates)
             setPrograms(workPrograms)
 
             // Load budget totals for each program
@@ -39,6 +67,27 @@ const WorkProgramsPage: React.FC = () => {
             console.error('Failed to load work programs:', error)
         } finally {
             setLoading(false)
+        }
+    }
+
+    const confirmDelete = (id: string) => {
+        setProgramToDelete(id)
+        setShowDeleteModal(true)
+    }
+
+    const handleDelete = async () => {
+        if (!programToDelete) return
+
+        setIsDeleting(true)
+        try {
+            await attendanceAPI.deleteEvent(programToDelete)
+            await loadPrograms()
+            setShowDeleteModal(false)
+            setProgramToDelete(null)
+        } catch (error) {
+            console.error('Error deleting program:', error)
+        } finally {
+            setIsDeleting(false)
         }
     }
 
@@ -66,7 +115,10 @@ const WorkProgramsPage: React.FC = () => {
                     <p className="text-slate-500 dark:text-slate-400">Kelola program kerja, anggaran (RAB), dan realisasi keuangan</p>
                 </div>
                 <button
-                    onClick={() => setShowForm(true)}
+                    onClick={() => {
+                        setEditingProgram(null)
+                        setShowForm(true)
+                    }}
                     className="px-4 py-2 bg-blue-600 text-white rounded-lg flex items-center gap-2 hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200 dark:shadow-none"
                 >
                     <Plus size={18} />
@@ -110,7 +162,12 @@ const WorkProgramsPage: React.FC = () => {
                                 <div className="space-y-2 text-sm text-slate-600 dark:text-slate-300">
                                     <div className="flex items-center gap-2">
                                         <Calendar size={16} className="text-slate-400" />
-                                        <span>{new Date(program.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                                        <span>
+                                            {new Date(program.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                            {program.end_date && program.end_date !== program.date && (
+                                                <> - {new Date(program.end_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</>
+                                            )}
+                                        </span>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <MapPin size={16} className="text-slate-400" />
@@ -138,9 +195,18 @@ const WorkProgramsPage: React.FC = () => {
                                     <button
                                         onClick={(e) => {
                                             e.stopPropagation()
-                                            if (window.confirm('Apakah Anda yakin ingin menghapus program kerja ini?')) {
-                                                attendanceAPI.deleteEvent(program.id).then(() => loadPrograms())
-                                            }
+                                            setEditingProgram(program)
+                                            setShowForm(true)
+                                        }}
+                                        className="px-3 py-2 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 rounded-lg hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-colors"
+                                        title="Edit Program"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /><path d="m15 5 4 4" /></svg>
+                                    </button>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation()
+                                            confirmDelete(program.id)
                                         }}
                                         className="px-3 py-2 bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 rounded-lg hover:bg-rose-100 dark:hover:bg-rose-900/40 transition-colors"
                                         title="Hapus Program"
@@ -162,7 +228,10 @@ const WorkProgramsPage: React.FC = () => {
                         Buat program kerja baru untuk mulai mengelola kegiatan, anggaran, dan laporan keuangan.
                     </p>
                     <button
-                        onClick={() => setShowForm(true)}
+                        onClick={() => {
+                            setEditingProgram(null)
+                            setShowForm(true)
+                        }}
                         className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                     >
                         Buat Program Kerja
@@ -172,11 +241,27 @@ const WorkProgramsPage: React.FC = () => {
 
             {showForm && (
                 <EventForm
-                    onClose={() => setShowForm(false)}
+                    onClose={() => {
+                        setShowForm(false)
+                        setEditingProgram(null)
+                    }}
                     onSuccess={loadPrograms}
                     initialType="work_program"
+                    initialData={editingProgram}
                 />
             )}
+
+            <ConfirmationModal
+                isOpen={showDeleteModal}
+                onClose={() => setShowDeleteModal(false)}
+                onConfirm={handleDelete}
+                title="Hapus Program Kerja"
+                message="Apakah Anda yakin ingin menghapus program kerja ini? Tindakan ini tidak dapat dibatalkan."
+                confirmText="Hapus"
+                cancelText="Batal"
+                type="danger"
+                loading={isDeleting}
+            />
         </div>
     )
 }

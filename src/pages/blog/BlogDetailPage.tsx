@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, Calendar, User, Tag, BookOpen, Heart, Share2 } from 'lucide-react';
 import { newsAPI, type News } from '../../lib/supabase';
-import { useSEO } from '../../hooks/useSEO';
+import SEO from '../../components/common/SEO';
 import RelatedArticles from '../../components/ui/RelatedArticles';
 import Breadcrumb from '../../components/ui/Breadcrumb';
 import SocialShare from '../../components/ui/SocialShare';
@@ -133,42 +133,51 @@ const BlogDetailPage: React.FC = () => {
     }
   }, [slug]);
 
-  // SEO hook
-  useSEO({
-    title: article ? `${article.title} - Blog DIGCITY` : 'Artikel - Blog DIGCITY',
-    description: article?.excerpt || 'Baca artikel menarik seputar bisnis digital dan teknologi dari DIGCITY',
-    keywords: article ? `${article.tags.join(', ')}, ${article.category}, DIGCITY, blog, artikel` : 'blog DIGCITY, artikel, berita',
-    ogImage: article?.image_url,
-    canonicalUrl: `https://digcity.my.id/blog/${slug}`,
-    structuredData: article ? {
-      '@context': 'https://schema.org',
-      '@type': 'Article',
-      headline: article.title,
+  // SEO Component
+  const seoData = useMemo(() => {
+    if (!article) return {
+      title: 'Artikel - Blog DIGCITY',
+      description: 'Baca artikel menarik seputar bisnis digital dan teknologi dari DIGCITY',
+      keywords: 'blog DIGCITY, artikel, berita',
+      canonicalUrl: `https://digcity.my.id/blog/${slug}`
+    };
+
+    return {
+      title: `${article.title} - Blog DIGCITY`,
       description: article.excerpt,
-      image: article.image_url ? `https://digcity.my.id${article.image_url}` : undefined,
-      author: {
-        '@type': 'Person',
-        name: article.author
-      },
-      publisher: {
-        '@type': 'Organization',
-        name: 'DIGCITY',
-        logo: {
-          '@type': 'ImageObject',
-          url: 'https://digcity.my.id/logo_digcity.png'
-        }
-      },
-      datePublished: article.published_date,
-      dateModified: article.updated_at,
-      mainEntityOfPage: {
-        '@type': 'WebPage',
-        '@id': `https://digcity.my.id/blog/${slug}`
-      },
-      articleSection: article.category,
-      keywords: article.tags.join(', '),
-      wordCount: article.content.split(' ').length
-    } : undefined
-  });
+      keywords: `${article.tags.join(', ')}, ${article.category}, DIGCITY, blog, artikel`,
+      ogImage: article.image_url,
+      canonicalUrl: `https://digcity.my.id/blog/${slug}`,
+      structuredData: {
+        '@context': 'https://schema.org',
+        '@type': 'Article',
+        headline: article.title,
+        description: article.excerpt,
+        image: article.image_url ? `https://digcity.my.id${article.image_url}` : undefined,
+        author: {
+          '@type': 'Person',
+          name: article.author
+        },
+        publisher: {
+          '@type': 'Organization',
+          name: 'DIGCITY',
+          logo: {
+            '@type': 'ImageObject',
+            url: 'https://digcity.my.id/logo_digcity.png'
+          }
+        },
+        datePublished: article.published_date,
+        dateModified: article.updated_at,
+        mainEntityOfPage: {
+          '@type': 'WebPage',
+          '@id': `https://digcity.my.id/blog/${slug}`
+        },
+        articleSection: article.category,
+        keywords: article.tags.join(', '),
+        wordCount: article.content.split(' ').length
+      }
+    };
+  }, [article, slug]);
 
   useEffect(() => {
     if (slug) {
@@ -180,15 +189,15 @@ const BlogDetailPage: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       // Load article by slug (we'll need to modify the API to support slug)
       const articles = await newsAPI.getAll();
-      const foundArticle = articles.find(art => 
+      const foundArticle = articles.find(art =>
         art.title.toLowerCase()
           .replace(/[^a-z0-9]+/g, '-')
           .replace(/(^-|-$)/g, '') === slug
       );
-      
+
       if (foundArticle) {
         setArticle(foundArticle);
         calculateReadingTime(foundArticle.content);
@@ -215,10 +224,10 @@ const BlogDetailPage: React.FC = () => {
     try {
       const allArticles = await newsAPI.getAll();
       const related = allArticles
-        .filter(art => 
-          art.id !== currentArticle.id && 
-          (art.category === currentArticle.category || 
-           art.tags.some(tag => currentArticle.tags.includes(tag)))
+        .filter(art =>
+          art.id !== currentArticle.id &&
+          (art.category === currentArticle.category ||
+            art.tags.some(tag => currentArticle.tags.includes(tag)))
         )
         .slice(0, 3);
       setRelatedArticles(related);
@@ -273,6 +282,7 @@ const BlogDetailPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-secondary-50 via-white to-secondary-50">
+      <SEO {...seoData} />
       <Breadcrumb />
 
       {/* Hero */}
@@ -311,12 +321,12 @@ const BlogDetailPage: React.FC = () => {
               <BookOpen className="w-4 h-4" />
               {readingTime} menit baca
             </span>
-                {shareCount !== null && (
-                  <span className="inline-flex items-center gap-2">
-                    <Share2 className="w-4 h-4" />
-                    {shareCount} {shareCount === 1 ? 'kali dibagikan' : 'kali dibagikan'}
-                  </span>
-                )}
+            {shareCount !== null && (
+              <span className="inline-flex items-center gap-2">
+                <Share2 className="w-4 h-4" />
+                {shareCount} {shareCount === 1 ? 'kali dibagikan' : 'kali dibagikan'}
+              </span>
+            )}
           </div>
         </div>
       </section>
@@ -430,7 +440,7 @@ const BlogDetailPage: React.FC = () => {
       </div>
 
       {relatedArticles.length > 0 && (
-        <RelatedArticles 
+        <RelatedArticles
           articles={relatedArticles}
           currentArticleId={article.id}
           maxArticles={3}

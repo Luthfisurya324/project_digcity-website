@@ -22,7 +22,10 @@ const AdminComplaints: React.FC = () => {
   const [from, setFrom] = useState<string>('')
   const [to, setTo] = useState<string>('')
   const [updatingId, setUpdatingId] = useState<string | null>(null)
+
   const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [responseText, setResponseText] = useState('')
+  const [respondingId, setRespondingId] = useState<string | null>(null)
 
   const load = async () => {
     setLoading(true)
@@ -65,13 +68,28 @@ const AdminComplaints: React.FC = () => {
     }
   }
 
+  const handleResponse = async (id: string) => {
+    if (!responseText.trim()) return
+    setRespondingId(id)
+    setError(null)
+    try {
+      const updated = await complaintsAPI.respond(id, responseText)
+      setItems((prev) => prev.map((it) => (it.id === id ? updated : it)))
+      setResponseText('')
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Gagal mengirim tanggapan')
+    } finally {
+      setRespondingId(null)
+    }
+  }
+
   const escapeCsv = (value: unknown) => {
     const str = value == null ? '' : String(value)
     return '"' + str.replace(/"/g, '""') + '"'
   }
 
   const exportCSV = () => {
-    const headers = ['Tanggal','Tiket','Kategori','Anonim','Nama','NPM','Email','Lampiran','Status','Deskripsi']
+    const headers = ['Tanggal', 'Tiket', 'Kategori', 'Anonim', 'Nama', 'NPM', 'Email', 'Lampiran', 'Status', 'Deskripsi']
     const rows = items.map((it) => {
       const dateStr = new Date(it.created_at).toISOString()
       const attach = Array.isArray(it.attachments) ? it.attachments.join(';') : ''
@@ -247,8 +265,13 @@ const AdminComplaints: React.FC = () => {
                     className="border-t border-secondary-100 hover:bg-secondary-50 cursor-pointer"
                     onClick={(e) => {
                       const el = e.target as HTMLElement
-                      if (el.closest('select, a, button')) return
-                      setExpandedId(expandedId === it.id ? null : it.id)
+                      if (el.closest('select, a, button, textarea')) return
+                      if (expandedId !== it.id) {
+                        setExpandedId(it.id)
+                        setResponseText(it.response || '')
+                      } else {
+                        setExpandedId(null)
+                      }
                     }}
                   >
                     <td className="px-4 py-3">
@@ -285,7 +308,14 @@ const AdminComplaints: React.FC = () => {
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       <button
-                        onClick={() => setExpandedId(expandedId === it.id ? null : it.id)}
+                        onClick={() => {
+                          if (expandedId !== it.id) {
+                            setExpandedId(it.id)
+                            setResponseText(it.response || '')
+                          } else {
+                            setExpandedId(null)
+                          }
+                        }}
                         className="inline-flex items-center gap-1 px-2 py-1 rounded-lg border border-secondary-300 text-secondary-700 hover:bg-secondary-100 text-xs"
                       >
                         {expandedId === it.id ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
@@ -342,7 +372,7 @@ const AdminComplaints: React.FC = () => {
                                       {it.contact_email ? (
                                         <a href={`mailto:${it.contact_email}`} className="text-primary-700 hover:underline">{it.contact_email}</a>
                                       ) : (
-                                        '-' 
+                                        '-'
                                       )}
                                     </div>
                                   </div>
@@ -351,7 +381,7 @@ const AdminComplaints: React.FC = () => {
                             </div>
                             <div className="space-y-2 min-w-0">
                               <div className="text-secondary-600 text-xs">Deskripsi</div>
-                              <div className="text-sm whitespace-pre-wrap break-all md:break-words w-full max-w-full pr-2">{it.description}</div>
+                              <div className="text-sm whitespace-pre-wrap break-all w-full max-w-full pr-4">{it.description}</div>
                               <div className="text-secondary-600 text-xs mt-3">Lampiran</div>
                               <div className="flex flex-wrap gap-2">
                                 {Array.isArray(it.attachments) && it.attachments.length > 0 ? (
@@ -367,6 +397,30 @@ const AdminComplaints: React.FC = () => {
                             </div>
                           </div>
                         </div>
+
+                        <div className="mt-6 pt-4 border-t border-secondary-200">
+                          <div className="text-secondary-600 text-xs font-semibold mb-2">Tanggapan Admin</div>
+                          <div className="bg-secondary-50 p-4 rounded-xl border border-secondary-200">
+                            <textarea
+                              value={expandedId === it.id ? responseText : ''}
+                              onChange={(e) => setResponseText(e.target.value)}
+                              placeholder="Tulis tanggapan resmi di sini... Tanggapan ini akan muncul di halaman publik."
+                              className="w-full rounded-lg border border-secondary-300 p-3 text-sm focus:ring-2 focus:ring-primary-500/50 min-h-[120px] bg-white"
+                            />
+                            <div className="mt-3 flex justify-between items-center">
+                              <span className="text-xs text-secondary-500">
+                                {it.response_at ? `Terakhir ditanggapi: ${new Date(it.response_at).toLocaleString()}` : 'Belum ada tanggapan'}
+                              </span>
+                              <button
+                                onClick={() => handleResponse(it.id)}
+                                disabled={respondingId === it.id || !responseText.trim()}
+                                className="px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+                              >
+                                {respondingId === it.id ? 'Menyimpan...' : 'Kirim Tanggapan'}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
                       </td>
                     </tr>
                   )}
@@ -376,7 +430,7 @@ const AdminComplaints: React.FC = () => {
           </tbody>
         </table>
       </div>
-    </div>
+    </div >
   )
 }
 

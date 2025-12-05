@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
-import { attendanceAPI, supabase, auditAPI, orgAPI, type OrganizationDivision } from '../../lib/supabase'
+import { createPortal } from 'react-dom'
+import { attendanceAPI, supabase, auditAPI, orgAPI, type OrganizationDivision, type InternalEvent } from '../../lib/supabase'
 import { useNotifications } from '../common/NotificationCenter'
 import { X, Check } from 'lucide-react'
 
@@ -7,33 +8,37 @@ interface EventFormProps {
   onClose: () => void
   onSuccess: () => void
   initialType?: 'meeting' | 'work_program' | 'gathering' | 'other'
+  initialData?: InternalEvent | null
 }
 
-const EventForm: React.FC<EventFormProps> = ({ onClose, onSuccess, initialType = 'meeting' }) => {
+const EventForm: React.FC<EventFormProps> = ({ onClose, onSuccess, initialType = 'meeting', initialData }) => {
   const { notify } = useNotifications()
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [date, setDate] = useState('')
-  const [endDate, setEndDate] = useState('')
-  const [location, setLocation] = useState('')
-  const [division, setDivision] = useState('')
-  const [type, setType] = useState<'meeting' | 'work_program' | 'gathering' | 'other'>(initialType)
+  const [title, setTitle] = useState(initialData?.title || '')
+  const [description, setDescription] = useState(initialData?.description || '')
+  const [date, setDate] = useState(initialData?.date ? new Date(initialData.date).toISOString().slice(0, 16) : '')
+  const [endDate, setEndDate] = useState(initialData?.end_date ? new Date(initialData.end_date).toISOString().slice(0, 16) : '')
+  const [location, setLocation] = useState(initialData?.location || '')
+  const [divisionId, setDivisionId] = useState(initialData?.division_id || '')
+  const [type, setType] = useState<'meeting' | 'work_program' | 'gathering' | 'other'>(
+    (initialData?.type as 'meeting' | 'work_program' | 'gathering' | 'other') || initialType
+  )
   const [loading, setLoading] = useState(false)
-  const [divisionOptions, setDivisionOptions] = useState<string[]>([])
+  const [divisions, setDivisions] = useState<OrganizationDivision[]>([])
+
   useEffect(() => {
     const loadDivisions = async () => {
       try {
         const list = await orgAPI.getStructure(null)
-        const names = list.map((d: OrganizationDivision) => d.name)
-        setDivisionOptions(names.length ? names : ['Umum'])
-        setDivision(names.length ? names[0] : 'Umum')
+        setDivisions(list)
+        if (!initialData?.division_id && !divisionId && list.length > 0) {
+          // Don't auto-select if it might be 'Umum' (empty ID)
+        }
       } catch {
-        setDivisionOptions(['Umum'])
-        setDivision('Umum')
+        setDivisions([])
       }
     }
     loadDivisions()
-  }, [])
+  }, [initialData])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -44,34 +49,50 @@ const EventForm: React.FC<EventFormProps> = ({ onClose, onSuccess, initialType =
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('User not authenticated')
 
-      const created = await attendanceAPI.createEvent({
+      // Find division name for legacy support
+      const selectedDiv = divisions.find(d => d.id === divisionId)
+      const divisionName = selectedDiv ? selectedDiv.name : 'Umum'
+
+      const eventData = {
         title,
         description,
         date: new Date(date).toISOString(),
         end_date: endDate ? new Date(endDate).toISOString() : undefined,
         location,
-        division,
+        division: divisionName, // Keep for legacy/display
+        division_id: divisionId || null,
         type,
-        status: 'upcoming',
-        created_by: user.id // Use real user ID
-      })
-      notify({ type: 'success', title: 'Event dibuat', message: title })
-      await auditAPI.log({ module: 'attendance', action: 'create_event', entity_type: 'internal_event', entity_id: created.id, details: { division, location, date } })
+        status: initialData?.status || 'upcoming',
+        created_by: initialData?.created_by || user.id
+      }
+
+      if (initialData) {
+        await attendanceAPI.updateEvent(initialData.id, eventData)
+        notify({ type: 'success', title: 'Event diperbarui', message: title })
+        await auditAPI.log({ module: 'attendance', action: 'update_event', entity_type: 'internal_event', entity_id: initialData.id, details: { division: divisionName, location, date } })
+      } else {
+        const created = await attendanceAPI.createEvent(eventData)
+        notify({ type: 'success', title: 'Event dibuat', message: title })
+        await auditAPI.log({ module: 'attendance', action: 'create_event', entity_type: 'internal_event', entity_id: created.id, details: { division: divisionName, location, date } })
+      }
+
       onSuccess()
       onClose()
     } catch (error) {
-      console.error('Error creating event:', error)
-      alert('Gagal membuat event. Pastikan Anda sudah login.')
+      console.error('Error saving event:', error)
+      alert('Gagal menyimpan event. Pastikan Anda sudah login.')
     } finally {
       setLoading(false)
     }
   }
 
-  return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+  return createPortal(
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
       <div className="bg-white dark:bg-[#1E1E1E] rounded-2xl w-full max-w-lg overflow-hidden shadow-xl">
         <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-[#2A2A2A]">
-          <h3 className="text-lg font-bold text-slate-900 dark:text-white">Buat Agenda Baru</h3>
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+            {initialData ? 'Edit Agenda' : 'Buat Agenda Baru'}
+          </h3>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"><X size={20} /></button>
         </div>
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
@@ -96,9 +117,10 @@ const EventForm: React.FC<EventFormProps> = ({ onClose, onSuccess, initialType =
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Divisi Penanggung Jawab</label>
-              <select value={division} onChange={e => setDivision(e.target.value)} className="w-full px-4 py-2 border border-slate-200 dark:border-[#2A2A2A] rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-[#1A1A1A] dark:text-white">
-                {divisionOptions.map((div) => (
-                  <option key={div} value={div}>{div}</option>
+              <select value={divisionId} onChange={e => setDivisionId(e.target.value)} className="w-full px-4 py-2 border border-slate-200 dark:border-[#2A2A2A] rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-[#1A1A1A] dark:text-white">
+                <option value="">Umum</option>
+                {divisions.map((div) => (
+                  <option key={div.id} value={div.id}>{div.name}</option>
                 ))}
               </select>
             </div>
@@ -124,7 +146,8 @@ const EventForm: React.FC<EventFormProps> = ({ onClose, onSuccess, initialType =
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 

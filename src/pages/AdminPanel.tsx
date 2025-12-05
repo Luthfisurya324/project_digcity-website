@@ -13,12 +13,12 @@ import AdminNewsletter from '../components/admin/AdminNewsletter'
 import AdminLinktree from '../components/admin/AdminLinktree'
 import CacheControl from '../components/common/CacheControl'
 import ThemeToggle from '../components/common/ThemeToggle'
-import { 
-  BarChart3, 
-  Calendar, 
-  Newspaper, 
-  Image, 
-  Mail, 
+import {
+  BarChart3,
+  Calendar,
+  Newspaper,
+  Image,
+  Mail,
   Trash2,
   User,
   Link,
@@ -31,6 +31,7 @@ import {
   AlertCircle
 } from 'lucide-react'
 import AdminComplaints from '../components/admin/AdminComplaints'
+import NotFoundPage from './NotFoundPage'
 
 interface User {
   id: string
@@ -186,12 +187,12 @@ const AdminPanel: React.FC = () => {
   const getActiveTab = () => {
     const path = location.pathname
     const adminBasePath = getAdminBasePath()
-    
+
     // Handle dashboard path
     if (path === adminBasePath || path === `${adminBasePath}/` || path === '/' || path === '') {
       return 'dashboard'
     }
-    
+
     // Handle other paths
     if (path.startsWith(`${adminBasePath}/events`)) return 'events'
     if (path.startsWith(`${adminBasePath}/news`)) return 'news'
@@ -200,7 +201,7 @@ const AdminPanel: React.FC = () => {
     if (path.startsWith(`${adminBasePath}/newsletter`)) return 'newsletter'
     if (path.startsWith(`${adminBasePath}/complaints`)) return 'complaints'
     if (path.startsWith(`${adminBasePath}/cache`)) return 'cache'
-    
+
     return 'dashboard'
   }
 
@@ -247,22 +248,22 @@ const AdminPanel: React.FC = () => {
   const handleTabClick = (tabId: string) => {
     const adminBasePath = getAdminBasePath()
     const target = navigationItems.find((tab) => tab.id === tabId)
-    
+
     if (!target) {
       navigate(adminBasePath || '/')
       return
     }
-    
+
     if (target.path === '/' || target.path === '') {
       navigate(adminBasePath || '/')
       return
     }
-    
+
     navigate(`${adminBasePath}${target.path}`)
   }
 
   const toggleSidebar = () => setSidebarCollapsed((prev) => !prev)
-  
+
   const groupedNavigation = useMemo(() => {
     return navigationGroups
       .map((group) => ({
@@ -368,7 +369,7 @@ const AdminPanel: React.FC = () => {
               </div>
             </div>
           </header>
-          
+
           {/* Context badges */}
           <div className="bg-white/80 dark:bg-[#121212]/70 border-b border-secondary-100 dark:border-[#1F1F1F] backdrop-blur">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-3 flex flex-wrap gap-2 text-xs font-medium">
@@ -386,7 +387,7 @@ const AdminPanel: React.FC = () => {
               </span>
             </div>
           </div>
-          
+
           {/* Mobile navigation */}
           <div className="lg:hidden border-b border-secondary-100 dark:border-[#1F1F1F] bg-white/85 dark:bg-[#121212]/85 backdrop-blur px-4 py-3">
             <label htmlFor="admin-mobile-navigation" className="block text-xs uppercase tracking-widest text-secondary-500 dark:text-[rgba(255,255,255,0.6)] mb-2">
@@ -407,13 +408,12 @@ const AdminPanel: React.FC = () => {
           </div>
         </>
       )}
-      
+
       <div className={isEditorRoute ? '' : 'flex'}>
         {!isEditorRoute && (
           <aside
-            className={`hidden lg:flex flex-col border-r border-secondary-100 dark:border-[#1F1F1F] bg-white/90 dark:bg-[#101010]/90 backdrop-blur min-h-screen transition-all duration-300 ${
-              sidebarCollapsed ? 'w-20' : 'w-72'
-            }`}
+            className={`hidden lg:flex flex-col border-r border-secondary-100 dark:border-[#1F1F1F] bg-white/90 dark:bg-[#101010]/90 backdrop-blur min-h-screen transition-all duration-300 ${sidebarCollapsed ? 'w-20' : 'w-72'
+              }`}
           >
             <div className={`flex items-center ${sidebarCollapsed ? 'justify-end' : 'justify-between'} px-4 py-4 border-b border-secondary-100 dark:border-[#1F1F1F]`}>
               {!sidebarCollapsed && (
@@ -435,7 +435,7 @@ const AdminPanel: React.FC = () => {
                 {sidebarCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
               </button>
             </div>
-            
+
             <nav className={`flex-1 ${sidebarCollapsed ? 'px-1' : 'px-3'} pt-4 pb-6 overflow-y-auto`}>
               {groupedNavigation.map((group) => (
                 <div key={group.label} className="mb-5">
@@ -448,7 +448,7 @@ const AdminPanel: React.FC = () => {
                     {group.items.map((item) => {
                       const Icon = item.icon
                       const isActive = activeTab === item.id
-                      
+
                       return (
                         <button
                           key={item.id}
@@ -482,12 +482,11 @@ const AdminPanel: React.FC = () => {
                 </div>
               ))}
             </nav>
-            
+
             <div className="px-4 pb-6">
               <div
-                className={`rounded-2xl border border-secondary-200 dark:border-[#2A2A2A] bg-white/80 dark:bg-[#141414] ${
-                  sidebarCollapsed ? 'p-3' : 'p-4'
-                }`}
+                className={`rounded-2xl border border-secondary-200 dark:border-[#2A2A2A] bg-white/80 dark:bg-[#141414] ${sidebarCollapsed ? 'p-3' : 'p-4'
+                  }`}
               >
                 <div className={`flex items-center ${sidebarCollapsed ? 'justify-center' : 'gap-3'}`}>
                   <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-500 to-secondary-600 text-white flex items-center justify-center">
@@ -514,7 +513,7 @@ const AdminPanel: React.FC = () => {
             </div>
           </aside>
         )}
-        
+
         {/* Main Content */}
         <main className={`flex-1 ${isEditorRoute ? '' : 'px-4 sm:px-6 lg:px-10 py-8'}`}>
           <div className={isEditorRoute ? '' : 'max-w-7xl mx-auto'}>
@@ -541,7 +540,7 @@ const AdminPanel: React.FC = () => {
                   />
                 }
               />
-              <Route path="*" element={<Navigate to="/" replace />} />
+              <Route path="*" element={<NotFoundPage type="admin" />} />
             </Routes>
           </div>
         </main>

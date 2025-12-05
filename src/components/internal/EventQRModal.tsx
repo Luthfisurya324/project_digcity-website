@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { X, Download, Calendar, Clock, MapPin, RefreshCw } from 'lucide-react'
 import { InternalEvent, attendanceAPI } from '../../lib/supabase'
 
@@ -68,11 +69,11 @@ const EventQRModal: React.FC<EventQRModalProps> = ({ event, onClose }) => {
     }
   }
 
-  return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+  return createPortal(
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
       <div className="bg-white dark:bg-[#1E1E1E] rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl transform transition-all">
         <div className="relative bg-blue-600 p-6 text-center text-white">
-          <button 
+          <button
             onClick={onClose}
             className="absolute top-4 right-4 p-1 bg-white/20 rounded-full hover:bg-white/30 transition-colors"
           >
@@ -85,9 +86,9 @@ const EventQRModal: React.FC<EventQRModalProps> = ({ event, onClose }) => {
         <div className="p-8 flex flex-col items-center">
           <div className="bg-white p-4 rounded-2xl shadow-inner border-2 border-dashed border-slate-200 mb-6 min-h-[220px] flex items-center justify-center">
             {qrImageUrl ? (
-              <img 
-                src={qrImageUrl} 
-                alt="QR Code Presensi" 
+              <img
+                src={qrImageUrl}
+                alt="QR Code Presensi"
                 className="w-48 h-48 object-contain"
               />
             ) : (
@@ -119,7 +120,7 @@ const EventQRModal: React.FC<EventQRModalProps> = ({ event, onClose }) => {
           </div>
 
           <div className="flex gap-3 w-full">
-            <button 
+            <button
               onClick={handleDownload}
               className="flex-1 py-2.5 bg-slate-100 dark:bg-[#2A2A2A] text-slate-700 dark:text-slate-300 rounded-xl font-medium text-sm hover:bg-slate-200 transition-colors flex items-center justify-center gap-2"
               disabled={!qrImageUrl}
@@ -127,7 +128,7 @@ const EventQRModal: React.FC<EventQRModalProps> = ({ event, onClose }) => {
               <Download size={16} />
               Simpan QR
             </button>
-            <button 
+            <button
               onClick={() => window.open(checkInUrl, '_blank')}
               disabled={!qrImageUrl}
               className="flex-1 py-2.5 bg-blue-600 text-white rounded-xl font-medium text-sm hover:bg-blue-700 transition-colors disabled:opacity-60"
@@ -137,7 +138,8 @@ const EventQRModal: React.FC<EventQRModalProps> = ({ event, onClose }) => {
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 

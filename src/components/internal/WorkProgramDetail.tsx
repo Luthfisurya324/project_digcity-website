@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { InternalEvent, WorkProgramBudget, budgetAPI } from '../../lib/supabase'
-import { ArrowLeft, Calendar, MapPin, Plus, Trash2, Edit2, Save, X } from 'lucide-react'
+import { ArrowLeft, Calendar, MapPin, Plus, Trash2, Edit2, Save, X, Upload } from 'lucide-react'
 import AttendanceDetail from './AttendanceDetail'
+import RABImportModal from './RABImportModal'
 
 interface WorkProgramDetailProps {
     program: InternalEvent
@@ -14,6 +15,7 @@ const WorkProgramDetail: React.FC<WorkProgramDetailProps> = ({ program, onBack }
     const [loadingBudget, setLoadingBudget] = useState(false)
     const [editingItem, setEditingItem] = useState<string | null>(null)
     const [newItem, setNewItem] = useState<Partial<WorkProgramBudget> | null>(null)
+    const [showImportModal, setShowImportModal] = useState(false)
 
     useEffect(() => {
         if (activeTab === 'budget') {
@@ -164,13 +166,22 @@ const WorkProgramDetail: React.FC<WorkProgramDetailProps> = ({ program, onBack }
                     <div className="space-y-4">
                         <div className="flex justify-between items-center">
                             <h3 className="text-lg font-bold text-slate-900 dark:text-white">Rancangan Anggaran Biaya (RAB)</h3>
-                            <button
-                                onClick={() => setNewItem({ item_name: '', quantity: 1, unit_price: 0, category: 'Umum' })}
-                                className="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-sm flex items-center gap-2 hover:bg-blue-700 transition-colors"
-                            >
-                                <Plus size={16} />
-                                Tambah Item
-                            </button>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => setShowImportModal(true)}
+                                    className="px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-sm flex items-center gap-2 hover:bg-emerald-700 transition-colors"
+                                >
+                                    <Upload size={16} />
+                                    Import RAB
+                                </button>
+                                <button
+                                    onClick={() => setNewItem({ item_name: '', quantity: 1, unit_price: 0, category: 'Umum' })}
+                                    className="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-sm flex items-center gap-2 hover:bg-blue-700 transition-colors"
+                                >
+                                    <Plus size={16} />
+                                    Tambah Item
+                                </button>
+                            </div>
                         </div>
 
                         <div className="overflow-x-auto max-h-[60vh] overflow-y-auto rounded-lg border border-slate-200 dark:border-[#2A2A2A]">
@@ -247,6 +258,13 @@ const WorkProgramDetail: React.FC<WorkProgramDetailProps> = ({ program, onBack }
                     </div>
                 )}
             </div>
+
+            <RABImportModal
+                isOpen={showImportModal}
+                onClose={() => setShowImportModal(false)}
+                onSuccess={loadBudgets}
+                programId={program.id}
+            />
         </div>
     )
 }

@@ -1,7 +1,9 @@
 import React from 'react'
+import { createPortal } from 'react-dom'
 import { X, Calendar, MapPin, Tag, Clock } from 'lucide-react'
 import ImageCarousel from './ImageCarousel'
 import type { Event } from '../../lib/supabase'
+import SEO from '../common/SEO'
 import '../../styles/carousel.css'
 
 interface EventDetailModalProps {
@@ -47,12 +49,12 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
     if (event.additional_images && Array.isArray(event.additional_images) && event.additional_images.length > 0) {
       return event.additional_images
     }
-    
+
     // Fallback to image_url if no additional_images (for backward compatibility)
     if (event.image_url) {
       return [event.image_url]
     }
-    
+
     // Default placeholder
     return ['/placeholder-event.jpg']
   }
@@ -61,7 +63,7 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
   const formatDate = (dateString: string) => {
     try {
       const date = new Date(dateString);
-      
+
       // Check if date is valid
       if (isNaN(date.getTime())) {
         return 'Tanggal tidak valid';
@@ -87,8 +89,8 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
 
   const isUpcoming = new Date(event.date) > new Date()
 
-  return (
-    <div className="modal-overlay fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+  return createPortal(
+    <div className="modal-overlay fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[9999] p-4">
       {/* Close button outside modal */}
       <button
         onClick={onClose}
@@ -97,18 +99,49 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
       >
         <X size={24} />
       </button>
-      
+
       <div className="modal-content bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+        <SEO
+          title={`${event.title} - Event DIGCITY`}
+          description={event.description}
+          ogTitle={`${event.title} - Event DIGCITY`}
+          ogDescription={event.description}
+          ogImage={images[0]}
+          structuredData={{
+            '@context': 'https://schema.org',
+            '@type': 'Event',
+            name: event.title,
+            startDate: event.date,
+            endDate: event.date, // Assuming single day event if no end date
+            eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+            eventStatus: 'https://schema.org/EventScheduled',
+            location: {
+              '@type': 'Place',
+              name: event.location,
+              address: {
+                '@type': 'PostalAddress',
+                addressLocality: 'Bogor', // Default assumption, can be improved
+                addressCountry: 'ID'
+              }
+            },
+            image: images,
+            description: event.description,
+            organizer: {
+              '@type': 'Organization',
+              name: 'DIGCITY',
+              url: 'https://digcity.my.id'
+            }
+          }}
+        />
         {/* Header */}
         <div className="p-6 border-b border-gray-200">
           <div>
             <h2 className="text-2xl font-bold text-secondary-900">{event.title}</h2>
             <div className="flex items-center gap-4 mt-2">
-              <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                isUpcoming 
-                  ? 'bg-green-100 text-green-800' 
-                  : 'bg-gray-100 text-gray-600'
-              }`}>
+              <span className={`px-3 py-1 rounded-full text-sm font-semibold ${isUpcoming
+                ? 'bg-green-100 text-green-800'
+                : 'bg-gray-100 text-gray-600'
+                }`}>
                 {isUpcoming ? 'Upcoming' : 'Past Event'}
               </span>
               <span className="px-3 py-1 bg-primary-100 text-primary-700 rounded-full text-sm font-semibold">
@@ -170,7 +203,7 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
                   Register for Event
                 </button>
               )}
-              
+
               <button className="bg-secondary-100 text-secondary-700 py-2 px-6 rounded-lg hover:bg-secondary-200 transition-colors font-medium">
                 Share Event
               </button>
@@ -178,7 +211,8 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 

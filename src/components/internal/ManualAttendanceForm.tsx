@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react'
-import { X, UserPlus } from 'lucide-react'
+import React, { useEffect, useState, useRef } from 'react'
+import { createPortal } from 'react-dom'
+import { X, UserPlus, Search, ChevronDown } from 'lucide-react'
 import { attendanceAPI, membersAPI, OrganizationMember } from '../../lib/supabase'
 
 interface ManualAttendanceFormProps {
@@ -13,11 +14,16 @@ const ManualAttendanceForm: React.FC<ManualAttendanceFormProps> = ({ eventId, on
   const [selectedMember, setSelectedMember] = useState<string>('')
   const [name, setName] = useState('')
   const [npm, setNpm] = useState('')
-  const [status, setStatus] = useState<'present' | 'late' | 'excused' | 'absent'>('present')
+  const [status, setStatus] = useState<'present' | 'late' | 'excused' | 'absent' | 'sick'>('present')
   const [notes, setNotes] = useState('')
   const [checkInTime, setCheckInTime] = useState(() => new Date().toISOString().slice(0, 16))
   const [loadingMembers, setLoadingMembers] = useState(true)
   const [saving, setSaving] = useState(false)
+
+  // Searchable dropdown states
+  const [searchQuery, setSearchQuery] = useState('')
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const loadMembers = async () => {
@@ -31,21 +37,37 @@ const ManualAttendanceForm: React.FC<ManualAttendanceFormProps> = ({ eventId, on
       }
     }
     loadMembers()
+
+    // Click outside listener
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  const handleMemberChange = (value: string) => {
-    setSelectedMember(value)
-    if (!value) {
-      setName('')
-      setNpm('')
-      return
-    }
-    const member = members.find((m) => m.id === value)
-    if (member) {
-      setName(member.full_name)
-      setNpm(member.npm)
-    }
+  const handleMemberSelect = (member: OrganizationMember) => {
+    setSelectedMember(member.id)
+    setName(member.full_name)
+    setNpm(member.npm)
+    setSearchQuery(member.full_name)
+    setIsDropdownOpen(false)
   }
+
+  const clearSelection = () => {
+    setSelectedMember('')
+    setName('')
+    setNpm('')
+    setSearchQuery('')
+  }
+
+  const filteredMembers = members.filter(member =>
+    member.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    member.npm.includes(searchQuery) ||
+    member.division.toLowerCase().includes(searchQuery.toLowerCase())
+  )
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -75,8 +97,8 @@ const ManualAttendanceForm: React.FC<ManualAttendanceFormProps> = ({ eventId, on
     }
   }
 
-  return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+  return createPortal(
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
       <div className="bg-white dark:bg-[#1E1E1E] rounded-2xl w-full max-w-lg overflow-hidden shadow-xl">
         <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-[#2A2A2A]">
           <div>
@@ -88,21 +110,58 @@ const ManualAttendanceForm: React.FC<ManualAttendanceFormProps> = ({ eventId, on
           </button>
         </div>
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Pilih Anggota</label>
-            <select
-              value={selectedMember}
-              onChange={(e) => handleMemberChange(e.target.value)}
-              className="w-full px-4 py-2 border border-slate-200 dark:border-[#2A2A2A] rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-[#1A1A1A] dark:text-white"
-            >
-              <option value="">{loadingMembers ? 'Memuat data...' : 'Pilih dari database anggota (opsional)'}</option>
-              {members.map((member) => (
-                <option key={member.id} value={member.id}>
-                  {member.full_name} • {member.division}
-                </option>
-              ))}
-            </select>
+          <div className="relative" ref={dropdownRef}>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Cari Anggota</label>
+            <div className="relative">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value)
+                  setIsDropdownOpen(true)
+                  if (selectedMember && e.target.value !== name) {
+                    setSelectedMember('') // Clear selection if user types something else
+                  }
+                }}
+                onFocus={() => setIsDropdownOpen(true)}
+                placeholder="Ketik nama atau NPM..."
+                className="w-full pl-10 pr-4 py-2 border border-slate-200 dark:border-[#2A2A2A] rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-[#1A1A1A] dark:text-white"
+              />
+              <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              {selectedMember && (
+                <button
+                  type="button"
+                  onClick={clearSelection}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                >
+                  <X size={14} />
+                </button>
+              )}
+            </div>
+
+            {isDropdownOpen && (
+              <div className="absolute z-10 w-full mt-1 bg-white dark:bg-[#1A1A1A] border border-slate-200 dark:border-[#2A2A2A] rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                {loadingMembers ? (
+                  <div className="p-3 text-sm text-slate-500 text-center">Memuat data...</div>
+                ) : filteredMembers.length > 0 ? (
+                  filteredMembers.map((member) => (
+                    <button
+                      key={member.id}
+                      type="button"
+                      onClick={() => handleMemberSelect(member)}
+                      className="w-full text-left px-4 py-2 hover:bg-slate-50 dark:hover:bg-[#2A2A2A] flex flex-col"
+                    >
+                      <span className="text-sm font-medium text-slate-900 dark:text-white">{member.full_name}</span>
+                      <span className="text-xs text-slate-500">{member.npm} • {member.division}</span>
+                    </button>
+                  ))
+                ) : (
+                  <div className="p-3 text-sm text-slate-500 text-center">Tidak ada anggota ditemukan</div>
+                )}
+              </div>
+            )}
           </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nama Peserta</label>
@@ -135,6 +194,7 @@ const ManualAttendanceForm: React.FC<ManualAttendanceFormProps> = ({ eventId, on
                 <option value="present">Hadir</option>
                 <option value="late">Terlambat</option>
                 <option value="excused">Izin</option>
+                <option value="sick">Sakit</option>
                 <option value="absent">Tidak Hadir</option>
               </select>
             </div>
@@ -183,7 +243,8 @@ const ManualAttendanceForm: React.FC<ManualAttendanceFormProps> = ({ eventId, on
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 

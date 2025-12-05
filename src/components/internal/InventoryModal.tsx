@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { X, Upload, Save, Trash2 } from 'lucide-react'
 import { supabase, inventoryAPI, InventoryItem } from '../../lib/supabase'
 
@@ -102,8 +103,8 @@ const InventoryModal: React.FC<InventoryModalProps> = ({ isOpen, onClose, onSucc
 
     if (!isOpen) return null
 
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+    return createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
             <div className="bg-white dark:bg-[#1E1E1E] rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-xl">
                 <div className="sticky top-0 z-10 flex items-center justify-between p-6 bg-white dark:bg-[#1E1E1E] border-b border-slate-100 dark:border-[#2A2A2A]">
                     <h2 className="text-xl font-bold text-slate-900 dark:text-white">
@@ -249,7 +250,8 @@ const InventoryModal: React.FC<InventoryModalProps> = ({ isOpen, onClose, onSucc
                     </div>
                 </form>
             </div>
-        </div>
+        </div>,
+        document.body
     )
 }
 

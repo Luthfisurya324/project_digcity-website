@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode'
 import { X, Camera, AlertCircle } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
@@ -89,8 +90,8 @@ const QRScannerModal: React.FC<QRScannerModalProps> = ({ onClose }) => {
         }
     }
 
-    return (
-        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
+    return createPortal(
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
             <div className="bg-white dark:bg-[#1E1E1E] rounded-3xl w-full max-w-md overflow-hidden shadow-2xl flex flex-col">
                 <div className="p-4 flex items-center justify-between border-b border-slate-100 dark:border-[#2A2A2A]">
                     <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -138,7 +139,8 @@ const QRScannerModal: React.FC<QRScannerModalProps> = ({ onClose }) => {
                     )}
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     )
 }
 

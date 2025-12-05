@@ -64,6 +64,22 @@ const DocumentsPage: React.FC = () => {
     const matchesSearch = doc.title.toLowerCase().includes(search.toLowerCase()) ||
       doc.ticket_number.toLowerCase().includes(search.toLowerCase())
     return matchesFilter && matchesSearch
+  }).sort((a, b) => {
+    // Extract number from ticket_number (e.g., "001" from "001/SEK/...")
+    const getNumber = (ticket: string) => {
+      const match = ticket.match(/^(\d+)/)
+      return match ? parseInt(match[1], 10) : Number.MAX_SAFE_INTEGER // Put non-numbered at the end
+    }
+
+    const numA = getNumber(a.ticket_number)
+    const numB = getNumber(b.ticket_number)
+
+    if (numA !== numB) {
+      return numA - numB
+    }
+
+    // Fallback to date if numbers are equal or invalid
+    return new Date(b.date).getTime() - new Date(a.date).getTime()
   })
 
   const handleOpenForm = (mode: 'create' | 'edit' | 'revision', doc?: Document) => {
@@ -172,8 +188,8 @@ const DocumentsPage: React.FC = () => {
               key={type.id}
               onClick={() => setTypeFilter(type.id)}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${typeFilter === type.id
-                  ? 'bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800'
-                  : 'bg-white dark:bg-[#1E1E1E] text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-[#2A2A2A]'
+                ? 'bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800'
+                : 'bg-white dark:bg-[#1E1E1E] text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-[#2A2A2A]'
                 }`}
             >
               {type.label}
@@ -195,8 +211,8 @@ const DocumentsPage: React.FC = () => {
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start gap-4">
                     <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${doc.type === 'incoming' ? 'bg-blue-100 text-blue-600' :
-                        doc.type === 'outgoing' ? 'bg-purple-100 text-purple-600' :
-                          'bg-orange-100 text-orange-600'
+                      doc.type === 'outgoing' ? 'bg-purple-100 text-purple-600' :
+                        'bg-orange-100 text-orange-600'
                       }`}>
                       <FileText size={20} />
                     </div>

@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react'
+import FinanceImportModal from './FinanceImportModal'
 import { financeAPI, FinanceTransaction, auditAPI } from '../../lib/supabase'
 import TransactionForm from './TransactionForm'
+import ConfirmationModal from '../common/ConfirmationModal'
 import {
   Plus,
   Search,
@@ -19,7 +21,6 @@ import {
   BarChart3,
   Wallet
 } from 'lucide-react'
-import MemberDuesPanel from './DuesPanel'
 import DivisionCashPanel from './DivisionCashPanel'
 import UPMPanel from './UPMPanel'
 
@@ -32,6 +33,12 @@ const FinancePage: React.FC = () => {
   const [formMode, setFormMode] = useState<'create' | 'edit'>('create')
   const [editingTransaction, setEditingTransaction] = useState<FinanceTransaction | null>(null)
   const [showDivisionPanel, setShowDivisionPanel] = useState(false)
+  const [showImportModal, setShowImportModal] = useState(false)
+
+  // Delete Modal State
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [transactionToDelete, setTransactionToDelete] = useState<string | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   useEffect(() => {
     loadTransactions()
@@ -60,21 +67,31 @@ const FinancePage: React.FC = () => {
     }
   }
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm('Yakin ingin menghapus transaksi ini?')) {
-      try {
-        await financeAPI.delete(id)
-        await auditAPI.log({
-          module: 'finance',
-          action: 'delete_transaction',
-          entity_type: 'transaction',
-          entity_id: id,
-          details: { id }
-        })
-        loadTransactions()
-      } catch (error) {
-        console.error('Error deleting transaction:', error)
-      }
+  const confirmDelete = (id: string) => {
+    setTransactionToDelete(id)
+    setShowDeleteModal(true)
+  }
+
+  const handleDelete = async () => {
+    if (!transactionToDelete) return
+
+    setIsDeleting(true)
+    try {
+      await financeAPI.delete(transactionToDelete)
+      await auditAPI.log({
+        module: 'finance',
+        action: 'delete_transaction',
+        entity_type: 'transaction',
+        entity_id: transactionToDelete,
+        details: { id: transactionToDelete }
+      })
+      loadTransactions()
+      setShowDeleteModal(false)
+      setTransactionToDelete(null)
+    } catch (error) {
+      console.error('Error deleting transaction:', error)
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -118,48 +135,48 @@ const FinancePage: React.FC = () => {
 
   const handleExportPdf = () => {
     const rows = transactions.map((t) => `
-      <tr>
-        <td>${formatDate(t.date)}</td>
-        <td>${t.type === 'income' ? 'Pemasukan' : 'Pengeluaran'}</td>
-        <td>${t.category}</td>
-        <td>${t.description || '-'}</td>
-        <td>${formatCurrency(t.amount)}</td>
-        <td>${t.status || 'approved'}</td>
-      </tr>
+    <tr>
+      <td>${formatDate(t.date)}</td>
+      <td>${t.type === 'income' ? 'Pemasukan' : 'Pengeluaran'}</td>
+      <td>${t.category}</td>
+      <td>${t.description || '-'}</td>
+      <td>${formatCurrency(t.amount)}</td>
+      <td>${t.status || 'approved'}</td>
+    </tr>
     `).join('')
 
     const html = `
-      <html>
-        <head>
-          <title>Laporan Keuangan DIGCITY</title>
-          <style>
-            body { font-family: Arial, sans-serif; padding: 24px; }
-            h1 { font-size: 20px; margin-bottom: 16px; }
-            table { width: 100%; border-collapse: collapse; }
-            th, td { border: 1px solid #ddd; padding: 8px; font-size: 12px; }
-            th { background: #f4f4f4; text-align: left; }
-          </style>
-        </head>
-        <body>
-          <h1>Laporan Keuangan DIGCITY</h1>
-          <p>Dicetak pada ${new Date().toLocaleString('id-ID')}</p>
-          <table>
-            <thead>
-              <tr>
-                <th>Tanggal</th>
-                <th>Tipe</th>
-                <th>Kategori</th>
-                <th>Deskripsi</th>
-                <th>Nominal</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${rows}
-            </tbody>
-          </table>
-        </body>
-      </html>
+    <html>
+      <head>
+        <title>Laporan Keuangan DIGCITY</title>
+        <style>
+          body {font - family: Arial, sans-serif; padding: 24px; }
+          h1 {font - size: 20px; margin-bottom: 16px; }
+          table {width: 100%; border-collapse: collapse; }
+          th, td {border: 1px solid #ddd; padding: 8px; font-size: 12px; }
+          th {background: #f4f4f4; text-align: left; }
+        </style>
+      </head>
+      <body>
+        <h1>Laporan Keuangan DIGCITY</h1>
+        <p>Dicetak pada ${new Date().toLocaleString('id-ID')}</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Tanggal</th>
+              <th>Tipe</th>
+              <th>Kategori</th>
+              <th>Deskripsi</th>
+              <th>Nominal</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows}
+          </tbody>
+        </table>
+      </body>
+    </html>
     `
 
     const win = window.open('', '_blank')
@@ -237,6 +254,13 @@ const FinancePage: React.FC = () => {
           <p className="text-slate-500 dark:text-slate-400">Kelola pemasukan dan pengeluaran organisasi</p>
         </div>
         <div className="flex gap-2 flex-wrap">
+          <button
+            onClick={() => setShowImportModal(true)}
+            className="px-4 py-2 bg-white dark:bg-[#1E1E1E] border border-slate-200 dark:border-[#2A2A2A] text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 transition-colors flex items-center gap-2"
+          >
+            <FileText size={18} />
+            <span className="hidden sm:inline">Import Excel</span>
+          </button>
           <button
             onClick={handleExportPdf}
             className="px-4 py-2 bg-white dark:bg-[#1E1E1E] border border-slate-200 dark:border-[#2A2A2A] text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 transition-colors flex items-center gap-2"
@@ -460,113 +484,117 @@ const FinancePage: React.FC = () => {
       </div>
 
       {/* Transactions List */}
-      <div className="bg-white dark:bg-[#1E1E1E] rounded-xl border border-slate-200 dark:border-[#2A2A2A] overflow-hidden">
-        {filteredTransactions.length > 0 ? (
-          <div className="divide-y divide-slate-100 dark:divide-[#2A2A2A]">
-            {filteredTransactions.map((t) => (
-              <div key={t.id} className="p-4 hover:bg-slate-50 dark:hover:bg-[#232323] transition-colors group">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${t.type === 'income'
-                      ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400'
-                      : 'bg-rose-100 text-rose-600 dark:bg-rose-900/20 dark:text-rose-400'
-                      }`}>
-                      {t.type === 'income' ? <ArrowUpRight size={20} /> : <ArrowDownRight size={20} />}
+      <div className="bg-white dark:bg-[#1E1E1E] rounded-xl border border-slate-200 dark:border-[#2A2A2A] overflow-hidden flex flex-col max-h-[600px]">
+        <div className="p-4 border-b border-slate-100 dark:border-[#2A2A2A] flex justify-between items-center bg-slate-50/50 dark:bg-[#232323]/50">
+          <h3 className="font-bold text-slate-700 dark:text-slate-200">Riwayat Transaksi</h3>
+          <span className="text-xs text-slate-500">{filteredTransactions.length} transaksi</span>
+        </div>
+        <div className="overflow-y-auto flex-1">
+          {filteredTransactions.length > 0 ? (
+            <div className="divide-y divide-slate-100 dark:divide-[#2A2A2A]">
+              {filteredTransactions.map((t) => (
+                <div key={t.id} className="p-4 hover:bg-slate-50 dark:hover:bg-[#232323] transition-colors group">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${t.type === 'income'
+                        ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400'
+                        : 'bg-rose-100 text-rose-600 dark:bg-rose-900/20 dark:text-rose-400'
+                        }`}>
+                        {t.type === 'income' ? <ArrowUpRight size={20} /> : <ArrowDownRight size={20} />}
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <p className="font-semibold text-slate-900 dark:text-white">{t.description || t.category}</p>
+                          {t.status === 'pending' && (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-yellow-100 text-yellow-700 flex items-center gap-1">
+                              <Clock size={10} /> Pending
+                            </span>
+                          )}
+                          {t.status === 'rejected' && (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-700 flex items-center gap-1">
+                              <XCircle size={10} /> Ditolak
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                          <span className="flex items-center gap-1"><Calendar size={12} /> {formatDate(t.date)}</span>
+                          <span>•</span>
+                          <span className="px-2 py-0.5 bg-slate-100 dark:bg-[#2A2A2A] rounded text-slate-600 dark:text-slate-300">{t.category}</span>
+                          {t.sub_account && (
+                            <>
+                              <span>•</span>
+                              <span className="px-2 py-0.5 bg-slate-50 dark:bg-[#1E1E1E] rounded text-slate-500 dark:text-slate-300 text-xs">
+                                {t.sub_account}
+                              </span>
+                            </>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <p className="font-semibold text-slate-900 dark:text-white">{t.description || t.category}</p>
-                        {t.status === 'pending' && (
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-yellow-100 text-yellow-700 flex items-center gap-1">
-                            <Clock size={10} /> Pending
-                          </span>
-                        )}
-                        {t.status === 'rejected' && (
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-700 flex items-center gap-1">
-                            <XCircle size={10} /> Ditolak
-                          </span>
+                    <div className="flex items-center gap-4">
+                      <div className="text-right">
+                        <p className={`font-bold ${t.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
+                          }`}>
+                          {t.type === 'income' ? '+' : '-'}{formatCurrency(t.amount)}
+                        </p>
+                        {t.proof_url && (
+                          <a href={t.proof_url} target="_blank" rel="noreferrer" className="text-xs text-blue-600 hover:underline flex items-center justify-end gap-1">
+                            <FileText size={12} /> Bukti
+                          </a>
                         )}
                       </div>
-                      <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-                        <span className="flex items-center gap-1"><Calendar size={12} /> {formatDate(t.date)}</span>
-                        <span>•</span>
-                        <span className="px-2 py-0.5 bg-slate-100 dark:bg-[#2A2A2A] rounded text-slate-600 dark:text-slate-300">{t.category}</span>
-                        {t.sub_account && (
+
+                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                        {/* Approval Actions for Pending Expense */}
+                        {t.type === 'expense' && t.status === 'pending' && (
                           <>
-                            <span>•</span>
-                            <span className="px-2 py-0.5 bg-slate-50 dark:bg-[#1E1E1E] rounded text-slate-500 dark:text-slate-300 text-xs">
-                              {t.sub_account}
-                            </span>
+                            <button
+                              onClick={() => handleStatusUpdate(t.id, 'approved')}
+                              className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg"
+                              title="Setujui"
+                            >
+                              <CheckCircle size={18} />
+                            </button>
+                            <button
+                              onClick={() => handleStatusUpdate(t.id, 'rejected')}
+                              className="p-2 text-rose-600 hover:bg-rose-50 rounded-lg"
+                              title="Tolak"
+                            >
+                              <XCircle size={18} />
+                            </button>
                           </>
                         )}
+
+                        <button
+                          onClick={() => openEditForm(t)}
+                          className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg"
+                          title="Edit"
+                        >
+                          <Edit3 size={18} />
+                        </button>
+                        <button
+                          onClick={() => confirmDelete(t.id)}
+                          className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg"
+                          title="Hapus"
+                        >
+                          <Trash2 size={18} />
+                        </button>
                       </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <p className={`font-bold ${t.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
-                        }`}>
-                        {t.type === 'income' ? '+' : '-'}{formatCurrency(t.amount)}
-                      </p>
-                      {t.proof_url && (
-                        <a href={t.proof_url} target="_blank" rel="noreferrer" className="text-xs text-blue-600 hover:underline flex items-center justify-end gap-1">
-                          <FileText size={12} /> Bukti
-                        </a>
-                      )}
-                    </div>
-
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
-                      {/* Approval Actions for Pending Expense */}
-                      {t.type === 'expense' && t.status === 'pending' && (
-                        <>
-                          <button
-                            onClick={() => handleStatusUpdate(t.id, 'approved')}
-                            className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg"
-                            title="Setujui"
-                          >
-                            <CheckCircle size={18} />
-                          </button>
-                          <button
-                            onClick={() => handleStatusUpdate(t.id, 'rejected')}
-                            className="p-2 text-rose-600 hover:bg-rose-50 rounded-lg"
-                            title="Tolak"
-                          >
-                            <XCircle size={18} />
-                          </button>
-                        </>
-                      )}
-
-                      <button
-                        onClick={() => openEditForm(t)}
-                        className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg"
-                        title="Edit"
-                      >
-                        <Edit3 size={18} />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(t.id)}
-                        className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg"
-                        title="Hapus"
-                      >
-                        <Trash2 size={18} />
-                      </button>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="p-12 text-center text-slate-500 dark:text-slate-400">
-            <div className="w-16 h-16 bg-slate-100 dark:bg-[#2A2A2A] rounded-full flex items-center justify-center mx-auto mb-4">
-              <Filter size={24} />
+              ))}
             </div>
-            <p>Belum ada transaksi yang sesuai filter</p>
-          </div>
-        )}
+          ) : (
+            <div className="p-12 text-center text-slate-500 dark:text-slate-400">
+              <div className="w-16 h-16 bg-slate-100 dark:bg-[#2A2A2A] rounded-full flex items-center justify-center mx-auto mb-4">
+                <Filter size={24} />
+              </div>
+              <p>Belum ada transaksi yang sesuai filter</p>
+            </div>
+          )}
+        </div>
       </div>
-
-      <MemberDuesPanel onFinanceUpdate={loadTransactions} />
 
       {showForm && (
         <TransactionForm
@@ -576,6 +604,28 @@ const FinancePage: React.FC = () => {
           onSuccess={() => {
             loadTransactions()
             setShowForm(false)
+          }}
+        />
+      )}
+
+      <ConfirmationModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleDelete}
+        title="Hapus Transaksi"
+        message="Apakah Anda yakin ingin menghapus transaksi ini? Tindakan ini tidak dapat dibatalkan."
+        confirmText="Hapus"
+        cancelText="Batal"
+        type="danger"
+        loading={isDeleting}
+      />
+
+      {showImportModal && (
+        <FinanceImportModal
+          onClose={() => setShowImportModal(false)}
+          onSuccess={() => {
+            loadTransactions()
+            setShowImportModal(false)
           }}
         />
       )}

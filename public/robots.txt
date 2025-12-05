@@ -35,7 +35,9 @@ Allow: /*.jpeg
 Allow: /*.webp
 Allow: /*.avif
 
-# Sitemap location
+# SitUser-agent: *
+Allow: /
+
 Sitemap: https://digcity.my.id/sitemap.xml
 Sitemap: https://digcity.my.id/blog-sitemap.xml
 

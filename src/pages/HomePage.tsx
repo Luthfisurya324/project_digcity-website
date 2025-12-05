@@ -4,6 +4,7 @@ import { ArrowRight, Lightbulb, RefreshCw, Award, CheckCircle2, Target, Calendar
 import EventCardCarousel from '../components/ui/EventCardCarousel';
 import { newsAPI, galleryAPI, type News, type Gallery } from '../lib/supabase';
 import { formatContentCategory } from '../utils/categoryLabels';
+import SEO from '../components/common/SEO';
 
 const HomePage: React.FC = () => {
   const [featuredNews, setFeaturedNews] = useState<News[]>([])
@@ -76,6 +77,11 @@ const HomePage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-secondary-50 via-white to-white">
+      <SEO
+        title="DIGCITY - Himpunan Mahasiswa Bisnis Digital UIKA Bogor"
+        description="Website resmi DIGCITY, Himpunan Mahasiswa Bisnis Digital Universitas Ibn Khaldun Bogor. Wadah pengembangan potensi mahasiswa yang Berdampak, Adaptif, Inovatif, dan Kompeten."
+        keywords="Himpunan Mahasiswa Bisnis Digital, DIGCITY, UIKA Bogor, Bisnis Digital UIKA, Organisasi Mahasiswa, Digital Business Student Society"
+      />
       {/* Hero Section */}
       <section className="relative overflow-hidden" aria-labelledby="hero-heading">
         <div className="absolute inset-0 pointer-events-none">
@@ -83,7 +89,7 @@ const HomePage: React.FC = () => {
           <div className="absolute -top-16 -left-16 sm:-top-32 sm:-left-32 w-48 h-48 sm:w-80 sm:h-80 rounded-full blur-3xl opacity-20 bg-gradient-to-br from-primary-400 via-secondary-400 to-primary-600" />
           <div className="absolute -bottom-10 -right-10 sm:-bottom-20 sm:-right-20 w-48 h-48 sm:w-80 sm:h-80 rounded-full blur-3xl opacity-15 bg-gradient-to-br from-secondary-300 via-primary-300 to-secondary-500" />
           <div className="absolute top-1/3 -right-8 sm:-right-16 w-32 h-32 sm:w-64 sm:h-64 rounded-full blur-3xl opacity-10 bg-gradient-to-br from-primary-200 to-secondary-300" />
-          
+
           {/* Enhanced grid pattern - mobile optimized */}
           <svg className="absolute inset-0 w-full h-full opacity-5" xmlns="http://www.w3.org/2000/svg">
             <defs>
@@ -93,12 +99,12 @@ const HomePage: React.FC = () => {
             </defs>
             <rect width="100%" height="100%" fill="url(#grid)" className="text-secondary-400" />
           </svg>
-          
+
           {/* Floating geometric shapes - mobile optimized */}
           <div className="absolute top-10 right-10 sm:top-20 sm:right-20 w-8 h-8 sm:w-16 sm:h-16 border-2 border-primary-200/30 rounded-lg rotate-12 animate-pulse" />
           <div className="absolute bottom-16 left-16 sm:bottom-32 sm:left-32 w-6 h-6 sm:w-12 sm:h-12 bg-secondary-200/20 rounded-full animate-pulse delay-1000" />
           <div className="absolute top-1/2 left-10 sm:left-20 w-4 h-4 sm:w-8 sm:h-8 bg-primary-300/20 rounded-lg rotate-45 animate-pulse delay-500" />
-          
+
           {/* Additional floating elements for more visual interest - mobile optimized */}
           <div className="absolute top-8 left-1/4 sm:top-16 sm:left-1/4 w-3 h-3 sm:w-6 sm:h-6 bg-gradient-to-br from-primary-300/40 to-secondary-300/40 rounded-full animate-bounce delay-700" />
           <div className="absolute bottom-8 right-1/4 sm:bottom-16 sm:right-1/4 w-2 h-2 sm:w-4 sm:h-4 bg-gradient-to-br from-secondary-400/30 to-primary-400/30 rounded-full animate-bounce delay-300" />
@@ -123,7 +129,7 @@ const HomePage: React.FC = () => {
                   Berdampak • Adaptif • Inovatif • Kompeten — Temukan berbagai acara dan kegiatan kami, sampaikan kritik & saran untuk kemajuan himpunan.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start">
-                  <Link 
+                  <Link
                     to="/events"
                     className="group inline-flex items-center justify-center bg-primary-600 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg font-semibold shadow-lg shadow-primary-600/20 hover:bg-primary-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 interactive-element min-h-[40px] sm:min-h-[44px] text-sm sm:text-base hover:shadow-xl hover:-translate-y-0.5"
                     aria-label="Jelajahi acara dan kegiatan DIGCITY"
@@ -133,7 +139,7 @@ const HomePage: React.FC = () => {
                     <span className="xs:hidden">Lihat Acara</span>
                     <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
                   </Link>
-                  <Link 
+                  <Link
                     to="/kontak"
                     className="inline-flex items-center justify-center bg-white text-secondary-800 px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg font-semibold border border-secondary-200 hover:bg-secondary-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 interactive-element min-h-[40px] sm:min-h-[44px] text-sm sm:text-base hover:shadow-lg hover:-translate-y-0.5"
                     aria-label="Kirim kritik dan saran untuk DIGCITY"
@@ -188,7 +194,7 @@ const HomePage: React.FC = () => {
                   </div>
                   <div className="absolute -z-10 inset-0 blur-[70px] bg-gradient-to-br from-primary-200/30 via-secondary-200/30 to-primary-100/20 rounded-[40px]" />
                 </div>
-                
+
                 <div className="sm:hidden w-full flex items-center justify-center">
                   <div className="grid grid-cols-2 gap-3 w-full max-w-xs">
                     {[0, 1, 2, 3].map((idx) => (
@@ -295,7 +301,7 @@ const HomePage: React.FC = () => {
       {/* Events Carousel Section */}
       <section className="py-16 sm:py-20 bg-gradient-to-b from-white to-secondary-50/30">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
-          <EventCardCarousel 
+          <EventCardCarousel
             maxEvents={6}
             showTitle={true}
             autoRefresh={true}
@@ -365,7 +371,7 @@ const HomePage: React.FC = () => {
                 Mewujudkan DIGCITY sebagai organisasi yang Berdampak, Adaptif, Inovatif, Kompeten, yang menjadi wadah bagi mahasiswa Bisnis Digital untuk mengembangkan potensi diri, berprestasi, serta berkontribusi nyata bagi kemajuan program studi, fakultas, universitas, dan masyarakat.
               </p>
             </div>
-            
+
             <div>
               <h2 className="text-2xl sm:text-3xl font-bold text-secondary-900 mb-4 sm:mb-6 leading-tight">Misi</h2>
               <ul className="space-y-3 sm:space-y-4 text-base sm:text-lg text-secondary-700" role="list">
@@ -406,7 +412,7 @@ const HomePage: React.FC = () => {
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
-              <Link 
+              <Link
                 to="/kontak"
                 className="inline-flex items-center justify-center bg-primary-600 text-white px-6 sm:px-8 py-3 rounded-lg font-semibold hover:bg-primary-700 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 interactive-element min-h-[44px] text-sm sm:text-base"
                 aria-label="Tanyakan informasi lebih lanjut tentang keanggotaan DIGCITY"
@@ -415,7 +421,7 @@ const HomePage: React.FC = () => {
                 <span className="hidden xs:inline">Tanyakan Informasi Lebih Lanjut</span>
                 <span className="xs:hidden">Tanya Info</span>
               </Link>
-              <Link 
+              <Link
                 to="/events"
                 className="inline-flex items-center justify-center bg-white text-primary-600 px-6 sm:px-8 py-3 rounded-lg font-semibold border border-primary-200 hover:bg-primary-50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 interactive-element min-h-[44px] text-sm sm:text-base"
                 aria-label="Lihat acara yang sudah dilaksanakan DIGCITY"
@@ -471,7 +477,7 @@ const HomePage: React.FC = () => {
             <h2 id="stats-heading" className="text-2xl sm:text-3xl font-bold text-secondary-900 mb-3 leading-tight">Pencapaian Kami</h2>
             <p className="text-base sm:text-lg text-secondary-600 leading-relaxed">Angka-angka yang mencerminkan dedikasi dan kolaborasi kami.</p>
           </div>
-          
+
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 md:gap-8" role="list">
             <article className="group text-center p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-secondary-200 bg-white hover:shadow-lg transition-shadow" role="listitem">
               <div className="text-3xl sm:text-4xl font-extrabold text-primary-600 mb-1">98</div>
@@ -501,7 +507,7 @@ const HomePage: React.FC = () => {
           <p className="text-base sm:text-lg md:text-xl text-secondary-200 mb-6 sm:mb-8 max-w-3xl mx-auto leading-relaxed px-2 sm:px-0">
             Sampaikan kritik, saran, atau pertanyaan Anda kepada kami. Masukan dari mahasiswa sangat berarti untuk kemajuan DIGCITY dan program-program yang lebih baik.
           </p>
-          <Link 
+          <Link
             to="/kontak"
             className="inline-flex items-center justify-center bg-white text-secondary-800 px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-semibold hover:bg-secondary-50 transition-colors shadow-lg focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-secondary-700 interactive-element min-h-[44px] text-sm sm:text-base"
             aria-label="Kirim kritik dan saran untuk DIGCITY"
