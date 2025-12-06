@@ -6,7 +6,7 @@ import {
     ScrollView,
     StatusBar,
     RefreshControl,
-    Animated,
+    Alert,
 } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import {
@@ -25,7 +25,7 @@ import {
     Moon,
     Sunrise,
 } from 'lucide-react-native'
-import { colors, gradients, spacing, borderRadius, shadows } from '../ui/theme'
+import { useTheme, spacing, borderRadius, shadows } from '../ui/theme'
 
 type ScreenName = 'welcome' | 'attendance' | 'history' | 'sanctions' | 'profile' | 'scan' | 'kpi' | 'tasks' | 'dues' | 'leaderboard'
 
@@ -46,6 +46,7 @@ export default function WelcomeScreen({
     history = [],
     onQuickCheckIn,
 }: WelcomeScreenProps) {
+    const { colors, gradients, mode } = useTheme()
     const [refreshing, setRefreshing] = useState(false)
 
     const name = member?.full_name || 'Anggota DigCity'
@@ -54,18 +55,12 @@ export default function WelcomeScreen({
     const position = member?.position || 'Anggota'
     const presence = member?.presence_percent ? `${member.presence_percent}%` : '92%'
 
-    // Get greeting based on time
     const getGreeting = () => {
         const hour = new Date().getHours()
-        if (hour >= 5 && hour < 11) {
-            return { text: 'Selamat Pagi', icon: Sunrise, color: '#f59e0b' }
-        } else if (hour >= 11 && hour < 15) {
-            return { text: 'Selamat Siang', icon: Sun, color: '#eab308' }
-        } else if (hour >= 15 && hour < 18) {
-            return { text: 'Selamat Sore', icon: Sun, color: '#f97316' }
-        } else {
-            return { text: 'Selamat Malam', icon: Moon, color: '#8b5cf6' }
-        }
+        if (hour >= 5 && hour < 11) return { text: 'Selamat Pagi', icon: Sunrise, color: '#f59e0b' }
+        if (hour >= 11 && hour < 15) return { text: 'Selamat Siang', icon: Sun, color: '#eab308' }
+        if (hour >= 15 && hour < 18) return { text: 'Selamat Sore', icon: Sun, color: '#f97316' }
+        return { text: 'Selamat Malam', icon: Moon, color: '#8b5cf6' }
     }
 
     const greeting = getGreeting()
@@ -80,28 +75,24 @@ export default function WelcomeScreen({
 
     const onRefresh = async () => {
         setRefreshing(true)
-        // Allow parent to refresh data
         await new Promise(resolve => setTimeout(resolve, 1000))
         setRefreshing(false)
     }
+
+    const isDark = mode === 'dark'
 
     return (
         <ScrollView
             style={{ flex: 1, backgroundColor: colors.bg }}
             contentContainerStyle={{ paddingBottom: 100 }}
             refreshControl={
-                <RefreshControl
-                    refreshing={refreshing}
-                    onRefresh={onRefresh}
-                    tintColor={colors.primary}
-                    colors={[colors.primary]}
-                />
+                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} colors={[colors.primary]} />
             }
         >
-            <StatusBar barStyle="light-content" />
+            <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
             <View style={{ paddingHorizontal: spacing.lg, paddingTop: spacing.lg }}>
 
-                {/* Header Card with Glassmorphism */}
+                {/* Header Card */}
                 <View style={{
                     borderRadius: borderRadius.xl,
                     overflow: 'hidden',
@@ -110,16 +101,9 @@ export default function WelcomeScreen({
                     borderColor: colors.glassBorder,
                     ...shadows.lg,
                 }}>
-                    <LinearGradient
-                        colors={gradients.cardDark}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 1 }}
-                        style={{ padding: spacing.lg }}
-                    >
-                        {/* Greeting Row */}
+                    <LinearGradient colors={gradients.cardDark} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ padding: spacing.lg }}>
                         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                             <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
-                                {/* Avatar */}
                                 <LinearGradient
                                     colors={gradients.primary}
                                     style={{
@@ -131,38 +115,59 @@ export default function WelcomeScreen({
                                         marginRight: spacing.md,
                                     }}
                                 >
-                                    <Text style={{ color: colors.text, fontWeight: '700', fontSize: 18 }}>
+                                    <Text style={{ color: '#ffffff', fontWeight: '700', fontSize: 18 }}>
                                         {name.slice(0, 1).toUpperCase()}
                                     </Text>
                                 </LinearGradient>
                                 <View style={{ flex: 1 }}>
                                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                         <GreetingIcon color={greeting.color} size={16} />
-                                        <Text style={{ color: colors.muted, fontSize: 13, marginLeft: 6 }}>
-                                            {greeting.text}
-                                        </Text>
+                                        <Text style={{ color: colors.muted, fontSize: 13, marginLeft: 6 }}>{greeting.text}</Text>
                                     </View>
                                     <Text style={{ color: colors.text, fontSize: 18, fontWeight: '700' }} numberOfLines={1}>
                                         {name}
                                     </Text>
                                 </View>
                             </View>
-                            {/* Notification Bell */}
-                            <TouchableOpacity style={{
-                                width: 40,
-                                height: 40,
-                                borderRadius: 12,
-                                backgroundColor: colors.glass,
-                                borderWidth: 1,
-                                borderColor: colors.glassBorder,
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                            }}>
+                            <TouchableOpacity
+                                onPress={() => {
+                                    const notifCount = history.length
+                                    Alert.alert(
+                                        '🔔 Notifikasi',
+                                        notifCount > 0
+                                            ? `Anda memiliki ${notifCount} aktivitas terbaru.\n\nLihat di bagian "Aktivitas Terbaru" di bawah.`
+                                            : 'Tidak ada notifikasi baru saat ini.',
+                                        [{ text: 'OK' }]
+                                    )
+                                }}
+                                activeOpacity={0.7}
+                                style={{
+                                    width: 40,
+                                    height: 40,
+                                    borderRadius: 12,
+                                    backgroundColor: colors.glass,
+                                    borderWidth: 1,
+                                    borderColor: colors.glassBorder,
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                }}
+                            >
                                 <Bell color={colors.text} size={20} />
+                                {history.length > 0 && (
+                                    <View style={{
+                                        position: 'absolute',
+                                        top: 6,
+                                        right: 6,
+                                        width: 8,
+                                        height: 8,
+                                        borderRadius: 4,
+                                        backgroundColor: colors.danger,
+                                    }} />
+                                )}
                             </TouchableOpacity>
                         </View>
 
-                        {/* Member Info Card */}
+                        {/* Member Info */}
                         <View style={{
                             backgroundColor: colors.glass,
                             borderRadius: borderRadius.lg,
@@ -173,12 +178,7 @@ export default function WelcomeScreen({
                         }}>
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.sm }}>
                                 <Text style={{ color: colors.muted, fontSize: 13 }}>• Status Anggota</Text>
-                                <View style={{
-                                    backgroundColor: colors.successBg,
-                                    paddingHorizontal: spacing.sm,
-                                    paddingVertical: 2,
-                                    borderRadius: borderRadius.sm,
-                                }}>
+                                <View style={{ backgroundColor: colors.successBg, paddingHorizontal: spacing.sm, paddingVertical: 2, borderRadius: borderRadius.sm }}>
                                     <Text style={{ color: colors.success, fontSize: 12, fontWeight: '600' }}>Aktif</Text>
                                 </View>
                             </View>
@@ -206,11 +206,9 @@ export default function WelcomeScreen({
                     </LinearGradient>
                 </View>
 
-                {/* Quick Actions Grid */}
+                {/* Quick Actions */}
                 <View style={{ marginBottom: spacing.lg }}>
-                    <Text style={{ color: colors.text, fontSize: 16, fontWeight: '600', marginBottom: spacing.md }}>
-                        Akses Cepat
-                    </Text>
+                    <Text style={{ color: colors.text, fontSize: 16, fontWeight: '600', marginBottom: spacing.md }}>Akses Cepat</Text>
                     <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginHorizontal: -spacing.xs }}>
                         {quickActions.map((action) => {
                             const Icon = action.icon
@@ -241,11 +239,9 @@ export default function WelcomeScreen({
                                                 marginRight: spacing.sm,
                                             }}
                                         >
-                                            <Icon color={colors.text} size={20} />
+                                            <Icon color="#ffffff" size={20} />
                                         </LinearGradient>
-                                        <Text style={{ color: colors.text, fontSize: 14, fontWeight: '600', flex: 1 }}>
-                                            {action.label}
-                                        </Text>
+                                        <Text style={{ color: colors.text, fontSize: 14, fontWeight: '600', flex: 1 }}>{action.label}</Text>
                                         <ChevronRight color={colors.muted} size={16} />
                                     </View>
                                 </TouchableOpacity>
@@ -266,9 +262,7 @@ export default function WelcomeScreen({
                     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.md }}>
                         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                             <Calendar color={colors.primary} size={18} />
-                            <Text style={{ color: colors.text, fontSize: 16, fontWeight: '600', marginLeft: spacing.sm }}>
-                                Agenda Hari Ini
-                            </Text>
+                            <Text style={{ color: colors.text, fontSize: 16, fontWeight: '600', marginLeft: spacing.sm }}>Agenda Hari Ini</Text>
                         </View>
                         <TouchableOpacity onPress={() => onNavigate('attendance')}>
                             <Text style={{ color: colors.primary, fontSize: 13, fontWeight: '600' }}>Lihat Semua</Text>
@@ -278,9 +272,7 @@ export default function WelcomeScreen({
                     {todayEvents.length === 0 ? (
                         <View style={{ paddingVertical: spacing.lg, alignItems: 'center' }}>
                             <Calendar color={colors.muted} size={32} />
-                            <Text style={{ color: colors.muted, fontSize: 13, marginTop: spacing.sm }}>
-                                Tidak ada agenda hari ini
-                            </Text>
+                            <Text style={{ color: colors.muted, fontSize: 13, marginTop: spacing.sm }}>Tidak ada agenda hari ini</Text>
                         </View>
                     ) : (
                         todayEvents.slice(0, 2).map((item) => (
@@ -295,41 +287,44 @@ export default function WelcomeScreen({
                                     borderColor: colors.border,
                                 }}
                             >
-                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.sm }}>
-                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                        <View style={{
-                                            backgroundColor: colors.infoBg,
-                                            paddingHorizontal: spacing.sm,
-                                            paddingVertical: 2,
-                                            borderRadius: borderRadius.sm,
-                                            marginRight: spacing.sm,
-                                        }}>
-                                            <Text style={{ color: colors.info, fontSize: 11, fontWeight: '600' }}>
-                                                {item.division || 'Umum'}
-                                            </Text>
-                                        </View>
-                                        <Clock color={colors.muted} size={12} />
-                                        <Text style={{ color: colors.muted, fontSize: 11, marginLeft: 4 }}>
-                                            {item.time_range || (item.date ? new Date(item.date).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '')}
-                                        </Text>
+                                {/* Division Badge */}
+                                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.sm }}>
+                                    <View style={{
+                                        backgroundColor: colors.infoBg,
+                                        paddingHorizontal: spacing.sm,
+                                        paddingVertical: 3,
+                                        borderRadius: borderRadius.sm,
+                                    }}>
+                                        <Text style={{ color: colors.info, fontSize: 11, fontWeight: '600' }}>{item.division || 'Umum'}</Text>
                                     </View>
-                                    <Users color={colors.muted} size={16} />
                                 </View>
-                                <Text style={{ color: colors.text, fontWeight: '600', fontSize: 14, marginBottom: spacing.xs }}>
-                                    {item.title}
-                                </Text>
+
+                                {/* Title */}
+                                <Text style={{ color: colors.text, fontWeight: '600', fontSize: 15, marginBottom: spacing.sm }}>{item.title}</Text>
+
+                                {/* Time & Location Row */}
+                                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
+                                    <Clock color={colors.muted} size={14} />
+                                    <Text style={{ color: colors.muted, fontSize: 12, marginLeft: 6, flex: 1 }}>
+                                        {item.time_range || (item.date ? new Date(item.date).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-')}
+                                    </Text>
+                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                        <Users color={colors.muted} size={14} />
+                                        <Text style={{ color: colors.muted, fontSize: 12, marginLeft: 4 }}>{item.attendees || 0} peserta</Text>
+                                    </View>
+                                </View>
+
+                                {/* Location Row */}
                                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                     <MapPin color={colors.muted} size={14} />
-                                    <Text style={{ color: colors.muted, fontSize: 12, marginLeft: 4 }}>
-                                        {item.location || 'Lokasi belum ditentukan'}
-                                    </Text>
+                                    <Text style={{ color: colors.muted, fontSize: 12, marginLeft: 6 }}>{item.location || 'Lokasi belum ditentukan'}</Text>
                                 </View>
                             </View>
                         ))
                     )}
                 </View>
 
-                {/* Recent Activity / Notifications */}
+                {/* Recent Activity */}
                 <View style={{
                     backgroundColor: colors.glass,
                     borderRadius: borderRadius.xl,
@@ -340,9 +335,7 @@ export default function WelcomeScreen({
                     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.md }}>
                         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                             <Bell color={colors.accent} size={18} />
-                            <Text style={{ color: colors.text, fontSize: 16, fontWeight: '600', marginLeft: spacing.sm }}>
-                                Aktivitas Terbaru
-                            </Text>
+                            <Text style={{ color: colors.text, fontSize: 16, fontWeight: '600', marginLeft: spacing.sm }}>Aktivitas Terbaru</Text>
                         </View>
                         <TouchableOpacity>
                             <Text style={{ color: colors.primary, fontSize: 13, fontWeight: '600' }}>Tandai Dibaca</Text>
@@ -352,9 +345,7 @@ export default function WelcomeScreen({
                     {history.length === 0 ? (
                         <View style={{ paddingVertical: spacing.lg, alignItems: 'center' }}>
                             <Bell color={colors.muted} size={32} />
-                            <Text style={{ color: colors.muted, fontSize: 13, marginTop: spacing.sm }}>
-                                Belum ada aktivitas terbaru
-                            </Text>
+                            <Text style={{ color: colors.muted, fontSize: 13, marginTop: spacing.sm }}>Belum ada aktivitas terbaru</Text>
                         </View>
                     ) : (
                         history.slice(0, 3).map((h) => (
@@ -383,16 +374,9 @@ export default function WelcomeScreen({
                                     <CheckCircle2 color={colors.success} size={20} />
                                 </View>
                                 <View style={{ flex: 1 }}>
-                                    <Text style={{ color: colors.text, fontWeight: '600', fontSize: 14 }}>
-                                        Presensi Berhasil
-                                    </Text>
+                                    <Text style={{ color: colors.text, fontWeight: '600', fontSize: 14 }}>Presensi Berhasil</Text>
                                     <Text style={{ color: colors.muted, fontSize: 12 }}>
-                                        {new Date(h.created_at).toLocaleDateString('id-ID', {
-                                            day: 'numeric',
-                                            month: 'short',
-                                            hour: '2-digit',
-                                            minute: '2-digit',
-                                        })}
+                                        {new Date(h.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                                     </Text>
                                 </View>
                             </View>

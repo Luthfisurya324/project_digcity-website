@@ -16,7 +16,7 @@ import {
     Calendar,
     CreditCard,
 } from 'lucide-react-native'
-import { colors, gradients, spacing, borderRadius, shadows } from '../ui/theme'
+import { useTheme, spacing, borderRadius, shadows } from '../ui/theme'
 import { supabase } from '../lib/supabase'
 
 interface DuesScreenProps {
@@ -35,33 +35,49 @@ interface DueItem {
 }
 
 export default function DuesScreen({ userEmail, member }: DuesScreenProps) {
+    const { colors, gradients, mode } = useTheme()
     const [loading, setLoading] = useState(true)
     const [refreshing, setRefreshing] = useState(false)
     const [dues, setDues] = useState<DueItem[]>([])
     const [summary, setSummary] = useState({ total: 0, paid: 0, pending: 0 })
 
     const loadDues = async () => {
-        if (!member?.id) return
+        if (!member?.id && !member?.full_name) return
         try {
-            const { data } = await supabase
-                .from('member_dues')
-                .select('*')
-                .eq('member_id', member.id)
-                .order('due_date', { ascending: false })
+            // Try to load by member_id first
+            let data: any[] = []
 
-            if (data) {
+            if (member.id) {
+                const { data: byId } = await supabase
+                    .from('member_dues')
+                    .select('*')
+                    .eq('member_id', member.id)
+                    .order('due_date', { ascending: false })
+                data = byId || []
+            }
+
+            // If no data by member_id, try by member_name
+            if (data.length === 0 && member.full_name) {
+                const { data: byName } = await supabase
+                    .from('member_dues')
+                    .select('*')
+                    .eq('member_name', member.full_name)
+                    .order('due_date', { ascending: false })
+                data = byName || []
+            }
+
+            if (data.length > 0) {
                 const mapped = data.map((item: any) => ({
                     id: item.id,
-                    period: item.period || `${new Date(item.due_date).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}`,
+                    period: item.notes || `${new Date(item.due_date).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}`,
                     amount: item.amount || 0,
-                    paid_amount: item.paid_amount || 0,
+                    paid_amount: item.status === 'paid' ? (item.amount || 0) : (item.status === 'partial' ? (item.amount / 2) : 0),
                     status: item.status || 'unpaid',
                     due_date: item.due_date,
-                    paid_date: item.paid_date,
+                    paid_date: item.status === 'paid' ? item.due_date : undefined,
                 }))
                 setDues(mapped)
 
-                // Calculate summary
                 const total = mapped.reduce((sum, d) => sum + d.amount, 0)
                 const paid = mapped.reduce((sum, d) => sum + d.paid_amount, 0)
                 setSummary({ total, paid, pending: total - paid })
@@ -75,7 +91,7 @@ export default function DuesScreen({ userEmail, member }: DuesScreenProps) {
 
     useEffect(() => {
         loadDues()
-    }, [member?.id])
+    }, [member?.id, member?.full_name])
 
     const onRefresh = async () => {
         setRefreshing(true)
@@ -98,9 +114,12 @@ export default function DuesScreen({ userEmail, member }: DuesScreenProps) {
         return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount)
     }
 
+    const isDark = mode === 'dark'
+
     if (loading) {
         return (
             <View style={{ flex: 1, backgroundColor: colors.bg, justifyContent: 'center', alignItems: 'center' }}>
+                <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
                 <ActivityIndicator size="large" color={colors.primary} />
             </View>
         )
@@ -114,7 +133,7 @@ export default function DuesScreen({ userEmail, member }: DuesScreenProps) {
                 <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
             }
         >
-            <StatusBar barStyle="light-content" />
+            <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
             <View style={{ paddingHorizontal: spacing.lg, paddingTop: spacing.lg }}>
 
                 {/* Header */}
@@ -148,11 +167,11 @@ export default function DuesScreen({ userEmail, member }: DuesScreenProps) {
                                 alignItems: 'center',
                                 marginRight: spacing.md,
                             }}>
-                                <Wallet color={colors.text} size={24} />
+                                <Wallet color="#ffffff" size={24} />
                             </View>
                             <View>
                                 <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 13 }}>Total Iuran</Text>
-                                <Text style={{ color: colors.text, fontSize: 24, fontWeight: '700' }}>
+                                <Text style={{ color: '#ffffff', fontSize: 24, fontWeight: '700' }}>
                                     {formatCurrency(summary.total)}
                                 </Text>
                             </View>
@@ -167,7 +186,7 @@ export default function DuesScreen({ userEmail, member }: DuesScreenProps) {
                                 marginRight: spacing.sm,
                             }}>
                                 <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 11 }}>Sudah Bayar</Text>
-                                <Text style={{ color: colors.text, fontSize: 16, fontWeight: '600' }}>
+                                <Text style={{ color: '#ffffff', fontSize: 16, fontWeight: '600' }}>
                                     {formatCurrency(summary.paid)}
                                 </Text>
                             </View>
@@ -178,7 +197,7 @@ export default function DuesScreen({ userEmail, member }: DuesScreenProps) {
                                 padding: spacing.sm,
                             }}>
                                 <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 11 }}>Sisa Tagihan</Text>
-                                <Text style={{ color: colors.text, fontSize: 16, fontWeight: '600' }}>
+                                <Text style={{ color: '#ffffff', fontSize: 16, fontWeight: '600' }}>
                                     {formatCurrency(summary.pending)}
                                 </Text>
                             </View>

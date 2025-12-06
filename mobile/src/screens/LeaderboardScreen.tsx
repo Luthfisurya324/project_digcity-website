@@ -18,7 +18,7 @@ import {
     Users,
     Filter,
 } from 'lucide-react-native'
-import { colors, gradients, spacing, borderRadius, shadows } from '../ui/theme'
+import { useTheme, spacing, borderRadius, shadows } from '../ui/theme'
 import { supabase } from '../lib/supabase'
 
 interface LeaderboardScreenProps {
@@ -35,6 +35,7 @@ interface LeaderboardItem {
 }
 
 export default function LeaderboardScreen({ userEmail, member }: LeaderboardScreenProps) {
+    const { colors, gradients, mode } = useTheme()
     const [loading, setLoading] = useState(true)
     const [refreshing, setRefreshing] = useState(false)
     const [leaderboard, setLeaderboard] = useState<LeaderboardItem[]>([])
@@ -44,19 +45,16 @@ export default function LeaderboardScreen({ userEmail, member }: LeaderboardScre
 
     const loadLeaderboard = async () => {
         try {
-            // Load members
             const { data: members } = await supabase
                 .from('organization_members')
                 .select('id, full_name, division')
                 .eq('status', 'active')
 
-            // Load attendance counts
             const { data: attendance } = await supabase
                 .from('attendance')
                 .select('member_id')
 
             if (members && attendance) {
-                // Count attendance per member
                 const counts: Record<string, number> = {}
                 attendance.forEach((a: any) => {
                     if (a.member_id) {
@@ -64,7 +62,6 @@ export default function LeaderboardScreen({ userEmail, member }: LeaderboardScre
                     }
                 })
 
-                // Build leaderboard
                 const lb = members.map((m: any) => ({
                     id: m.id,
                     name: m.full_name,
@@ -73,23 +70,16 @@ export default function LeaderboardScreen({ userEmail, member }: LeaderboardScre
                     rank: 0,
                 }))
 
-                // Sort by attendance count
                 lb.sort((a, b) => b.attendanceCount - a.attendanceCount)
-
-                // Assign ranks
-                lb.forEach((item, index) => {
-                    item.rank = index + 1
-                })
+                lb.forEach((item, index) => { item.rank = index + 1 })
 
                 setLeaderboard(lb)
 
-                // Find user's rank
                 if (member?.id) {
                     const userItem = lb.find(item => item.id === member.id)
                     setMyRank(userItem?.rank || null)
                 }
 
-                // Get unique divisions
                 const divs = [...new Set(members.map((m: any) => m.division || 'Umum'))]
                 setDivisions(divs)
             }
@@ -121,9 +111,12 @@ export default function LeaderboardScreen({ userEmail, member }: LeaderboardScre
         ? leaderboard
         : leaderboard.filter(item => item.division === filter)
 
+    const isDark = mode === 'dark'
+
     if (loading) {
         return (
             <View style={{ flex: 1, backgroundColor: colors.bg, justifyContent: 'center', alignItems: 'center' }}>
+                <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
                 <ActivityIndicator size="large" color={colors.primary} />
             </View>
         )
@@ -131,7 +124,7 @@ export default function LeaderboardScreen({ userEmail, member }: LeaderboardScre
 
     return (
         <View style={{ flex: 1, backgroundColor: colors.bg }}>
-            <StatusBar barStyle="light-content" />
+            <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
 
             {/* Header */}
             <View style={{ paddingHorizontal: spacing.lg, paddingTop: spacing.lg }}>
@@ -179,7 +172,7 @@ export default function LeaderboardScreen({ userEmail, member }: LeaderboardScre
                         }}
                     >
                         <Text style={{
-                            color: filter === 'all' ? colors.text : colors.muted,
+                            color: filter === 'all' ? '#ffffff' : colors.muted,
                             fontSize: 13,
                             fontWeight: '600',
                         }}>
@@ -201,7 +194,7 @@ export default function LeaderboardScreen({ userEmail, member }: LeaderboardScre
                             }}
                         >
                             <Text style={{
-                                color: filter === div ? colors.text : colors.muted,
+                                color: filter === div ? '#ffffff' : colors.muted,
                                 fontSize: 13,
                                 fontWeight: '600',
                             }}>

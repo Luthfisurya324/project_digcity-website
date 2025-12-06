@@ -17,7 +17,7 @@ import {
     ArrowRight,
     ChevronRight
 } from 'lucide-react-native'
-import { colors, gradients, spacing, borderRadius } from '../ui/theme'
+import { useTheme, spacing, borderRadius } from '../ui/theme'
 
 const { width, height } = Dimensions.get('window')
 
@@ -26,8 +26,8 @@ interface OnboardingSlide {
     title: string
     subtitle: string
     description: string
-    icon: React.ReactNode
-    gradient: readonly [string, string, ...string[]]
+    iconType: 'logo' | 'qr' | 'chart' | 'bell'
+    gradientColors: readonly [string, string, ...string[]]
 }
 
 const slides: OnboardingSlide[] = [
@@ -36,32 +36,32 @@ const slides: OnboardingSlide[] = [
         title: 'Selamat Datang',
         subtitle: 'di DigCity',
         description: 'Aplikasi resmi untuk anggota organisasi. Kelola kehadiran, pantau performa, dan tetap terhubung.',
-        icon: <Image source={{ uri: 'https://digcity.my.id/logo_digcity.png' }} style={{ width: 80, height: 80, borderRadius: 20 }} />,
-        gradient: gradients.hero,
+        iconType: 'logo',
+        gradientColors: ['#1e3a8a', '#312e81', '#4c1d95'],
     },
     {
         id: '2',
         title: 'Absensi Digital',
         subtitle: 'Mudah & Cepat',
         description: 'Scan QR code untuk mencatat kehadiran Anda di setiap kegiatan organisasi secara real-time.',
-        icon: <QrCode color={colors.text} size={64} strokeWidth={1.5} />,
-        gradient: gradients.primary,
+        iconType: 'qr',
+        gradientColors: ['#2563eb', '#7c3aed'],
     },
     {
         id: '3',
         title: 'Pantau KPI',
         subtitle: 'Performa Anda',
         description: 'Lihat nilai KPI, grade, dan progres Anda. Tingkatkan kontribusi untuk organisasi.',
-        icon: <BarChart3 color={colors.text} size={64} strokeWidth={1.5} />,
-        gradient: ['#059669', '#0d9488'] as const,
+        iconType: 'chart',
+        gradientColors: ['#059669', '#0d9488'],
     },
     {
         id: '4',
         title: 'Tetap Update',
         subtitle: 'Setiap Saat',
         description: 'Terima notifikasi tugas, pengingat iuran, dan info kegiatan langsung di genggaman Anda.',
-        icon: <Bell color={colors.text} size={64} strokeWidth={1.5} />,
-        gradient: gradients.sunset,
+        iconType: 'bell',
+        gradientColors: ['#f97316', '#ec4899'],
     },
 ]
 
@@ -70,6 +70,7 @@ interface OnboardingScreenProps {
 }
 
 export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) {
+    const { colors, gradients, mode } = useTheme()
     const [currentIndex, setCurrentIndex] = useState(0)
     const flatListRef = useRef<FlatList>(null)
     const scrollX = useRef(new Animated.Value(0)).current
@@ -93,33 +94,32 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
         }
     }).current
 
+    const renderIcon = (iconType: string) => {
+        switch (iconType) {
+            case 'logo':
+                return <Image source={{ uri: 'https://digcity.my.id/logo_digcity.png' }} style={{ width: 80, height: 80, borderRadius: 20 }} />
+            case 'qr':
+                return <QrCode color="#ffffff" size={64} strokeWidth={1.5} />
+            case 'chart':
+                return <BarChart3 color="#ffffff" size={64} strokeWidth={1.5} />
+            case 'bell':
+                return <Bell color="#ffffff" size={64} strokeWidth={1.5} />
+            default:
+                return null
+        }
+    }
+
     const renderSlide = ({ item, index }: { item: OnboardingSlide; index: number }) => {
         const inputRange = [(index - 1) * width, index * width, (index + 1) * width]
-
-        const scale = scrollX.interpolate({
-            inputRange,
-            outputRange: [0.8, 1, 0.8],
-            extrapolate: 'clamp',
-        })
-
-        const opacity = scrollX.interpolate({
-            inputRange,
-            outputRange: [0.5, 1, 0.5],
-            extrapolate: 'clamp',
-        })
+        const scale = scrollX.interpolate({ inputRange, outputRange: [0.8, 1, 0.8], extrapolate: 'clamp' })
+        const opacity = scrollX.interpolate({ inputRange, outputRange: [0.5, 1, 0.5], extrapolate: 'clamp' })
 
         return (
             <View style={{ width, paddingHorizontal: spacing.lg }}>
                 <Animated.View style={{ flex: 1, transform: [{ scale }], opacity }}>
-                    {/* Icon container with glassmorphism */}
-                    <View style={{
-                        flex: 1,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        paddingTop: height * 0.1,
-                    }}>
+                    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: height * 0.1 }}>
                         <LinearGradient
-                            colors={item.gradient}
+                            colors={item.gradientColors}
                             start={{ x: 0, y: 0 }}
                             end={{ x: 1, y: 1 }}
                             style={{
@@ -141,36 +141,18 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
                                 borderWidth: 1,
                                 borderColor: colors.glassBorder,
                             }}>
-                                {item.icon}
+                                {renderIcon(item.iconType)}
                             </View>
                         </LinearGradient>
 
-                        {/* Text content */}
                         <View style={{ alignItems: 'center', paddingHorizontal: spacing.md }}>
-                            <Text style={{
-                                fontSize: 28,
-                                fontWeight: '700',
-                                color: colors.text,
-                                textAlign: 'center',
-                            }}>
+                            <Text style={{ fontSize: 28, fontWeight: '700', color: colors.text, textAlign: 'center' }}>
                                 {item.title}
                             </Text>
-                            <Text style={{
-                                fontSize: 28,
-                                fontWeight: '700',
-                                color: colors.primary,
-                                textAlign: 'center',
-                                marginBottom: spacing.md,
-                            }}>
+                            <Text style={{ fontSize: 28, fontWeight: '700', color: colors.primary, textAlign: 'center', marginBottom: spacing.md }}>
                                 {item.subtitle}
                             </Text>
-                            <Text style={{
-                                fontSize: 15,
-                                color: colors.muted,
-                                textAlign: 'center',
-                                lineHeight: 24,
-                                paddingHorizontal: spacing.lg,
-                            }}>
+                            <Text style={{ fontSize: 15, color: colors.muted, textAlign: 'center', lineHeight: 24, paddingHorizontal: spacing.lg }}>
                                 {item.description}
                             </Text>
                         </View>
@@ -181,25 +163,11 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
     }
 
     const renderDots = () => (
-        <View style={{
-            flexDirection: 'row',
-            justifyContent: 'center',
-            marginBottom: spacing.xl,
-        }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: spacing.xl }}>
             {slides.map((_, index) => {
                 const inputRange = [(index - 1) * width, index * width, (index + 1) * width]
-
-                const dotWidth = scrollX.interpolate({
-                    inputRange,
-                    outputRange: [8, 24, 8],
-                    extrapolate: 'clamp',
-                })
-
-                const dotOpacity = scrollX.interpolate({
-                    inputRange,
-                    outputRange: [0.3, 1, 0.3],
-                    extrapolate: 'clamp',
-                })
+                const dotWidth = scrollX.interpolate({ inputRange, outputRange: [8, 24, 8], extrapolate: 'clamp' })
+                const dotOpacity = scrollX.interpolate({ inputRange, outputRange: [0.3, 1, 0.3], extrapolate: 'clamp' })
 
                 return (
                     <Animated.View
@@ -219,12 +187,12 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
     )
 
     const isLastSlide = currentIndex === slides.length - 1
+    const isDark = mode === 'dark'
 
     return (
         <View style={{ flex: 1, backgroundColor: colors.bg }}>
-            <StatusBar barStyle="light-content" />
+            <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
 
-            {/* Skip button */}
             {!isLastSlide && (
                 <TouchableOpacity
                     onPress={handleSkip}
@@ -237,13 +205,10 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
                         paddingHorizontal: spacing.md,
                     }}
                 >
-                    <Text style={{ color: colors.muted, fontSize: 15, fontWeight: '600' }}>
-                        Lewati
-                    </Text>
+                    <Text style={{ color: colors.muted, fontSize: 15, fontWeight: '600' }}>Lewati</Text>
                 </TouchableOpacity>
             )}
 
-            {/* Slides */}
             <Animated.FlatList
                 ref={flatListRef}
                 data={slides}
@@ -252,24 +217,15 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
                 horizontal
                 pagingEnabled
                 showsHorizontalScrollIndicator={false}
-                onScroll={Animated.event(
-                    [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-                    { useNativeDriver: true }
-                )}
+                onScroll={Animated.event([{ nativeEvent: { contentOffset: { x: scrollX } } }], { useNativeDriver: true })}
                 onViewableItemsChanged={onViewableItemsChanged}
                 viewabilityConfig={{ viewAreaCoveragePercentThreshold: 50 }}
                 style={{ flex: 1 }}
             />
 
-            {/* Bottom section */}
-            <View style={{
-                paddingHorizontal: spacing.lg,
-                paddingBottom: spacing.xxl,
-            }}>
-                {/* Dots */}
+            <View style={{ paddingHorizontal: spacing.lg, paddingBottom: spacing.xxl }}>
                 {renderDots()}
 
-                {/* Action button */}
                 <TouchableOpacity onPress={handleNext} activeOpacity={0.8}>
                     <LinearGradient
                         colors={gradients.primary}
@@ -283,19 +239,10 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
                             borderRadius: borderRadius.lg,
                         }}
                     >
-                        <Text style={{
-                            color: colors.text,
-                            fontSize: 17,
-                            fontWeight: '600',
-                            marginRight: spacing.sm,
-                        }}>
+                        <Text style={{ color: '#ffffff', fontSize: 17, fontWeight: '600', marginRight: spacing.sm }}>
                             {isLastSlide ? 'Mulai Sekarang' : 'Lanjutkan'}
                         </Text>
-                        {isLastSlide ? (
-                            <ArrowRight color={colors.text} size={20} />
-                        ) : (
-                            <ChevronRight color={colors.text} size={20} />
-                        )}
+                        {isLastSlide ? <ArrowRight color="#ffffff" size={20} /> : <ChevronRight color="#ffffff" size={20} />}
                     </LinearGradient>
                 </TouchableOpacity>
             </View>

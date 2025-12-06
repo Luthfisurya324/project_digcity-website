@@ -1,7 +1,7 @@
 import 'react-native-get-random-values'
 import 'react-native-url-polyfill/auto'
 import './global.css'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import {
   SafeAreaView,
   View,
@@ -10,14 +10,17 @@ import {
   StyleSheet,
   StatusBar,
   Animated,
-  ActivityIndicator
+  ActivityIndicator,
+  Modal,
+  Dimensions,
 } from 'react-native'
 import {
   Home,
   BarChart3,
   Briefcase,
   User as UserIcon,
-  QrCode
+  QrCode,
+  X,
 } from 'lucide-react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import { NativeModulesProxy } from 'expo-modules-core'
@@ -38,7 +41,7 @@ import LeaderboardScreen from './src/screens/LeaderboardScreen'
 const ONBOARDING_KEY = '@digcity_onboarding_done'
 
 type AppState = 'loading' | 'onboarding' | 'login' | 'authenticated'
-type AuthedScreen = 'welcome' | 'history' | 'sanctions' | 'profile' | 'scan' | 'kpi' | 'tasks' | 'dues' | 'leaderboard'
+type AuthedScreen = 'welcome' | 'history' | 'sanctions' | 'profile' | 'kpi' | 'tasks' | 'dues' | 'leaderboard'
 
 // Root App with ThemeProvider wrapper
 export default function App() {
@@ -117,7 +120,7 @@ function AppContent() {
 }
 
 // Bottom Navigation Bar
-function BottomBar({ active, onChange }: { active: AuthedScreen; onChange: (s: AuthedScreen) => void }) {
+function BottomBar({ active, onChange, onScan }: { active: AuthedScreen; onChange: (s: AuthedScreen) => void; onScan: () => void }) {
   const { colors, gradients } = useTheme()
 
   function BarItem({ label, Icon, active, onPress }: { label: string; Icon: any; active: boolean; onPress: () => void }) {
@@ -176,8 +179,8 @@ function BottomBar({ active, onChange }: { active: AuthedScreen; onChange: (s: A
       </View>
       <View pointerEvents="box-none" style={styles.fabOverlay}>
         <TouchableOpacity
-          onPress={() => onChange('scan')}
-          style={[styles.scanFab, { transform: [{ scale: active === 'scan' ? 1.08 : 1 }] }]}
+          onPress={onScan}
+          style={styles.scanFab}
           activeOpacity={0.8}
         >
           <LinearGradient
@@ -205,6 +208,8 @@ function MainApp({ userEmail, onLogout }: { userEmail: string; onLogout: () => v
   const [scanMessage, setScanMessage] = useState('')
   const [scannerComp, setScannerComp] = useState<any>(null)
   const [nativeMissing, setNativeMissing] = useState(false)
+  const [showScanModal, setShowScanModal] = useState(false)
+  const slideAnim = useRef(new Animated.Value(0)).current
 
   useEffect(() => {
     loadEvents()
@@ -212,25 +217,43 @@ function MainApp({ userEmail, onLogout }: { userEmail: string; onLogout: () => v
     loadHistory()
   }, [])
 
+  // Load scanner when modal opens
   useEffect(() => {
-    if (screen === 'scan') {
-      ; (async () => {
-        const hasNative = !!(NativeModulesProxy as any)?.ExpoBarCodeScanner
-        if (!hasNative) {
-          setNativeMissing(true)
-          return
-        }
-        try {
-          const mod = await import('expo-barcode-scanner')
-          setScannerComp(mod.BarCodeScanner)
-          const { status } = await mod.BarCodeScanner.requestPermissionsAsync()
-          setHasCamPermission(status === 'granted')
-        } catch {
-          setNativeMissing(true)
-        }
-      })()
+    if (showScanModal) {
+      // Animate modal in
+      Animated.spring(slideAnim, { toValue: 1, friction: 8, tension: 40, useNativeDriver: true }).start()
+
+        // Load scanner
+        ; (async () => {
+          const hasNative = !!(NativeModulesProxy as any)?.ExpoBarCodeScanner
+          if (!hasNative) {
+            setNativeMissing(true)
+            return
+          }
+          try {
+            const mod = await import('expo-barcode-scanner')
+            setScannerComp(mod.BarCodeScanner)
+            const { status } = await mod.BarCodeScanner.requestPermissionsAsync()
+            setHasCamPermission(status === 'granted')
+          } catch {
+            setNativeMissing(true)
+          }
+        })()
+    } else {
+      // Animate modal out
+      Animated.timing(slideAnim, { toValue: 0, duration: 200, useNativeDriver: true }).start()
     }
-  }, [screen])
+  }, [showScanModal])
+
+  const openScanModal = () => {
+    setScanned(false)
+    setScanMessage('')
+    setShowScanModal(true)
+  }
+
+  const closeScanModal = () => {
+    setShowScanModal(false)
+  }
 
   const loadEvents = async () => {
     setRefreshing(true)
@@ -351,122 +374,12 @@ function MainApp({ userEmail, onLogout }: { userEmail: string; onLogout: () => v
         return <LeaderboardScreen userEmail={userEmail} member={member} />
       case 'profile':
         return <ProfileScreen userEmail={userEmail} member={member} onLogout={onLogout} />
-      case 'scan':
-        return (
-          <View style={{ flex: 1, paddingHorizontal: spacing.lg, paddingTop: spacing.lg }}>
-            <Text style={{ color: colors.text, fontSize: 24, fontWeight: '700', marginBottom: spacing.md }}>
-              Scan QR Absensi
-            </Text>
-            {nativeMissing ? (
-              <View style={{
-                flex: 1,
-                backgroundColor: colors.glass,
-                borderRadius: borderRadius.xl,
-                justifyContent: 'center',
-                alignItems: 'center',
-                borderWidth: 1,
-                borderColor: colors.glassBorder,
-              }}>
-                <QrCode color={colors.muted} size={48} />
-                <Text style={{ color: colors.danger, fontSize: 14, marginTop: spacing.md }}>Fitur scan belum aktif</Text>
-                <Text style={{ color: colors.muted, fontSize: 12, marginTop: spacing.xs, textAlign: 'center', paddingHorizontal: spacing.lg }}>
-                  Rebuild development client diperlukan untuk menggunakan fitur ini
-                </Text>
-              </View>
-            ) : hasCamPermission === false ? (
-              <View style={{
-                flex: 1,
-                backgroundColor: colors.glass,
-                borderRadius: borderRadius.xl,
-                justifyContent: 'center',
-                alignItems: 'center',
-                borderWidth: 1,
-                borderColor: colors.glassBorder,
-              }}>
-                <Text style={{ color: colors.danger, fontSize: 14 }}>Izin kamera ditolak</Text>
-                <TouchableOpacity
-                  onPress={() => {
-                    const hasNative = !!(NativeModulesProxy as any)?.ExpoBarCodeScanner
-                    if (!hasNative) { setNativeMissing(true); return }
-                    import('expo-barcode-scanner')
-                      .then((m) => m.BarCodeScanner.requestPermissionsAsync())
-                      .then(({ status }) => setHasCamPermission(status === 'granted'))
-                      .catch(() => setNativeMissing(true))
-                  }}
-                  style={{ marginTop: spacing.md }}
-                >
-                  <LinearGradient
-                    colors={gradients.primary}
-                    style={{ paddingVertical: 12, paddingHorizontal: spacing.lg, borderRadius: borderRadius.md }}
-                  >
-                    <Text style={{ color: '#ffffff', fontWeight: '600' }}>Minta Izin</Text>
-                  </LinearGradient>
-                </TouchableOpacity>
-              </View>
-            ) : (
-              <View style={{ flex: 1 }}>
-                <View style={{
-                  flex: 1,
-                  borderRadius: borderRadius.xl,
-                  overflow: 'hidden',
-                  borderWidth: 1,
-                  borderColor: colors.glassBorder,
-                }}>
-                  {scannerComp ? (
-                    React.createElement(scannerComp, {
-                      onBarCodeScanned: scanned ? undefined : ({ data }: any) => handleScan(String(data)),
-                      style: { flex: 1 }
-                    })
-                  ) : (
-                    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.glass }}>
-                      <ActivityIndicator color={colors.primary} size="large" />
-                      <Text style={{ color: colors.muted, marginTop: spacing.md }}>Menyiapkan kamera...</Text>
-                    </View>
-                  )}
-                </View>
-                <View style={{
-                  backgroundColor: colors.glass,
-                  borderRadius: borderRadius.lg,
-                  padding: spacing.md,
-                  marginTop: spacing.md,
-                  borderWidth: 1,
-                  borderColor: colors.glassBorder,
-                }}>
-                  <Text style={{ color: colors.muted, fontSize: 13 }}>
-                    Arahkan kamera ke QR acara untuk mencatat kehadiran
-                  </Text>
-                  {scanMessage ? (
-                    <Text style={{
-                      fontSize: 14,
-                      fontWeight: '600',
-                      marginTop: spacing.sm,
-                      color: scanMessage.includes('berhasil') ? colors.success : colors.danger
-                    }}>
-                      {scanMessage}
-                    </Text>
-                  ) : null}
-                  {scanned && (
-                    <TouchableOpacity
-                      onPress={() => { setScanned(false); setScanMessage('') }}
-                      style={{ marginTop: spacing.md }}
-                    >
-                      <LinearGradient
-                        colors={gradients.primary}
-                        style={{ paddingVertical: 12, borderRadius: borderRadius.md, alignItems: 'center' }}
-                      >
-                        <Text style={{ color: '#ffffff', fontWeight: '600' }}>Scan Lagi</Text>
-                      </LinearGradient>
-                    </TouchableOpacity>
-                  )}
-                </View>
-              </View>
-            )}
-          </View>
-        )
       default:
         return null
     }
   }
+
+  const screenHeight = Dimensions.get('window').height
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.bg }]}>
@@ -474,7 +387,163 @@ function MainApp({ userEmail, onLogout }: { userEmail: string; onLogout: () => v
       <View style={{ flex: 1 }}>
         {renderScreen()}
       </View>
-      <BottomBar active={screen} onChange={setScreen} />
+      <BottomBar active={screen} onChange={setScreen} onScan={openScanModal} />
+
+      {/* Scan QR Bottom Sheet Modal */}
+      <Modal
+        visible={showScanModal}
+        transparent
+        animationType="none"
+        onRequestClose={closeScanModal}
+      >
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' }}>
+          <TouchableOpacity
+            style={{ flex: 1 }}
+            activeOpacity={1}
+            onPress={closeScanModal}
+          />
+          <Animated.View style={{
+            backgroundColor: colors.card,
+            borderTopLeftRadius: 24,
+            borderTopRightRadius: 24,
+            height: screenHeight * 0.55,
+            transform: [{
+              translateY: slideAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [screenHeight * 0.55, 0]
+              })
+            }],
+          }}>
+            {/* Handle Bar */}
+            <View style={{ alignItems: 'center', paddingTop: 12, paddingBottom: 8 }}>
+              <View style={{ width: 40, height: 4, backgroundColor: colors.border, borderRadius: 2 }} />
+            </View>
+
+            {/* Header */}
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: spacing.lg, paddingBottom: spacing.md }}>
+              <Text style={{ color: colors.text, fontSize: 20, fontWeight: '700' }}>Scan QR Absensi</Text>
+              <TouchableOpacity
+                onPress={closeScanModal}
+                style={{
+                  width: 36, height: 36, borderRadius: 18,
+                  backgroundColor: colors.glass, justifyContent: 'center', alignItems: 'center',
+                  borderWidth: 1, borderColor: colors.glassBorder,
+                }}
+              >
+                <X color={colors.text} size={20} />
+              </TouchableOpacity>
+            </View>
+
+            {/* Scanner Content */}
+            <View style={{ flex: 1, paddingHorizontal: spacing.lg, paddingBottom: spacing.lg }}>
+              {nativeMissing ? (
+                <View style={{
+                  flex: 1,
+                  backgroundColor: colors.glass,
+                  borderRadius: borderRadius.xl,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  borderWidth: 1,
+                  borderColor: colors.glassBorder,
+                }}>
+                  <QrCode color={colors.muted} size={48} />
+                  <Text style={{ color: colors.danger, fontSize: 14, marginTop: spacing.md }}>Fitur scan belum aktif</Text>
+                  <Text style={{ color: colors.muted, fontSize: 12, marginTop: spacing.xs, textAlign: 'center', paddingHorizontal: spacing.lg }}>
+                    Rebuild development client diperlukan untuk menggunakan fitur ini
+                  </Text>
+                </View>
+              ) : hasCamPermission === false ? (
+                <View style={{
+                  flex: 1,
+                  backgroundColor: colors.glass,
+                  borderRadius: borderRadius.xl,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  borderWidth: 1,
+                  borderColor: colors.glassBorder,
+                }}>
+                  <Text style={{ color: colors.danger, fontSize: 14 }}>Izin kamera ditolak</Text>
+                  <TouchableOpacity
+                    onPress={() => {
+                      const hasNative = !!(NativeModulesProxy as any)?.ExpoBarCodeScanner
+                      if (!hasNative) { setNativeMissing(true); return }
+                      import('expo-barcode-scanner')
+                        .then((m) => m.BarCodeScanner.requestPermissionsAsync())
+                        .then(({ status }) => setHasCamPermission(status === 'granted'))
+                        .catch(() => setNativeMissing(true))
+                    }}
+                    style={{ marginTop: spacing.md }}
+                  >
+                    <LinearGradient
+                      colors={gradients.primary}
+                      style={{ paddingVertical: 12, paddingHorizontal: spacing.lg, borderRadius: borderRadius.md }}
+                    >
+                      <Text style={{ color: '#ffffff', fontWeight: '600' }}>Minta Izin</Text>
+                    </LinearGradient>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <View style={{ flex: 1 }}>
+                  <View style={{
+                    flex: 1,
+                    borderRadius: borderRadius.xl,
+                    overflow: 'hidden',
+                    borderWidth: 1,
+                    borderColor: colors.glassBorder,
+                  }}>
+                    {scannerComp ? (
+                      React.createElement(scannerComp, {
+                        onBarCodeScanned: scanned ? undefined : ({ data }: any) => handleScan(String(data)),
+                        style: { flex: 1 }
+                      })
+                    ) : (
+                      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.glass }}>
+                        <ActivityIndicator color={colors.primary} size="large" />
+                        <Text style={{ color: colors.muted, marginTop: spacing.md }}>Menyiapkan kamera...</Text>
+                      </View>
+                    )}
+                  </View>
+                  <View style={{
+                    backgroundColor: colors.glass,
+                    borderRadius: borderRadius.lg,
+                    padding: spacing.md,
+                    marginTop: spacing.md,
+                    borderWidth: 1,
+                    borderColor: colors.glassBorder,
+                  }}>
+                    <Text style={{ color: colors.muted, fontSize: 13 }}>
+                      Arahkan kamera ke QR acara untuk mencatat kehadiran
+                    </Text>
+                    {scanMessage ? (
+                      <Text style={{
+                        fontSize: 14,
+                        fontWeight: '600',
+                        marginTop: spacing.sm,
+                        color: scanMessage.includes('berhasil') ? colors.success : colors.danger
+                      }}>
+                        {scanMessage}
+                      </Text>
+                    ) : null}
+                    {scanned && (
+                      <TouchableOpacity
+                        onPress={() => { setScanned(false); setScanMessage('') }}
+                        style={{ marginTop: spacing.md }}
+                      >
+                        <LinearGradient
+                          colors={gradients.primary}
+                          style={{ paddingVertical: 12, borderRadius: borderRadius.md, alignItems: 'center' }}
+                        >
+                          <Text style={{ color: '#ffffff', fontWeight: '600' }}>Scan Lagi</Text>
+                        </LinearGradient>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                </View>
+              )}
+            </View>
+          </Animated.View>
+        </View>
+      </Modal>
     </SafeAreaView>
   )
 }

@@ -159,24 +159,24 @@ export default function ProfileScreen({ userEmail, member, onLogout }: ProfileSc
                                 flex: 1,
                                 backgroundColor: 'rgba(255,255,255,0.15)',
                                 borderRadius: borderRadius.md,
-                                padding: spacing.sm,
+                                padding: spacing.md,
                                 marginRight: spacing.sm,
                                 alignItems: 'center',
                             }}>
-                                <Building2 color="rgba(255,255,255,0.7)" size={16} />
-                                <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 10, marginTop: 4 }}>Divisi</Text>
-                                <Text style={{ color: '#ffffff', fontSize: 13, fontWeight: '600' }}>{division}</Text>
+                                <Building2 color="rgba(255,255,255,0.7)" size={18} />
+                                <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 11, marginTop: 4 }}>Divisi</Text>
+                                <Text style={{ color: '#ffffff', fontSize: 13, fontWeight: '600', textAlign: 'center' }} numberOfLines={2}>{division}</Text>
                             </View>
                             <View style={{
                                 flex: 1,
                                 backgroundColor: 'rgba(255,255,255,0.15)',
                                 borderRadius: borderRadius.md,
-                                padding: spacing.sm,
+                                padding: spacing.md,
                                 alignItems: 'center',
                             }}>
-                                <Briefcase color="rgba(255,255,255,0.7)" size={16} />
-                                <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 10, marginTop: 4 }}>Jabatan</Text>
-                                <Text style={{ color: '#ffffff', fontSize: 13, fontWeight: '600' }}>{position}</Text>
+                                <Briefcase color="rgba(255,255,255,0.7)" size={18} />
+                                <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 11, marginTop: 4 }}>Jabatan</Text>
+                                <Text style={{ color: '#ffffff', fontSize: 13, fontWeight: '600', textAlign: 'center' }} numberOfLines={2}>{position}</Text>
                             </View>
                         </View>
                     </LinearGradient>

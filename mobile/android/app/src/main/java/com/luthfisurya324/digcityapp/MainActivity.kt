@@ -1,4 +1,4 @@
-package com.anonymous.digcitymobile
+package com.luthfisurya324.digcityapp
 
 import android.os.Build
 import android.os.Bundle

@@ -252,6 +252,25 @@ export const orgAPI = {
   },
   async softDeleteOrganization() {
     await orgAPI.updateProfile({ deleted_at: new Date().toISOString() })
+  },
+  async estafetKepengurusan(demisionerYear: number, newPeriodStart: string, newPeriodEnd: string) {
+    // 1. Update old batch (demisionerYear) to position 'Demisioner'
+    // We only update those who are currently 'active' to avoid messing up already resigned/alumni
+    const { error: demisionerError } = await supabase
+      .from('organization_members')
+      .update({ position: 'Demisioner' })
+      .eq('join_year', demisionerYear)
+      .eq('status', 'active')
+
+    if (demisionerError) throw demisionerError
+
+    // 2. Update Organization Period
+    await orgAPI.updateProfile({
+      period_start: newPeriodStart,
+      period_end: newPeriodEnd
+    })
+
+    return true
   }
 }
 

@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "cb4b6450-96c0-4e16-9ae9-933f21157f22"
+      }
+    },
+    "android": {
+      "package": "com.luthfisurya324.digcityapp"
+    }
+  }
+}

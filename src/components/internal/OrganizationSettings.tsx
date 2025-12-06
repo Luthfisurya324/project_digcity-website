@@ -18,6 +18,11 @@ const OrganizationSettings: React.FC = () => {
   const [logoUploading, setLogoUploading] = useState(false)
   const [saving, setSaving] = useState(false)
 
+  // Succession State
+  const [demisionerYear, setDemisionerYear] = useState<string>(new Date().getFullYear().toString()) // e.g. 2023
+  const [nextYear, setNextYear] = useState<string>((new Date().getFullYear() + 1).toString()) // e.g. 2024
+  const [successionLoading, setSuccessionLoading] = useState(false)
+
   useEffect(() => {
     const load = async () => {
       setLoading(true)
@@ -184,6 +189,35 @@ const OrganizationSettings: React.FC = () => {
     alert('Organisasi dihapus (soft delete)')
   }
 
+  const handleEstafet = async () => {
+    if (!periodStart || !periodEnd) {
+      alert('Mohon isi tanggal periode baru terlebih dahulu (Mulai & Selesai).')
+      return
+    }
+    if (!demisionerYear) {
+      alert('Mohon isi angkatan demisioner.')
+      return
+    }
+
+    const confirmMsg = `PERINGATAN: Aksi ini akan:\n\n1. Mengubah status jabatan angkatan ${demisionerYear} menjadi 'Demisioner'.\n2. Memperbarui periode kepengurusan menjadi ${periodStart} s.d ${periodEnd}.\n\nAngkatan ${nextYear} akan siap untuk diassign jabatan baru secara manual.\n\nLanjutkan?`
+
+    if (!confirm(confirmMsg)) return
+
+    setSuccessionLoading(true)
+    try {
+      await orgAPI.estafetKepengurusan(parseInt(demisionerYear), periodStart, periodEnd)
+      alert('Estafet kepengurusan berhasil diproses!')
+      // Refresh
+      const p = await orgAPI.getProfile()
+      setProfile(p)
+    } catch (e) {
+      console.error(e)
+      alert('Gagal memproses estafet.')
+    } finally {
+      setSuccessionLoading(false)
+    }
+  }
+
   if (loading) {
     return (<div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div></div>)
   }
@@ -295,6 +329,64 @@ const OrganizationSettings: React.FC = () => {
             <p className="text-sm text-slate-500">Belum ada jabatan. Tambahkan di atas.</p>
           )}
         </div>
+      </div>
+
+      <div className="bg-white dark:bg-[#1E1E1E] rounded-xl p-6 border border-slate-200 dark:border-[#2A2A2A]">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-lg font-bold flex items-center gap-2 text-blue-600 dark:text-blue-400">
+            <RefreshCcw size={18} /> Estafet Kepengurusan
+          </h3>
+        </div>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
+          Fitur ini untuk melakukan pergantian kepengurusan secara massal.
+          Angkatan lama akan diubah status jabatannya menjadi <b>Demisioner</b>, dan periode organisasi akan diperbarui.
+        </p>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Angkatan Demisioner (Lama)</label>
+            <input
+              type="number"
+              value={demisionerYear}
+              onChange={(e) => setDemisionerYear(e.target.value)}
+              className="w-full px-4 py-2 border rounded-lg dark:bg-[#1A1A1A]"
+              placeholder="Contoh: 2023"
+            />
+            <p className="text-xs text-slate-400 mt-1">Anggota aktif tahun ini akan menjadi Demisioner</p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Angkatan Penerus (Baru)</label>
+            <input
+              type="number"
+              value={nextYear}
+              onChange={(e) => setNextYear(e.target.value)}
+              className="w-full px-4 py-2 border rounded-lg dark:bg-[#1A1A1A]"
+              placeholder="Contoh: 2024"
+            />
+            <p className="text-xs text-slate-400 mt-1">Hanya referensi, tidak ada perubahan otomatis</p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Periode Baru Mulai</label>
+            <input type="date" value={periodStart} onChange={(e) => setPeriodStart(e.target.value)} className="w-full px-4 py-2 border rounded-lg dark:bg-[#1A1A1A]" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Periode Baru Selesai</label>
+            <input type="date" value={periodEnd} onChange={(e) => setPeriodEnd(e.target.value)} className="w-full px-4 py-2 border rounded-lg dark:bg-[#1A1A1A]" />
+          </div>
+        </div>
+
+        <button
+          onClick={handleEstafet}
+          disabled={successionLoading}
+          className="w-full px-4 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2"
+        >
+          {successionLoading ? (
+            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+          ) : (
+            <RefreshCcw size={18} />
+          )}
+          Proses Estafet Kepengurusan
+        </button>
       </div>
 
       {/* Backup & Soft Delete */}

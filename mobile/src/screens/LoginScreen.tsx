@@ -14,7 +14,7 @@ import {
 } from 'react-native'
 import { Mail, Lock, Eye, EyeOff, ArrowRight, CheckSquare, Square } from 'lucide-react-native'
 import { LinearGradient } from 'expo-linear-gradient'
-import { colors, gradients, spacing, borderRadius, shadows } from '../ui/theme'
+import { useTheme, spacing, borderRadius, shadows } from '../ui/theme'
 import { supabase } from '../lib/supabase'
 
 interface LoginScreenProps {
@@ -22,6 +22,7 @@ interface LoginScreenProps {
 }
 
 export default function LoginScreen({ onLoggedIn }: LoginScreenProps) {
+    const { colors, gradients, mode } = useTheme()
     const [emailOrNpm, setEmailOrNpm] = useState('')
     const [password, setPassword] = useState('')
     const [showPassword, setShowPassword] = useState(false)
@@ -30,49 +31,24 @@ export default function LoginScreen({ onLoggedIn }: LoginScreenProps) {
     const [info, setInfo] = useState('')
     const [remember, setRemember] = useState(false)
 
-    // Animation values
     const logoScale = useRef(new Animated.Value(0.5)).current
     const logoOpacity = useRef(new Animated.Value(0)).current
     const formTranslateY = useRef(new Animated.Value(50)).current
     const formOpacity = useRef(new Animated.Value(0)).current
 
     useEffect(() => {
-        // Entrance animations
         Animated.parallel([
-            Animated.spring(logoScale, {
-                toValue: 1,
-                friction: 8,
-                tension: 40,
-                useNativeDriver: true,
-            }),
-            Animated.timing(logoOpacity, {
-                toValue: 1,
-                duration: 400,
-                useNativeDriver: true,
-            }),
-            Animated.timing(formTranslateY, {
-                toValue: 0,
-                duration: 500,
-                delay: 200,
-                useNativeDriver: true,
-            }),
-            Animated.timing(formOpacity, {
-                toValue: 1,
-                duration: 500,
-                delay: 200,
-                useNativeDriver: true,
-            }),
+            Animated.spring(logoScale, { toValue: 1, friction: 8, tension: 40, useNativeDriver: true }),
+            Animated.timing(logoOpacity, { toValue: 1, duration: 400, useNativeDriver: true }),
+            Animated.timing(formTranslateY, { toValue: 0, duration: 500, delay: 200, useNativeDriver: true }),
+            Animated.timing(formOpacity, { toValue: 1, duration: 500, delay: 200, useNativeDriver: true }),
         ]).start()
     }, [])
 
     const resolveEmail = async (identifier: string): Promise<string> => {
         if (!identifier) return ''
         if (identifier.includes('@')) return identifier
-        const { data } = await supabase
-            .from('organization_members')
-            .select('email')
-            .eq('npm', identifier)
-            .single()
+        const { data } = await supabase.from('organization_members').select('email').eq('npm', identifier).single()
         return (data && data.email) || ''
     }
 
@@ -115,15 +91,14 @@ export default function LoginScreen({ onLoggedIn }: LoginScreenProps) {
         }
     }
 
+    const isDark = mode === 'dark'
+
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>
-            <StatusBar barStyle="light-content" />
-            <KeyboardAvoidingView
-                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                style={{ flex: 1 }}
-            >
+            <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
+            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
                 <View style={{ flex: 1, justifyContent: 'center', paddingHorizontal: spacing.lg }}>
-                    {/* Logo Section with Animation */}
+                    {/* Logo Section */}
                     <Animated.View style={{
                         alignItems: 'center',
                         marginBottom: spacing.xl,
@@ -159,20 +134,10 @@ export default function LoginScreen({ onLoggedIn }: LoginScreenProps) {
                                     style={{ width: 64, height: 64, borderRadius: 16 }}
                                 />
                             </View>
-                            <Text style={{
-                                fontSize: 24,
-                                fontWeight: '700',
-                                color: colors.text,
-                                textAlign: 'center',
-                            }}>
+                            <Text style={{ fontSize: 24, fontWeight: '700', color: colors.text, textAlign: 'center' }}>
                                 Selamat Datang
                             </Text>
-                            <Text style={{
-                                fontSize: 14,
-                                color: colors.muted,
-                                textAlign: 'center',
-                                marginTop: 4,
-                            }}>
+                            <Text style={{ fontSize: 14, color: colors.muted, textAlign: 'center', marginTop: 4 }}>
                                 Masuk ke akun Anda
                             </Text>
                         </LinearGradient>
@@ -204,11 +169,8 @@ export default function LoginScreen({ onLoggedIn }: LoginScreenProps) {
                         </View>
                     ) : null}
 
-                    {/* Login Form with Glassmorphism */}
-                    <Animated.View style={{
-                        transform: [{ translateY: formTranslateY }],
-                        opacity: formOpacity,
-                    }}>
+                    {/* Login Form */}
+                    <Animated.View style={{ transform: [{ translateY: formTranslateY }], opacity: formOpacity }}>
                         <View style={{
                             backgroundColor: colors.glass,
                             borderRadius: borderRadius.xl,
@@ -217,7 +179,7 @@ export default function LoginScreen({ onLoggedIn }: LoginScreenProps) {
                             borderColor: colors.glassBorder,
                             ...shadows.md,
                         }}>
-                            {/* Email/NPM Input */}
+                            {/* Email Input */}
                             <View style={{
                                 flexDirection: 'row',
                                 alignItems: 'center',
@@ -278,48 +240,28 @@ export default function LoginScreen({ onLoggedIn }: LoginScreenProps) {
                                     }}
                                 />
                                 <TouchableOpacity onPress={() => setShowPassword((v) => !v)}>
-                                    {showPassword ? (
-                                        <EyeOff color={colors.muted} size={20} />
-                                    ) : (
-                                        <Eye color={colors.muted} size={20} />
-                                    )}
+                                    {showPassword ? <EyeOff color={colors.muted} size={20} /> : <Eye color={colors.muted} size={20} />}
                                 </TouchableOpacity>
                             </View>
 
-                            {/* Remember & Forgot Password Row */}
+                            {/* Remember & Forgot Password */}
                             <View style={{
                                 flexDirection: 'row',
                                 alignItems: 'center',
                                 justifyContent: 'space-between',
                                 marginBottom: spacing.lg,
                             }}>
-                                <TouchableOpacity
-                                    onPress={() => setRemember((v) => !v)}
-                                    style={{ flexDirection: 'row', alignItems: 'center' }}
-                                >
-                                    {remember ? (
-                                        <CheckSquare color={colors.primary} size={18} />
-                                    ) : (
-                                        <Square color={colors.muted} size={18} />
-                                    )}
-                                    <Text style={{ color: colors.muted, fontSize: 13, marginLeft: spacing.sm }}>
-                                        Ingat saya
-                                    </Text>
+                                <TouchableOpacity onPress={() => setRemember((v) => !v)} style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                    {remember ? <CheckSquare color={colors.primary} size={18} /> : <Square color={colors.muted} size={18} />}
+                                    <Text style={{ color: colors.muted, fontSize: 13, marginLeft: spacing.sm }}>Ingat saya</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity onPress={forgotPassword}>
-                                    <Text style={{ color: colors.primary, fontSize: 13, fontWeight: '600' }}>
-                                        Lupa password?
-                                    </Text>
+                                    <Text style={{ color: colors.primary, fontSize: 13, fontWeight: '600' }}>Lupa password?</Text>
                                 </TouchableOpacity>
                             </View>
 
                             {/* Login Button */}
-                            <TouchableOpacity
-                                onPress={login}
-                                disabled={loading}
-                                activeOpacity={0.8}
-                                style={{ opacity: loading ? 0.7 : 1 }}
-                            >
+                            <TouchableOpacity onPress={login} disabled={loading} activeOpacity={0.8} style={{ opacity: loading ? 0.7 : 1 }}>
                                 <LinearGradient
                                     colors={gradients.primary}
                                     start={{ x: 0, y: 0 }}
@@ -336,12 +278,7 @@ export default function LoginScreen({ onLoggedIn }: LoginScreenProps) {
                                         <ActivityIndicator color="#ffffff" />
                                     ) : (
                                         <>
-                                            <Text style={{
-                                                color: colors.text,
-                                                fontSize: 16,
-                                                fontWeight: '600',
-                                                marginRight: spacing.sm,
-                                            }}>
+                                            <Text style={{ color: '#ffffff', fontSize: 16, fontWeight: '600', marginRight: spacing.sm }}>
                                                 Masuk
                                             </Text>
                                             <ArrowRight color="#ffffff" size={20} />

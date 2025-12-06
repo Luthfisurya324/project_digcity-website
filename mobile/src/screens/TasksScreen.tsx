@@ -19,7 +19,7 @@ import {
     Circle,
     ChevronRight,
 } from 'lucide-react-native'
-import { colors, gradients, spacing, borderRadius, shadows } from '../ui/theme'
+import { useTheme, spacing, borderRadius, shadows } from '../ui/theme'
 import { supabase } from '../lib/supabase'
 
 interface TasksScreenProps {
@@ -38,6 +38,7 @@ interface WorkProgram {
 }
 
 export default function TasksScreen({ userEmail, member }: TasksScreenProps) {
+    const { colors, gradients, mode } = useTheme()
     const [loading, setLoading] = useState(true)
     const [refreshing, setRefreshing] = useState(false)
     const [programs, setPrograms] = useState<WorkProgram[]>([])
@@ -45,7 +46,6 @@ export default function TasksScreen({ userEmail, member }: TasksScreenProps) {
 
     const loadPrograms = async () => {
         try {
-            // Load work programs (proker) from internal_events
             const { data } = await supabase
                 .from('internal_events')
                 .select('*')
@@ -113,9 +113,12 @@ export default function TasksScreen({ userEmail, member }: TasksScreenProps) {
         { key: 'completed' as const, label: 'Selesai' },
     ]
 
+    const isDark = mode === 'dark'
+
     if (loading) {
         return (
             <View style={{ flex: 1, backgroundColor: colors.bg, justifyContent: 'center', alignItems: 'center' }}>
+                <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
                 <ActivityIndicator size="large" color={colors.primary} />
             </View>
         )
@@ -123,7 +126,7 @@ export default function TasksScreen({ userEmail, member }: TasksScreenProps) {
 
     return (
         <View style={{ flex: 1, backgroundColor: colors.bg }}>
-            <StatusBar barStyle="light-content" />
+            <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
 
             {/* Header */}
             <View style={{ paddingHorizontal: spacing.lg, paddingTop: spacing.lg }}>
@@ -154,7 +157,7 @@ export default function TasksScreen({ userEmail, member }: TasksScreenProps) {
                             }}
                         >
                             <Text style={{
-                                color: filter === opt.key ? colors.text : colors.muted,
+                                color: filter === opt.key ? '#ffffff' : colors.muted,
                                 fontSize: 13,
                                 fontWeight: '600',
                             }}>
