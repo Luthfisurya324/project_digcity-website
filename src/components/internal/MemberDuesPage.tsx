@@ -1,10 +1,17 @@
 import React from 'react'
+import { useOutletContext } from 'react-router-dom'
 import MemberDuesPanel from './DuesPanel'
 
-const MemberDuesPage: React.FC = () => {
+interface MemberDuesPageProps {
+    userRole?: string
+}
+
+const MemberDuesPage: React.FC<MemberDuesPageProps> = ({ userRole = 'anggota' }) => {
+    // const { userRole } = useOutletContext<{ userRole: string }>()
+
     return (
         <div className="space-y-6">
-            <MemberDuesPanel onFinanceUpdate={() => { }} />
+            <MemberDuesPanel onFinanceUpdate={() => { }} userRole={userRole} />
         </div>
     )
 }

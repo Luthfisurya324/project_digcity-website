@@ -9,9 +9,11 @@ interface EventFormProps {
   onSuccess: () => void
   initialType?: 'meeting' | 'work_program' | 'gathering' | 'other'
   initialData?: InternalEvent | null
+  userRole?: string
+  userDivision?: string
 }
 
-const EventForm: React.FC<EventFormProps> = ({ onClose, onSuccess, initialType = 'meeting', initialData }) => {
+const EventForm: React.FC<EventFormProps> = ({ onClose, onSuccess, initialType = 'meeting', initialData, userRole, userDivision }) => {
   const { notify } = useNotifications()
   const [title, setTitle] = useState(initialData?.title || '')
   const [description, setDescription] = useState(initialData?.description || '')
@@ -31,14 +33,18 @@ const EventForm: React.FC<EventFormProps> = ({ onClose, onSuccess, initialType =
         const list = await orgAPI.getStructure(null)
         setDivisions(list)
         if (!initialData?.division_id && !divisionId && list.length > 0) {
-          // Don't auto-select if it might be 'Umum' (empty ID)
+          // Auto-select for Kadiv
+          if (userRole === 'kepala divisi' && userDivision) {
+            const match = list.find(d => d.name.toLowerCase() === userDivision.toLowerCase())
+            if (match) setDivisionId(match.id)
+          }
         }
       } catch {
         setDivisions([])
       }
     }
     loadDivisions()
-  }, [initialData])
+  }, [initialData, userRole, userDivision])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -60,7 +66,7 @@ const EventForm: React.FC<EventFormProps> = ({ onClose, onSuccess, initialType =
         end_date: endDate ? new Date(endDate).toISOString() : undefined,
         location,
         division: divisionName, // Keep for legacy/display
-        division_id: divisionId || null,
+        division_id: divisionId || undefined,
         type,
         status: initialData?.status || 'upcoming',
         created_by: initialData?.created_by || user.id
@@ -117,7 +123,12 @@ const EventForm: React.FC<EventFormProps> = ({ onClose, onSuccess, initialType =
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Divisi Penanggung Jawab</label>
-              <select value={divisionId} onChange={e => setDivisionId(e.target.value)} className="w-full px-4 py-2 border border-slate-200 dark:border-[#2A2A2A] rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-[#1A1A1A] dark:text-white">
+              <select
+                value={divisionId}
+                onChange={e => setDivisionId(e.target.value)}
+                disabled={userRole === 'kepala divisi'}
+                className="w-full px-4 py-2 border border-slate-200 dark:border-[#2A2A2A] rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-[#1A1A1A] dark:text-white disabled:opacity-50 disabled:bg-slate-100 dark:disabled:bg-[#252525]"
+              >
                 <option value="">Umum</option>
                 {divisions.map((div) => (
                   <option key={div.id} value={div.id}>{div.name}</option>

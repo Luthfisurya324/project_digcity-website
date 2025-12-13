@@ -47,6 +47,7 @@ import MemberDuesPage from '../components/internal/MemberDuesPage'
 import AdminUserManagement from '../components/internal/AdminUserManagement'
 import NotFoundPage from './NotFoundPage'
 import { MANAGEMENT_ROLES } from '../lib/roles'
+import TutorialButton from '../components/internal/TutorialButton'
 
 
 
@@ -190,6 +191,8 @@ const navigationGroups: { section: TabSection; label: string }[] = [
 const AuthenticatedLayout: React.FC<{
   user: User
   internalRole: string
+  userDivision: string
+  userPosition: string
   activeTab: string
   activeTabInfo: NavigationItem
   sidebarCollapsed: boolean
@@ -206,6 +209,8 @@ const AuthenticatedLayout: React.FC<{
 }> = ({
   user,
   internalRole,
+  userDivision,
+  userPosition,
   activeTab,
   activeTabInfo,
   sidebarCollapsed,
@@ -285,7 +290,9 @@ const AuthenticatedLayout: React.FC<{
             </button>
           </div>
 
-          <nav className={`flex-1 ${sidebarCollapsed ? 'px-2' : 'px-4'} py-6 overflow-y-auto space-y-6 custom-scrollbar`}>
+
+
+          <nav id="sidebar-nav" className={`flex-1 ${sidebarCollapsed ? 'px-2' : 'px-4'} py-6 overflow-y-auto space-y-6 custom-scrollbar`}>
             {groupedNavigation.map((group) => (
               <div key={group.label}>
                 {(!sidebarCollapsed || mobileMenuOpen) && (
@@ -367,26 +374,30 @@ const AuthenticatedLayout: React.FC<{
           </nav>
 
           {/* Admin Only Menu */}
-          {internalRole === 'admin' && (
-            <div className="pt-4 mt-4 border-t border-slate-100 dark:border-[#1F1F1F] flex-shrink-0">
-              <p className={`px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 ${sidebarCollapsed ? 'text-center' : ''}`}>
-                {sidebarCollapsed ? 'ADM' : 'Admin'}
-              </p>
-              <Link
-                to={`${getInternalBasePath()}/admin/users`}
-                onClick={() => setMobileMenuOpen(false)}
-                className={`flex items-center px-4 py-3 text-sm font-medium transition-colors ${location.pathname === `${getInternalBasePath()}/admin/users`
-                  ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/20 border-r-2 border-blue-600'
-                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-[#1A1A1A] hover:text-slate-900 dark:hover:text-white'
-                  }`}
-              >
-                <Shield size={20} className={sidebarCollapsed ? 'mx-auto' : 'mr-3'} />
-                {(!sidebarCollapsed || mobileMenuOpen) && 'Manajemen User'}
-              </Link>
-            </div>
-          )}
+          {
+            internalRole === 'admin' && (
+              <div className="pt-4 mt-4 border-t border-slate-100 dark:border-[#1F1F1F] flex-shrink-0">
+                <p className={`px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 ${sidebarCollapsed ? 'text-center' : ''}`}>
+                  {sidebarCollapsed ? 'ADM' : 'Admin'}
+                </p>
+                <Link
+                  to={`${getInternalBasePath()}/admin/users`}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex items-center px-4 py-3 text-sm font-medium transition-colors ${location.pathname === `${getInternalBasePath()}/admin/users`
+                    ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/20 border-r-2 border-blue-600'
+                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-[#1A1A1A] hover:text-slate-900 dark:hover:text-white'
+                    }`}
+                >
+                  <Shield size={20} className={sidebarCollapsed ? 'mx-auto' : 'mr-3'} />
+                  {(!sidebarCollapsed || mobileMenuOpen) && 'Manajemen User'}
+                </Link>
+              </div>
+            )
+          }
 
-          <div className="p-4 border-t border-slate-100 dark:border-[#1F1F1F] flex-shrink-0">
+
+
+          <div id="user-profile-section" className="p-4 border-t border-slate-100 dark:border-[#1F1F1F] flex-shrink-0">
             <div className={`flex items-center ${sidebarCollapsed ? 'justify-center' : 'gap-3'} mb-4`}>
               <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-bold">
                 {user.email.charAt(0).toUpperCase()}
@@ -406,7 +417,7 @@ const AuthenticatedLayout: React.FC<{
               {(!sidebarCollapsed || mobileMenuOpen) && <span className="text-sm font-medium">Keluar</span>}
             </button>
           </div>
-        </aside>
+        </aside >
 
         <main className={`flex-1 flex flex-col h-full overflow-hidden transition-all duration-300 w-full ${sidebarCollapsed ? 'lg:ml-0' : 'lg:ml-0'}`}>
           <header className="bg-white/80 dark:bg-[#101010]/80 backdrop-blur z-10 border-b border-slate-200 dark:border-[#1F1F1F] px-4 sm:px-6 py-4 flex-shrink-0">
@@ -419,12 +430,14 @@ const AuthenticatedLayout: React.FC<{
                   <Menu size={24} />
                 </button>
                 <div>
-                  <h1 className="text-xl font-bold text-slate-900 dark:text-white">{activeTabInfo.name}</h1>
+                  <h1 id="internal-dashboard-header" className="text-xl font-bold text-slate-900 dark:text-white">{activeTabInfo.name}</h1>
                   <p className="text-sm text-slate-500 dark:text-slate-400 hidden sm:block">{activeTabInfo.description}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <ThemeToggle />
+                <div id="theme-toggle-btn">
+                  <ThemeToggle />
+                </div>
                 <a href="https://digcity.my.id" target="_blank" rel="noreferrer" className="p-2 text-slate-400 hover:text-blue-600 transition-colors hidden sm:block">
                   <Globe size={20} />
                 </a>
@@ -439,12 +452,12 @@ const AuthenticatedLayout: React.FC<{
             <div className="max-w-7xl mx-auto w-full">
               <Routes>
                 <Route path="/" element={<InternalDashboard />} />
-                <Route path="/work-programs" element={<WorkProgramsPage />} />
-                <Route path="/finance/dashboard" element={MANAGEMENT_ROLES.includes(internalRole.toLowerCase()) ? <FinanceDashboard /> : <Navigate to="/" replace />} />
-                <Route path="/finance" element={MANAGEMENT_ROLES.includes(internalRole.toLowerCase()) ? <FinancePage /> : <Navigate to="/" replace />} />
-                <Route path="/finance/dues" element={MANAGEMENT_ROLES.includes(internalRole.toLowerCase()) ? <MemberDuesPage /> : <Navigate to="/" replace />} />
+                <Route path="/work-programs" element={<WorkProgramsPage userRole={internalRole} userDivision={userDivision} />} />
+                <Route path="/finance/dashboard" element={MANAGEMENT_ROLES.includes(internalRole.toLowerCase()) ? <FinanceDashboard userRole={internalRole} userDivision={userDivision} /> : <Navigate to="/" replace />} />
+                <Route path="/finance" element={MANAGEMENT_ROLES.includes(internalRole.toLowerCase()) ? <FinancePage userRole={internalRole} userPosition={userPosition} /> : <Navigate to="/" replace />} />
+                <Route path="/finance/dues" element={MANAGEMENT_ROLES.includes(internalRole.toLowerCase()) ? <MemberDuesPage userRole={internalRole} /> : <Navigate to="/" replace />} />
                 <Route path="/members" element={MANAGEMENT_ROLES.includes(internalRole.toLowerCase()) ? <MembersPage /> : <Navigate to="/" replace />} />
-                <Route path="/attendance" element={MANAGEMENT_ROLES.includes(internalRole.toLowerCase()) ? <AttendancePage /> : <Navigate to="/" replace />} />
+                <Route path="/attendance" element={MANAGEMENT_ROLES.includes(internalRole.toLowerCase()) ? <AttendancePage userRole={internalRole} userDivision={userDivision} /> : <Navigate to="/" replace />} />
                 <Route path="/attendance/leaderboard" element={<LeaderboardPage />} />
                 <Route path="/kpi" element={<KPIPage />} />
                 <Route path="/inventory" element={<InventoryPage />} />
@@ -460,13 +473,19 @@ const AuthenticatedLayout: React.FC<{
             </div>
           </div>
         </main>
-      </div>
+
+        {/* Tutorial Button */}
+        <TutorialButton sidebarCollapsed={sidebarCollapsed} />
+      </div >
     )
   }
 
 const InternalPanel: React.FC = () => {
   const [user, setUser] = useState<User | null>(null)
   const [internalRole, setInternalRole] = useState<string>('anggota')
+  const [userDivision, setUserDivision] = useState<string>('')
+  const [userPosition, setUserPosition] = useState<string>('')
+  const [userName, setUserName] = useState<string>('')
   const [loading, setLoading] = useState(true)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [expandedMenus, setExpandedMenus] = useState<string[]>(['finance'])
@@ -541,14 +560,30 @@ const InternalPanel: React.FC = () => {
           try {
             const { data: memberData } = await supabase
               .from('organization_members')
-              .select('position')
+              .select('id, full_name, position, division')
               .eq('email', currentUser.email)
               .single()
 
-            if (memberData?.position) {
-              const position = memberData.position.toLowerCase()
-              if (position.includes('kepala divisi') || position.includes('head of department')) {
+            if (memberData) {
+              setUserName(memberData.full_name)
+              const position = memberData.position ? memberData.position.toLowerCase() : ''
+              setUserPosition(position)
+              if (position.includes('kepala divisi') || position.includes('head of')) {
                 roleMeta = 'kepala divisi'
+              } else if (
+                position.includes('bph') ||
+                position.includes('badan pengurus harian') ||
+                position.includes('wakil ketua') ||
+                position.includes('sekretaris') ||
+                position.includes('bendahara') ||
+                position === 'ketua' ||
+                position.includes('ketua umum')
+              ) {
+                roleMeta = 'bph'
+              }
+
+              if (memberData.division) {
+                setUserDivision(memberData.division)
               }
             }
           } catch (err) {
@@ -631,6 +666,8 @@ const InternalPanel: React.FC = () => {
     <AuthenticatedLayout
       user={user}
       internalRole={internalRole}
+      userDivision={userDivision}
+      userPosition={userPosition}
       activeTab={activeTab}
       activeTabInfo={activeTabInfo}
       sidebarCollapsed={sidebarCollapsed}

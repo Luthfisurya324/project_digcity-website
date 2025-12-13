@@ -53,7 +53,16 @@ const statusColors: Record<keyof ActivityStats['statusCounts'], string> = {
   absent: 'bg-rose-500'
 }
 
-const AttendancePage: React.FC = () => {
+
+
+interface AttendancePageProps {
+  userRole?: string
+  userDivision?: string
+}
+
+const AttendancePage: React.FC<AttendancePageProps> = ({ userRole = 'anggota', userDivision = '' }) => {
+  // const { userRole, userDivision } = useOutletContext<{ userRole: string, userDivision: string }>()
+  const canManageFull = userRole === 'bph'
   const [events, setEvents] = useState<InternalEvent[]>([])
   const [loadingEvents, setLoadingEvents] = useState(true)
   const [showForm, setShowForm] = useState(false)
@@ -339,11 +348,11 @@ const AttendancePage: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
+        <div id="attendance-header">
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Agenda & Presensi</h1>
           <p className="text-slate-500 dark:text-slate-400">Kelola jadwal kegiatan, QR dinamis, dan laporan presensi</p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div id="attendance-actions" className="flex flex-wrap gap-2">
           <div className="flex bg-slate-100 dark:bg-[#2A2A2A] rounded-lg p-1">
             <button
               onClick={() => setViewMode('grid')}
@@ -359,6 +368,7 @@ const AttendancePage: React.FC = () => {
             </button>
           </div>
           <button
+            id="attendance-scanner-btn"
             onClick={() => setShowScanner(true)}
             className="px-4 py-2 bg-white dark:bg-[#1E1E1E] border border-slate-200 dark:border-[#2A2A2A] text-slate-700 dark:text-slate-300 rounded-lg flex items-center gap-2 hover:bg-slate-50 dark:hover:bg-[#2A2A2A] transition-colors shadow-sm"
           >
@@ -366,6 +376,7 @@ const AttendancePage: React.FC = () => {
             <span className="hidden sm:inline">Scan QR</span>
           </button>
           <button
+            id="attendance-create-btn"
             onClick={() => setShowForm(true)}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg flex items-center gap-2 hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200 dark:shadow-none"
           >
@@ -375,7 +386,7 @@ const AttendancePage: React.FC = () => {
         </div>
       </div>
       {(loadingEvents || loadingStats) ? (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div id="attendance-stats" className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[0, 1, 2].map((i) => (
             <div key={i} className="bg-white dark:bg-[#1E1E1E] p-4 rounded-xl border border-slate-200 dark:border-[#2A2A2A] flex items-center gap-4 animate-pulse">
               <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-[#232323]"></div>
@@ -418,7 +429,7 @@ const AttendancePage: React.FC = () => {
         </div>
       )}
 
-      <div className="bg-white dark:bg-[#1E1E1E] p-4 rounded-xl border border-slate-200 dark:border-[#2A2A2A] flex flex-wrap items-center gap-3">
+      <div id="attendance-filters" className="bg-white dark:bg-[#1E1E1E] p-4 rounded-xl border border-slate-200 dark:border-[#2A2A2A] flex flex-wrap items-center gap-3">
         <div className="relative">
           <Filter size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <select value={divisionFilter} onChange={(e) => setDivisionFilter(e.target.value)} className="pl-10 pr-4 py-2 border border-slate-200 dark:border-[#2A2A2A] rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-[#1A1A1A] dark:text-white">
@@ -443,7 +454,7 @@ const AttendancePage: React.FC = () => {
       </div>
 
       {viewMode === 'grid' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div id="attendance-content" className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {loadingEvents ? (
             Array.from({ length: 6 }).map((_, idx) => (
               <div key={idx} className="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl border border-slate-200 dark:border-[#2A2A2A] animate-pulse">
@@ -487,13 +498,15 @@ const AttendancePage: React.FC = () => {
                       <h3 className="text-lg font-bold mt-2 text-slate-900 dark:text-white line-clamp-1">{event.title}</h3>
                     </div>
                     <div className="flex gap-2">
-                      <button
-                        onClick={() => handleDeleteEvent(event.id, event.title)}
-                        className="p-2 bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 rounded-lg hover:bg-rose-100 transition-colors"
-                        title="Hapus Agenda"
-                      >
-                        <Trash2 size={20} />
-                      </button>
+                      {canManageFull && (
+                        <button
+                          onClick={() => handleDeleteEvent(event.id, event.title)}
+                          className="p-2 bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 rounded-lg hover:bg-rose-100 transition-colors"
+                          title="Hapus Agenda"
+                        >
+                          <Trash2 size={20} />
+                        </button>
+                      )}
                       <button
                         onClick={() => setQrEvent(event)}
                         className="p-2 bg-slate-50 dark:bg-[#2A2A2A] text-slate-600 dark:text-slate-300 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors"
@@ -624,12 +637,14 @@ const AttendancePage: React.FC = () => {
                         >
                           Lihat
                         </button>
-                        <button
-                          className="text-rose-600 text-xs font-semibold"
-                          onClick={() => handleDeleteEvent(event.id, event.title)}
-                        >
-                          Hapus
-                        </button>
+                        {canManageFull && (
+                          <button
+                            className="text-rose-600 text-xs font-semibold"
+                            onClick={() => handleDeleteEvent(event.id, event.title)}
+                          >
+                            Hapus
+                          </button>
+                        )}
                       </div>
                     </div>
                     <p className="text-xs text-slate-500 mb-1">{event.division}</p>
@@ -649,7 +664,7 @@ const AttendancePage: React.FC = () => {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div id="attendance-performance-stats" className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white dark:bg-[#1E1E1E] rounded-2xl border border-slate-200 dark:border-[#2A2A2A] p-6">
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -786,7 +801,7 @@ const AttendancePage: React.FC = () => {
         </div>
       </div>
 
-      {showForm && <EventForm onClose={() => setShowForm(false)} onSuccess={loadEvents} />}
+      {showForm && <EventForm onClose={() => setShowForm(false)} onSuccess={loadEvents} userRole={userRole} userDivision={userDivision} />}
 
       {selectedEvent && (
         <AttendanceDetail

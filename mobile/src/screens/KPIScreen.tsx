@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import {
     View,
     Text,
@@ -6,6 +6,7 @@ import {
     StatusBar,
     RefreshControl,
     ActivityIndicator,
+    Animated,
 } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import {
@@ -17,8 +18,46 @@ import {
     Sparkles,
     Award,
 } from 'lucide-react-native'
-import { useTheme, spacing, borderRadius, shadows } from '../ui/theme'
+import { useTheme, spacing, borderRadius, shadows, animation } from '../ui/theme'
 import { supabase } from '../lib/supabase'
+
+// Animated Progress Bar Component
+function AnimatedProgressBar({ percentage, color, delay = 0 }: { percentage: number; color: string; delay?: number }) {
+    const animatedWidth = useRef(new Animated.Value(0)).current
+    const { colors } = useTheme()
+
+    useEffect(() => {
+        Animated.sequence([
+            Animated.delay(delay),
+            Animated.timing(animatedWidth, {
+                toValue: percentage,
+                duration: 800,
+                useNativeDriver: false,
+            }),
+        ]).start()
+    }, [percentage])
+
+    const width = animatedWidth.interpolate({
+        inputRange: [0, 100],
+        outputRange: ['0%', '100%'],
+    })
+
+    return (
+        <View style={{
+            height: 8,
+            backgroundColor: colors.border,
+            borderRadius: 4,
+            overflow: 'hidden',
+        }}>
+            <Animated.View style={{
+                width: width,
+                height: '100%',
+                backgroundColor: color,
+                borderRadius: 4,
+            }} />
+        </View>
+    )
+}
 
 interface KPIScreenProps {
     userEmail: string
@@ -208,7 +247,7 @@ export default function KPIScreen({ userEmail, member }: KPIScreenProps) {
                             Breakdown Nilai
                         </Text>
 
-                        {categories.map((cat) => {
+                        {categories.map((cat, index) => {
                             const Icon = cat.icon
                             const score = kpiData ? (kpiData as any)[`${cat.key}_score`] || 0 : 0
                             const percentage = Math.min(100, score)
@@ -250,20 +289,12 @@ export default function KPIScreen({ userEmail, member }: KPIScreenProps) {
                                         </Text>
                                     </View>
 
-                                    {/* Progress Bar */}
-                                    <View style={{
-                                        height: 6,
-                                        backgroundColor: colors.border,
-                                        borderRadius: 3,
-                                        overflow: 'hidden',
-                                    }}>
-                                        <View style={{
-                                            width: `${percentage}%`,
-                                            height: '100%',
-                                            backgroundColor: cat.color,
-                                            borderRadius: 3,
-                                        }} />
-                                    </View>
+                                    {/* Animated Progress Bar */}
+                                    <AnimatedProgressBar
+                                        percentage={percentage}
+                                        color={cat.color}
+                                        delay={index * 100}
+                                    />
                                 </View>
                             )
                         })}

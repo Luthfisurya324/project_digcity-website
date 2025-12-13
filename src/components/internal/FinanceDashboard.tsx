@@ -12,7 +12,12 @@ import {
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
-const FinanceDashboard: React.FC = () => {
+interface FinanceDashboardProps {
+    userRole?: string
+    userDivision?: string
+}
+
+const FinanceDashboard: React.FC<FinanceDashboardProps> = (/* { userRole, userDivision } */) => {
     const [transactions, setTransactions] = useState<FinanceTransaction[]>([])
     const [dues, setDues] = useState<MemberDue[]>([])
     const [loading, setLoading] = useState(true)

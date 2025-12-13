@@ -12,6 +12,7 @@ interface ConfirmationModalProps {
     cancelText?: string
     type?: 'danger' | 'warning' | 'info'
     showCancel?: boolean
+    loading?: boolean
 }
 
 const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
@@ -23,7 +24,8 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     confirmText = 'Konfirmasi',
     cancelText = 'Batal',
     type = 'warning',
-    showCancel = true
+    showCancel = true,
+    loading = false
 }) => {
     if (!isOpen) return null
 
@@ -62,7 +64,8 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                         </div>
                         <button
                             onClick={onClose}
-                            className="text-slate-400 hover:text-slate-500 dark:hover:text-slate-300 transition-colors"
+                            disabled={loading}
+                            className="text-slate-400 hover:text-slate-500 dark:hover:text-slate-300 transition-colors disabled:opacity-50"
                         >
                             <X size={20} />
                         </button>
@@ -73,19 +76,26 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                     {showCancel && (
                         <button
                             onClick={onClose}
-                            className="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#2A2A2A] rounded-lg transition-colors"
+                            disabled={loading}
+                            className="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#2A2A2A] rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {cancelText}
                         </button>
                     )}
                     <button
                         onClick={() => {
-                            onConfirm()
-                            onClose()
+                            if (!loading) {
+                                onConfirm()
+                                // removed automatic onClose to let parent handle it if async
+                            }
                         }}
-                        className={`px-4 py-2 text-sm font-medium text-white rounded-lg shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-[#1E1E1E] ${currentColors.button}`}
+                        disabled={loading}
+                        className={`px-4 py-2 text-sm font-medium text-white rounded-lg shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-[#1E1E1E] ${currentColors.button} disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-2`}
                     >
-                        {confirmText}
+                        {loading && (
+                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        )}
+                        {loading ? 'Memproses...' : confirmText}
                     </button>
                 </div>
             </div>

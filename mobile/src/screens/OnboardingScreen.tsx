@@ -15,7 +15,7 @@ import {
     BarChart3,
     Bell,
     ArrowRight,
-    ChevronRight
+    Sparkles,
 } from 'lucide-react-native'
 import { useTheme, spacing, borderRadius } from '../ui/theme'
 
@@ -24,44 +24,49 @@ const { width, height } = Dimensions.get('window')
 interface OnboardingSlide {
     id: string
     title: string
-    subtitle: string
+    highlight: string
     description: string
     iconType: 'logo' | 'qr' | 'chart' | 'bell'
-    gradientColors: readonly [string, string, ...string[]]
+    gradient: readonly [string, string, ...string[]]
+    emoji: string
 }
 
 const slides: OnboardingSlide[] = [
     {
         id: '1',
-        title: 'Selamat Datang',
-        subtitle: 'di DigCity',
-        description: 'Aplikasi resmi untuk anggota organisasi. Kelola kehadiran, pantau performa, dan tetap terhubung.',
+        title: 'Selamat Datang di',
+        highlight: 'DigCity',
+        description: 'Platform resmi anggota organisasi untuk kelola kehadiran, pantau performa, dan tetap terhubung dengan komunitas.',
         iconType: 'logo',
-        gradientColors: ['#1e3a8a', '#312e81', '#4c1d95'],
+        gradient: ['#1e3a8a', '#4c1d95'],
+        emoji: '👋',
     },
     {
         id: '2',
-        title: 'Absensi Digital',
-        subtitle: 'Mudah & Cepat',
-        description: 'Scan QR code untuk mencatat kehadiran Anda di setiap kegiatan organisasi secara real-time.',
+        title: 'Absensi Cepat',
+        highlight: 'Scan QR',
+        description: 'Cukup scan QR code untuk mencatat kehadiran. Tidak perlu tanda tangan manual lagi!',
         iconType: 'qr',
-        gradientColors: ['#2563eb', '#7c3aed'],
+        gradient: ['#2563eb', '#7c3aed'],
+        emoji: '📱',
     },
     {
         id: '3',
-        title: 'Pantau KPI',
-        subtitle: 'Performa Anda',
-        description: 'Lihat nilai KPI, grade, dan progres Anda. Tingkatkan kontribusi untuk organisasi.',
+        title: 'Pantau',
+        highlight: 'Kinerja KPI',
+        description: 'Lihat skor KPI, grade, dan track record kehadiranmu secara real-time. Tingkatkan kontribusimu!',
         iconType: 'chart',
-        gradientColors: ['#059669', '#0d9488'],
+        gradient: ['#059669', '#10b981'],
+        emoji: '📊',
     },
     {
         id: '4',
-        title: 'Tetap Update',
-        subtitle: 'Setiap Saat',
-        description: 'Terima notifikasi tugas, pengingat iuran, dan info kegiatan langsung di genggaman Anda.',
+        title: 'Tetap',
+        highlight: 'Terhubung',
+        description: 'Dapatkan notifikasi tugas, info kegiatan, dan pengingat iuran langsung di HP-mu.',
         iconType: 'bell',
-        gradientColors: ['#f97316', '#ec4899'],
+        gradient: ['#f97316', '#ec4899'],
+        emoji: '🔔',
     },
 ]
 
@@ -70,7 +75,7 @@ interface OnboardingScreenProps {
 }
 
 export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) {
-    const { colors, gradients, mode } = useTheme()
+    const { colors, mode } = useTheme()
     const [currentIndex, setCurrentIndex] = useState(0)
     const flatListRef = useRef<FlatList>(null)
     const scrollX = useRef(new Animated.Value(0)).current
@@ -94,70 +99,62 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
         }
     }).current
 
-    const renderIcon = (iconType: string) => {
+    const renderIcon = (iconType: string, gradient: readonly string[]) => {
+        const iconProps = { color: '#ffffff', size: 48 }
         switch (iconType) {
             case 'logo':
-                return <Image source={{ uri: 'https://digcity.my.id/logo_digcity.png' }} style={{ width: 80, height: 80, borderRadius: 20 }} />
+                return <Sparkles {...iconProps} />
             case 'qr':
-                return <QrCode color="#ffffff" size={64} strokeWidth={1.5} />
+                return <QrCode {...iconProps} />
             case 'chart':
-                return <BarChart3 color="#ffffff" size={64} strokeWidth={1.5} />
+                return <BarChart3 {...iconProps} />
             case 'bell':
-                return <Bell color="#ffffff" size={64} strokeWidth={1.5} />
+                return <Bell {...iconProps} />
             default:
                 return null
         }
     }
 
     const renderSlide = ({ item, index }: { item: OnboardingSlide; index: number }) => {
-        const inputRange = [(index - 1) * width, index * width, (index + 1) * width]
-        const scale = scrollX.interpolate({ inputRange, outputRange: [0.8, 1, 0.8], extrapolate: 'clamp' })
-        const opacity = scrollX.interpolate({ inputRange, outputRange: [0.5, 1, 0.5], extrapolate: 'clamp' })
-
         return (
-            <View style={{ width, paddingHorizontal: spacing.lg }}>
-                <Animated.View style={{ flex: 1, transform: [{ scale }], opacity }}>
-                    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: height * 0.1 }}>
-                        <LinearGradient
-                            colors={item.gradientColors}
-                            start={{ x: 0, y: 0 }}
-                            end={{ x: 1, y: 1 }}
-                            style={{
-                                width: 160,
-                                height: 160,
-                                borderRadius: 40,
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                marginBottom: spacing.xl,
-                            }}
-                        >
-                            <View style={{
-                                width: 140,
-                                height: 140,
-                                borderRadius: 35,
-                                backgroundColor: colors.glass,
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                borderWidth: 1,
-                                borderColor: colors.glassBorder,
-                            }}>
-                                {renderIcon(item.iconType)}
-                            </View>
-                        </LinearGradient>
+            <View style={{ width, paddingHorizontal: spacing.xl }}>
+                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                    {/* Icon Container */}
+                    <LinearGradient
+                        colors={item.gradient}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={{
+                            width: 140,
+                            height: 140,
+                            borderRadius: 40,
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            marginBottom: spacing.xl,
+                            shadowColor: item.gradient[0],
+                            shadowOffset: { width: 0, height: 12 },
+                            shadowOpacity: 0.4,
+                            shadowRadius: 20,
+                            elevation: 15,
+                        }}
+                    >
+                        {renderIcon(item.iconType, item.gradient)}
+                    </LinearGradient>
 
-                        <View style={{ alignItems: 'center', paddingHorizontal: spacing.md }}>
-                            <Text style={{ fontSize: 28, fontWeight: '700', color: colors.text, textAlign: 'center' }}>
-                                {item.title}
-                            </Text>
-                            <Text style={{ fontSize: 28, fontWeight: '700', color: colors.primary, textAlign: 'center', marginBottom: spacing.md }}>
-                                {item.subtitle}
-                            </Text>
-                            <Text style={{ fontSize: 15, color: colors.muted, textAlign: 'center', lineHeight: 24, paddingHorizontal: spacing.lg }}>
-                                {item.description}
-                            </Text>
-                        </View>
+                    {/* Text Content */}
+                    <View style={{ alignItems: 'center', paddingHorizontal: spacing.md }}>
+                        <Text style={{ fontSize: 48, marginBottom: spacing.sm }}>{item.emoji}</Text>
+                        <Text style={{ fontSize: 24, color: colors.muted, fontWeight: '400', textAlign: 'center' }}>
+                            {item.title}
+                        </Text>
+                        <Text style={{ fontSize: 32, color: colors.text, fontWeight: '800', textAlign: 'center', marginBottom: spacing.md }}>
+                            {item.highlight}
+                        </Text>
+                        <Text style={{ fontSize: 16, color: colors.muted, textAlign: 'center', lineHeight: 26, paddingHorizontal: spacing.sm }}>
+                            {item.description}
+                        </Text>
                     </View>
-                </Animated.View>
+                </View>
             </View>
         )
     }
@@ -165,20 +162,16 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
     const renderDots = () => (
         <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: spacing.xl }}>
             {slides.map((_, index) => {
-                const inputRange = [(index - 1) * width, index * width, (index + 1) * width]
-                const dotWidth = scrollX.interpolate({ inputRange, outputRange: [8, 24, 8], extrapolate: 'clamp' })
-                const dotOpacity = scrollX.interpolate({ inputRange, outputRange: [0.3, 1, 0.3], extrapolate: 'clamp' })
-
+                const isActive = index === currentIndex
                 return (
-                    <Animated.View
+                    <View
                         key={index}
                         style={{
-                            width: dotWidth,
+                            width: isActive ? 32 : 8,
                             height: 8,
                             borderRadius: 4,
-                            backgroundColor: colors.primary,
+                            backgroundColor: isActive ? colors.primary : colors.border,
                             marginHorizontal: 4,
-                            opacity: dotOpacity,
                         }}
                     />
                 )
@@ -188,11 +181,13 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
 
     const isLastSlide = currentIndex === slides.length - 1
     const isDark = mode === 'dark'
+    const currentSlide = slides[currentIndex]
 
     return (
         <View style={{ flex: 1, backgroundColor: colors.bg }}>
             <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
 
+            {/* Skip Button */}
             {!isLastSlide && (
                 <TouchableOpacity
                     onPress={handleSkip}
@@ -209,6 +204,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
                 </TouchableOpacity>
             )}
 
+            {/* Slides */}
             <Animated.FlatList
                 ref={flatListRef}
                 data={slides}
@@ -223,26 +219,32 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
                 style={{ flex: 1 }}
             />
 
-            <View style={{ paddingHorizontal: spacing.lg, paddingBottom: spacing.xxl }}>
+            {/* Bottom Section */}
+            <View style={{ paddingHorizontal: spacing.xl, paddingBottom: spacing.xxl + 20 }}>
                 {renderDots()}
 
-                <TouchableOpacity onPress={handleNext} activeOpacity={0.8}>
+                <TouchableOpacity onPress={handleNext} activeOpacity={0.9}>
                     <LinearGradient
-                        colors={gradients.primary}
+                        colors={currentSlide.gradient}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 1 }}
                         style={{
                             flexDirection: 'row',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            paddingVertical: 16,
-                            borderRadius: borderRadius.lg,
+                            paddingVertical: 18,
+                            borderRadius: 16,
+                            shadowColor: currentSlide.gradient[0],
+                            shadowOffset: { width: 0, height: 8 },
+                            shadowOpacity: 0.35,
+                            shadowRadius: 12,
+                            elevation: 8,
                         }}
                     >
-                        <Text style={{ color: '#ffffff', fontSize: 17, fontWeight: '600', marginRight: spacing.sm }}>
+                        <Text style={{ color: '#ffffff', fontSize: 17, fontWeight: '700', marginRight: spacing.sm }}>
                             {isLastSlide ? 'Mulai Sekarang' : 'Lanjutkan'}
                         </Text>
-                        {isLastSlide ? <ArrowRight color="#ffffff" size={20} /> : <ChevronRight color="#ffffff" size={20} />}
+                        <ArrowRight color="#ffffff" size={20} />
                     </LinearGradient>
                 </TouchableOpacity>
             </View>

@@ -109,11 +109,14 @@ export interface MemberDue {
   division: string
   amount: number
   due_date: string
-  status: 'unpaid' | 'partial' | 'paid'
+  status: 'unpaid' | 'partial' | 'paid' | 'pending_verification'
   invoice_number: string
   notes?: string
   transaction_id?: string | null
   created_at: string
+  proof_url?: string
+  payment_method?: 'transfer' | 'cash'
+  submitted_at?: string
 }
 
 export interface Document {
@@ -169,6 +172,7 @@ export interface OrganizationProfile {
   external_drive_url?: string
   payment_provider?: string
   backup_last_at?: string
+  is_campaign_active?: boolean
   deleted_at?: string
   created_at: string
   updated_at: string
@@ -925,6 +929,7 @@ export const membersAPI = {
       .from('organization_members')
       .select('*')
       .order('full_name', { ascending: true })
+      .limit(5000)
 
     if (error) throw error
     return data as OrganizationMember[]
@@ -1204,7 +1209,7 @@ export const attendanceAPI = {
       .select('*')
       .eq('event_id', eventId)
       .order('check_in_time', { ascending: true })
-      .limit(10000)
+      .limit(50000)
 
     if (error) throw error
     return data as Attendance[]
@@ -1219,7 +1224,7 @@ export const attendanceAPI = {
       .from('attendance')
       .select('*')
       .gte('check_in_time', since.toISOString())
-      .limit(10000)
+      .limit(50000)
 
     if (error) throw error
     return data as Attendance[]

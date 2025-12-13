@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import {
     View,
     Text,
@@ -7,6 +7,8 @@ import {
     TouchableOpacity,
     TextInput,
     Switch,
+    Animated,
+    Dimensions,
 } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import {
@@ -24,9 +26,19 @@ import {
     Sun,
     Moon,
     Palette,
+    CreditCard,
+    QrCode,
+    RotateCcw,
+    Star,
+    Zap,
+    Trophy,
+    Award,
+    TrendingUp,
 } from 'lucide-react-native'
 import { useTheme, spacing, borderRadius, shadows } from '../ui/theme'
 import { supabase } from '../lib/supabase'
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window')
 
 interface ProfileScreenProps {
     userEmail: string
@@ -44,6 +56,38 @@ export default function ProfileScreen({ userEmail, member, onLogout }: ProfileSc
     const [pwError, setPwError] = useState('')
     const [pwSuccess, setPwSuccess] = useState('')
     const [loading, setLoading] = useState(false)
+
+    // E-ID Card flip animation
+    const [isCardFlipped, setIsCardFlipped] = useState(false)
+    const flipAnimation = useRef(new Animated.Value(0)).current
+
+    const handleCardFlip = () => {
+        Animated.spring(flipAnimation, {
+            toValue: isCardFlipped ? 0 : 1,
+            friction: 8,
+            tension: 10,
+            useNativeDriver: true,
+        }).start()
+        setIsCardFlipped(!isCardFlipped)
+    }
+
+    // Interpolate rotation values
+    const frontInterpolate = flipAnimation.interpolate({
+        inputRange: [0, 1],
+        outputRange: ['0deg', '180deg'],
+    })
+    const backInterpolate = flipAnimation.interpolate({
+        inputRange: [0, 1],
+        outputRange: ['180deg', '360deg'],
+    })
+    const frontOpacity = flipAnimation.interpolate({
+        inputRange: [0, 0.5, 1],
+        outputRange: [1, 0, 0],
+    })
+    const backOpacity = flipAnimation.interpolate({
+        inputRange: [0, 0.5, 1],
+        outputRange: [0, 0, 1],
+    })
 
     const name = member?.full_name || 'Anggota DigCity'
     const npm = member?.npm || '-'
@@ -101,85 +145,252 @@ export default function ProfileScreen({ userEmail, member, onLogout }: ProfileSc
                     </Text>
                 </View>
 
-                {/* Member Card */}
-                <View style={{
-                    borderRadius: borderRadius.xl,
-                    overflow: 'hidden',
-                    marginBottom: spacing.lg,
-                    ...shadows.lg,
-                }}>
-                    <LinearGradient
-                        colors={gradients.primary}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 1 }}
-                        style={{ padding: spacing.lg }}
-                    >
-                        {/* Profile Photo & Basic Info */}
-                        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.lg }}>
-                            <View style={{
-                                width: 72,
-                                height: 72,
-                                borderRadius: 24,
-                                backgroundColor: 'rgba(255,255,255,0.2)',
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                marginRight: spacing.md,
-                                borderWidth: 2,
-                                borderColor: 'rgba(255,255,255,0.3)',
-                            }}>
-                                <Text style={{ color: '#ffffff', fontSize: 28, fontWeight: '700' }}>
-                                    {name.slice(0, 1).toUpperCase()}
-                                </Text>
-                            </View>
-                            <View style={{ flex: 1 }}>
-                                <Text style={{ color: '#ffffff', fontSize: 18, fontWeight: '700' }} numberOfLines={1}>
-                                    {name}
-                                </Text>
-                                <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 13, marginTop: 2 }}>
-                                    NPM: {npm}
-                                </Text>
-                                <View style={{
-                                    backgroundColor: 'rgba(255,255,255,0.2)',
-                                    paddingHorizontal: spacing.sm,
-                                    paddingVertical: 2,
-                                    borderRadius: borderRadius.sm,
-                                    alignSelf: 'flex-start',
-                                    marginTop: 6,
-                                }}>
-                                    <Text style={{ color: '#ffffff', fontSize: 11, fontWeight: '600' }}>
-                                        • Aktif
-                                    </Text>
-                                </View>
-                            </View>
+                {/* E-ID Card - Digital Member Card with Flip Animation */}
+                <View style={{ marginBottom: spacing.lg }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.sm }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                            <CreditCard color={colors.primary} size={18} />
+                            <Text style={{ color: colors.text, fontSize: 16, fontWeight: '600', marginLeft: spacing.sm }}>Kartu Anggota Digital</Text>
                         </View>
+                        <TouchableOpacity onPress={handleCardFlip} style={{ flexDirection: 'row', alignItems: 'center' }}>
+                            <RotateCcw color={colors.muted} size={14} />
+                            <Text style={{ color: colors.muted, fontSize: 12, marginLeft: 4 }}>Tap untuk balik</Text>
+                        </TouchableOpacity>
+                    </View>
 
-                        {/* Stats Row */}
-                        <View style={{ flexDirection: 'row' }}>
-                            <View style={{
-                                flex: 1,
-                                backgroundColor: 'rgba(255,255,255,0.15)',
-                                borderRadius: borderRadius.md,
-                                padding: spacing.md,
-                                marginRight: spacing.sm,
-                                alignItems: 'center',
-                            }}>
-                                <Building2 color="rgba(255,255,255,0.7)" size={18} />
-                                <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 11, marginTop: 4 }}>Divisi</Text>
-                                <Text style={{ color: '#ffffff', fontSize: 13, fontWeight: '600', textAlign: 'center' }} numberOfLines={2}>{division}</Text>
+                    <TouchableOpacity activeOpacity={0.95} onPress={handleCardFlip}>
+                        <View style={{ height: 200, width: '100%' }}>
+                            {/* Front Side */}
+                            <Animated.View
+                                style={{
+                                    position: 'absolute',
+                                    width: '100%',
+                                    height: '100%',
+                                    backfaceVisibility: 'hidden',
+                                    transform: [{ perspective: 1000 }, { rotateY: frontInterpolate }],
+                                    opacity: frontOpacity,
+                                }}
+                            >
+                                <LinearGradient
+                                    colors={gradients.primary}
+                                    start={{ x: 0, y: 0 }}
+                                    end={{ x: 1, y: 1 }}
+                                    style={{
+                                        flex: 1,
+                                        borderRadius: borderRadius.xl,
+                                        padding: spacing.lg,
+                                        ...shadows.lg,
+                                    }}
+                                >
+                                    {/* Card Header */}
+                                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: spacing.md }}>
+                                        <Text style={{ color: 'rgba(255,255,255,0.9)', fontSize: 14, fontWeight: '700', letterSpacing: 1 }}>
+                                            DIGCITY
+                                        </Text>
+                                        <View style={{
+                                            backgroundColor: 'rgba(16, 185, 129, 0.3)',
+                                            paddingHorizontal: 10, paddingVertical: 4,
+                                            borderRadius: 12,
+                                        }}>
+                                            <Text style={{ color: '#34d399', fontSize: 10, fontWeight: '700' }}>AKTIF</Text>
+                                        </View>
+                                    </View>
+
+                                    {/* Member Info */}
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+                                        <View style={{
+                                            width: 64, height: 64, borderRadius: 20,
+                                            backgroundColor: 'rgba(255,255,255,0.2)',
+                                            justifyContent: 'center', alignItems: 'center',
+                                            borderWidth: 2, borderColor: 'rgba(255,255,255,0.3)',
+                                            marginRight: spacing.md,
+                                        }}>
+                                            <Text style={{ color: '#ffffff', fontSize: 28, fontWeight: '700' }}>
+                                                {name.slice(0, 1).toUpperCase()}
+                                            </Text>
+                                        </View>
+                                        <View style={{ flex: 1 }}>
+                                            <Text style={{ color: '#ffffff', fontSize: 18, fontWeight: '700' }} numberOfLines={1}>
+                                                {name}
+                                            </Text>
+                                            <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 13, marginTop: 2 }}>
+                                                {position}
+                                            </Text>
+                                            <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, marginTop: 2 }}>
+                                                {division}
+                                            </Text>
+                                        </View>
+                                    </View>
+
+                                    {/* NPM at bottom */}
+                                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                                        <View>
+                                            <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 10, letterSpacing: 1 }}>NPM</Text>
+                                            <Text style={{ color: '#ffffff', fontSize: 16, fontWeight: '600', letterSpacing: 2 }}>{npm}</Text>
+                                        </View>
+                                        <QrCode color="rgba(255,255,255,0.3)" size={32} />
+                                    </View>
+                                </LinearGradient>
+                            </Animated.View>
+
+                            {/* Back Side */}
+                            <Animated.View
+                                style={{
+                                    position: 'absolute',
+                                    width: '100%',
+                                    height: '100%',
+                                    backfaceVisibility: 'hidden',
+                                    transform: [{ perspective: 1000 }, { rotateY: backInterpolate }],
+                                    opacity: backOpacity,
+                                }}
+                            >
+                                <LinearGradient
+                                    colors={isDark ? ['#312e81', '#1e1b4b'] : ['#6366f1', '#4f46e5']}
+                                    start={{ x: 0, y: 0 }}
+                                    end={{ x: 1, y: 1 }}
+                                    style={{
+                                        flex: 1,
+                                        borderRadius: borderRadius.xl,
+                                        padding: spacing.lg,
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                        ...shadows.lg,
+                                    }}
+                                >
+                                    <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, marginBottom: spacing.sm, letterSpacing: 2 }}>
+                                        MEMBER ID
+                                    </Text>
+                                    <View style={{
+                                        width: 120, height: 120,
+                                        backgroundColor: 'rgba(255,255,255,0.95)',
+                                        borderRadius: 16,
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                        marginBottom: spacing.md,
+                                    }}>
+                                        <QrCode color="#312e81" size={80} />
+                                    </View>
+                                    <Text style={{ color: '#ffffff', fontSize: 18, fontWeight: '700', letterSpacing: 3 }}>
+                                        {npm}
+                                    </Text>
+                                    <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, marginTop: spacing.xs }}>
+                                        Scan untuk verifikasi
+                                    </Text>
+                                </LinearGradient>
+                            </Animated.View>
+                        </View>
+                    </TouchableOpacity>
+                </View>
+
+                {/* XP & Level Section - Gamification */}
+                <View style={{
+                    backgroundColor: colors.glass,
+                    borderRadius: borderRadius.xl,
+                    padding: spacing.lg,
+                    marginBottom: spacing.lg,
+                    borderWidth: 1,
+                    borderColor: colors.glassBorder,
+                }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.md }}>
+                        <Zap color={colors.warning} size={18} />
+                        <Text style={{ color: colors.text, fontSize: 16, fontWeight: '600', marginLeft: spacing.sm }}>
+                            Level & Progress
+                        </Text>
+                    </View>
+
+                    {/* Level Display */}
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.lg }}>
+                        <LinearGradient
+                            colors={isDark ? ['#f59e0b', '#d97706'] : ['#fbbf24', '#f59e0b']}
+                            style={{
+                                width: 60, height: 60, borderRadius: 16,
+                                justifyContent: 'center', alignItems: 'center',
+                                marginRight: spacing.md,
+                            }}
+                        >
+                            <Text style={{ color: '#ffffff', fontSize: 24, fontWeight: '800' }}>3</Text>
+                            <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 9, fontWeight: '600' }}>LEVEL</Text>
+                        </LinearGradient>
+                        <View style={{ flex: 1 }}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                                <Star color={colors.warning} size={14} fill={colors.warning} />
+                                <Text style={{ color: colors.text, fontSize: 15, fontWeight: '600', marginLeft: 4 }}>
+                                    Anggota Aktif
+                                </Text>
                             </View>
+                            <Text style={{ color: colors.muted, fontSize: 12 }}>
+                                750 / 1000 XP menuju Level 4
+                            </Text>
+                            {/* XP Progress Bar */}
                             <View style={{
-                                flex: 1,
-                                backgroundColor: 'rgba(255,255,255,0.15)',
-                                borderRadius: borderRadius.md,
-                                padding: spacing.md,
-                                alignItems: 'center',
+                                height: 6, backgroundColor: colors.border, borderRadius: 3,
+                                marginTop: spacing.sm, overflow: 'hidden',
                             }}>
-                                <Briefcase color="rgba(255,255,255,0.7)" size={18} />
-                                <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 11, marginTop: 4 }}>Jabatan</Text>
-                                <Text style={{ color: '#ffffff', fontSize: 13, fontWeight: '600', textAlign: 'center' }} numberOfLines={2}>{position}</Text>
+                                <LinearGradient
+                                    colors={['#f59e0b', '#fbbf24']}
+                                    start={{ x: 0, y: 0 }}
+                                    end={{ x: 1, y: 0 }}
+                                    style={{ width: '75%', height: '100%', borderRadius: 3 }}
+                                />
                             </View>
                         </View>
-                    </LinearGradient>
+                    </View>
+
+                    {/* Badges */}
+                    <View>
+                        <Text style={{ color: colors.muted, fontSize: 12, fontWeight: '600', marginBottom: spacing.sm }}>
+                            LENCANA YANG DIRAIH
+                        </Text>
+                        <View style={{ flexDirection: 'row', justifyContent: 'flex-start', gap: spacing.sm }}>
+                            <View style={{ alignItems: 'center' }}>
+                                <View style={{
+                                    width: 48, height: 48, borderRadius: 14,
+                                    backgroundColor: colors.successBg,
+                                    justifyContent: 'center', alignItems: 'center',
+                                    marginBottom: 4,
+                                }}>
+                                    <CheckCircle2 color={colors.success} size={22} />
+                                </View>
+                                <Text style={{ color: colors.muted, fontSize: 9, textAlign: 'center' }}>On Time</Text>
+                            </View>
+                            <View style={{ alignItems: 'center' }}>
+                                <View style={{
+                                    width: 48, height: 48, borderRadius: 14,
+                                    backgroundColor: colors.primaryBg,
+                                    justifyContent: 'center', alignItems: 'center',
+                                    marginBottom: 4,
+                                }}>
+                                    <TrendingUp color={colors.primary} size={22} />
+                                </View>
+                                <Text style={{ color: colors.muted, fontSize: 9, textAlign: 'center' }}>Top KPI</Text>
+                            </View>
+                            <View style={{ alignItems: 'center' }}>
+                                <View style={{
+                                    width: 48, height: 48, borderRadius: 14,
+                                    backgroundColor: colors.warningBg,
+                                    justifyContent: 'center', alignItems: 'center',
+                                    marginBottom: 4,
+                                }}>
+                                    <Trophy color={colors.warning} size={22} />
+                                </View>
+                                <Text style={{ color: colors.muted, fontSize: 9, textAlign: 'center' }}>Winner</Text>
+                            </View>
+                            <View style={{ alignItems: 'center', opacity: 0.4 }}>
+                                <View style={{
+                                    width: 48, height: 48, borderRadius: 14,
+                                    backgroundColor: colors.surface,
+                                    justifyContent: 'center', alignItems: 'center',
+                                    marginBottom: 4,
+                                    borderWidth: 1,
+                                    borderColor: colors.border,
+                                    borderStyle: 'dashed',
+                                }}>
+                                    <Award color={colors.muted} size={22} />
+                                </View>
+                                <Text style={{ color: colors.muted, fontSize: 9, textAlign: 'center' }}>???</Text>
+                            </View>
+                        </View>
+                    </View>
                 </View>
 
                 {/* Account Info Section */}

@@ -10,7 +10,10 @@ import Footer from './components/layout/Footer'
 import HomePage from './pages/HomePage'
 import { NotificationProvider } from './components/common/NotificationCenter'
 
+
 import { SpeedInsights } from "@vercel/speed-insights/react"
+import CampaignBanner from './components/common/CampaignBanner'
+import { orgAPI } from './lib/supabase'
 
 // Lazy load components
 const LazyBlogPage = React.lazy(() => import('./pages/blog/BlogPage'))
@@ -28,6 +31,7 @@ const LazyInternalPanel = React.lazy(() => import('./pages/InternalPanel'))
 const LazyLinktreePage = React.lazy(() => import('./pages/LinktreePage'))
 const LazyComplaintsPage = React.lazy(() => import('./pages/complaints/ComplaintsPage'))
 const LazyResponsePage = React.lazy(() => import('./pages/complaints/ResponsePage'))
+import Recap2025Page from './pages/Recap2025Page'
 import NotFoundPage from './pages/NotFoundPage'
 
 function App() {
@@ -90,9 +94,34 @@ function App() {
     }
   }, [])
 
+  // Check for campaign banner
+  const [showCampaignBanner, setShowCampaignBanner] = React.useState(false)
+
+  useEffect(() => {
+    const checkCampaign = async () => {
+      try {
+        const profile = await orgAPI.getProfile()
+        if (profile && profile.is_campaign_active) {
+          setShowCampaignBanner(true)
+        }
+      } catch (e) {
+        // silent fail
+      }
+    }
+
+    if (!isLinktreeSubdomain && !isAdminSubdomain && !isInternalSubdomain) {
+      checkCampaign()
+    }
+  }, [isLinktreeSubdomain, isAdminSubdomain, isInternalSubdomain])
+
+  const handleDismissBanner = () => {
+    setShowCampaignBanner(false)
+  }
+
   // Layout component untuk halaman dengan header dan footer
   const PageLayout = ({ children }: { children: React.ReactNode }) => (
     <>
+      {showCampaignBanner && <CampaignBanner onDismiss={handleDismissBanner} />}
       <Header />
       <main>{children}</main>
       <Footer />
@@ -133,6 +162,7 @@ function App() {
             <Route path="/" element={<PageLayout><HomePage /></PageLayout>} />
             <Route path="/blog" element={<PageLayout><LazyBlogPage /></PageLayout>} />
             <Route path="/blog/:slug" element={<PageLayout><LazyBlogDetailPage /></PageLayout>} />
+            <Route path="/blog/recap-2025" element={<Recap2025Page />} />
             <Route path="/events" element={<PageLayout><LazyEventsPage /></PageLayout>} />
             <Route path="/sejarah" element={<PageLayout><LazySejarahPage /></PageLayout>} />
             <Route path="/logo" element={<PageLayout><LazyLogoPage /></PageLayout>} />

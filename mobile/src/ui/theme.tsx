@@ -39,6 +39,7 @@ export const darkColors = {
   info: '#0ea5e9',
   infoLight: '#38bdf8',
   infoBg: 'rgba(14, 165, 233, 0.15)',
+  primaryBg: 'rgba(37, 99, 235, 0.15)',
 }
 
 export const lightColors = {
@@ -74,6 +75,7 @@ export const lightColors = {
   info: '#0284c7',
   infoLight: '#0ea5e9',
   infoBg: 'rgba(14, 165, 233, 0.1)',
+  primaryBg: 'rgba(37, 99, 235, 0.1)',
 }
 
 export const darkGradients = {

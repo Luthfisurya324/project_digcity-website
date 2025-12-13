@@ -18,7 +18,7 @@ import {
   Phone,
   QrCode,
   LayoutGrid,
-  List
+  Table as TableIcon
 } from 'lucide-react'
 
 const MembersPage: React.FC = () => {
@@ -32,7 +32,7 @@ const MembersPage: React.FC = () => {
   const [search, setSearch] = useState('')
   const [canManage, setCanManage] = useState(false)
   const [roleLabel, setRoleLabel] = useState('Anggota')
-  const [viewMode, setViewMode] = useState<'card' | 'list'>('card')
+  const [viewMode, setViewMode] = useState<'card' | 'table'>('card')
 
   useEffect(() => {
     loadMembers()
@@ -72,12 +72,26 @@ const MembersPage: React.FC = () => {
     return matchesFilter && matchesSearch
   })
 
+  const groupedMembers = React.useMemo(() => {
+    const groups: Record<string, OrganizationMember[]> = {}
+    filteredMembers.forEach(member => {
+      const division = member.division || 'Lainnya'
+      if (!groups[division]) {
+        groups[division] = []
+      }
+      groups[division].push(member)
+    })
+    return groups
+  }, [filteredMembers])
+
+  // Sort divisions to keep them consistent (optional, alphabetical or specific order)
+  const sortedDivisions = Object.keys(groupedMembers).sort()
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active': return 'bg-emerald-100 text-emerald-700 border-emerald-200'
-      case 'leave': return 'bg-amber-100 text-amber-700 border-amber-200'
-      case 'alumni': return 'bg-blue-100 text-blue-700 border-blue-200'
-      case 'resigned': return 'bg-rose-100 text-rose-700 border-rose-200'
+      case 'inactive': return 'bg-rose-100 text-rose-700 border-rose-200'
+      case 'demisioner': return 'bg-blue-100 text-blue-700 border-blue-200'
       default: return 'bg-slate-100 text-slate-700 border-slate-200'
     }
   }
@@ -85,9 +99,8 @@ const MembersPage: React.FC = () => {
   const getStatusLabel = (status: string) => {
     switch (status) {
       case 'active': return 'Aktif'
-      case 'leave': return 'Cuti'
-      case 'alumni': return 'Alumni'
-      case 'resigned': return 'Non-Aktif'
+      case 'inactive': return 'Tidak Aktif'
+      case 'demisioner': return 'Demisioner'
       default: return status
     }
   }
@@ -133,34 +146,38 @@ const MembersPage: React.FC = () => {
     document.body.removeChild(a)
   }
 
+
+
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
+        <div id="members-header">
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Database Anggota</h1>
           <p className="text-slate-500 dark:text-slate-400">Kelola data pengurus dan anggota organisasi</p>
           <p className="flex items-center gap-1 text-xs text-slate-400 mt-1">
             Akses: {roleLabel.toUpperCase()} {canManage ? '(full control)' : '(read only)'}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div id="members-actions" className="flex gap-2">
           <div className="flex bg-slate-100 dark:bg-[#2A2A2A] rounded-lg p-1">
             <button
               onClick={() => setViewMode('card')}
               className={`p-2 rounded-md transition-all ${viewMode === 'card' ? 'bg-white dark:bg-[#1E1E1E] shadow-sm text-blue-600' : 'text-slate-500 dark:text-slate-400'}`}
-              title="Tampilan kartu"
+              title="Tampilan Kartu"
             >
               <LayoutGrid size={18} />
             </button>
             <button
-              onClick={() => setViewMode('list')}
-              className={`p-2 rounded-md transition-all ${viewMode === 'list' ? 'bg-white dark:bg-[#1E1E1E] shadow-sm text-blue-600' : 'text-slate-500 dark:text-slate-400'}`}
-              title="Tampilan daftar"
+              onClick={() => setViewMode('table')}
+              className={`p-2 rounded-md transition-all ${viewMode === 'table' ? 'bg-white dark:bg-[#1E1E1E] shadow-sm text-blue-600' : 'text-slate-500 dark:text-slate-400'}`}
+              title="Tampilan Tabel"
             >
-              <List size={18} />
+              <TableIcon size={18} />
             </button>
           </div>
           <button
+            id="members-export"
             className="px-4 py-2 bg-white dark:bg-[#1E1E1E] border border-slate-200 dark:border-[#2A2A2A] text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 transition-colors flex items-center gap-2"
             onClick={exportCSV}
           >
@@ -168,6 +185,7 @@ const MembersPage: React.FC = () => {
             <span className="hidden sm:inline">Export CSV</span>
           </button>
           <button
+            id="members-import"
             disabled={!canManage}
             title={canManage ? undefined : 'Hanya pengurus inti yang dapat import'}
             className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-colors ${canManage ? 'bg-white dark:bg-[#1E1E1E] border border-slate-200 dark:border-[#2A2A2A] text-slate-700 dark:text-slate-300 hover:bg-slate-50' : 'bg-slate-200 text-slate-500 cursor-not-allowed'}`}
@@ -177,6 +195,7 @@ const MembersPage: React.FC = () => {
             <span className="hidden sm:inline">Import CSV</span>
           </button>
           <button
+            id="members-add-btn"
             disabled={!canManage}
             title={canManage ? undefined : 'Hanya pengurus inti yang dapat menambah anggota'}
             className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-colors shadow-lg shadow-blue-200 dark:shadow-none ${canManage ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-slate-200 text-slate-500 cursor-not-allowed'}`}
@@ -189,7 +208,7 @@ const MembersPage: React.FC = () => {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-4 bg-white dark:bg-[#1E1E1E] p-4 rounded-xl border border-slate-200 dark:border-[#2A2A2A]">
+      <div id="members-filters" className="flex flex-col sm:flex-row gap-4 bg-white dark:bg-[#1E1E1E] p-4 rounded-xl border border-slate-200 dark:border-[#2A2A2A]">
         <div className="flex-1 relative">
           <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
@@ -204,15 +223,15 @@ const MembersPage: React.FC = () => {
           {[
             { id: 'all', label: 'Semua' },
             { id: 'active', label: 'Aktif' },
-            { id: 'leave', label: 'Cuti' },
-            { id: 'alumni', label: 'Alumni' }
+            { id: 'inactive', label: 'Tidak Aktif' },
+            { id: 'demisioner', label: 'Demisioner' }
           ].map((type) => (
             <button
               key={type.id}
               onClick={() => setFilter(type.id)}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${filter === type.id
-                  ? 'bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800'
-                  : 'bg-white dark:bg-[#1E1E1E] text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-[#2A2A2A]'
+                ? 'bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800'
+                : 'bg-white dark:bg-[#1E1E1E] text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-[#2A2A2A]'
                 }`}
             >
               {type.label}
@@ -224,7 +243,7 @@ const MembersPage: React.FC = () => {
       {/* Members View */}
       {filteredMembers.length > 0 ? (
         viewMode === 'card' ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div id="members-content" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredMembers.map((member) => (
               <div key={member.id} className="bg-white dark:bg-[#1E1E1E] rounded-xl border border-slate-200 dark:border-[#2A2A2A] p-6 hover:shadow-lg transition-all group relative overflow-hidden">
                 <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
@@ -300,53 +319,69 @@ const MembersPage: React.FC = () => {
             ))}
           </div>
         ) : (
-          <div className="bg-white dark:bg-[#1E1E1E] rounded-xl border border-slate-200 dark:border-[#2A2A2A] overflow-hidden">
+          <div className="bg-white dark:bg-[#1E1E1E] rounded-xl border border-slate-200 dark:border-[#2A2A2A] overflow-hidden shadow-sm">
             <div className="overflow-x-auto">
-              <table className="min-w-full text-sm">
-                <thead className="bg-slate-50 dark:bg-[#232323]">
+              <table className="min-w-full text-sm text-left">
+                <thead className="bg-slate-50 dark:bg-[#252525] border-b border-slate-200 dark:border-[#2A2A2A]">
                   <tr>
-                    <th className="px-3 py-2 text-left">Anggota</th>
-                    <th className="px-3 py-2 text-left">NPM</th>
-                    <th className="px-3 py-2 text-left">Divisi</th>
-                    <th className="px-3 py-2 text-left">Jabatan</th>
-                    <th className="px-3 py-2 text-left">Angkatan</th>
-                    <th className="px-3 py-2 text-left">Status</th>
-                    <th className="px-3 py-2 text-right">Aksi</th>
+                    <th className="px-6 py-4 font-semibold text-slate-700 dark:text-slate-200">Nama Lengkap</th>
+                    <th className="px-6 py-4 font-semibold text-slate-700 dark:text-slate-200">NPM</th>
+                    <th className="px-6 py-4 font-semibold text-slate-700 dark:text-slate-200">Divisi</th>
+                    <th className="px-6 py-4 font-semibold text-slate-700 dark:text-slate-200">Jabatan</th>
+                    <th className="px-6 py-4 font-semibold text-slate-700 dark:text-slate-200">Angkatan</th>
+                    <th className="px-6 py-4 font-semibold text-slate-700 dark:text-slate-200">Status</th>
+                    <th className="px-6 py-4 font-semibold text-slate-700 dark:text-slate-200 text-right">Aksi</th>
                   </tr>
                 </thead>
-                <tbody>
-                  {filteredMembers.map((m) => (
-                    <tr key={m.id} className="border-t border-slate-100 dark:border-[#2A2A2A] hover:bg-slate-50 dark:hover:bg-[#232323] transition-colors">
-                      <td className="px-3 py-2">
+                <tbody className="divide-y divide-slate-100 dark:divide-[#2A2A2A]">
+                  {filteredMembers.map((member) => (
+                    <tr key={member.id} className="hover:bg-slate-50 dark:hover:bg-[#252525] transition-colors group">
+                      <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-full bg-slate-100 dark:bg-[#2A2A2A] overflow-hidden border">
-                            {m.image_url ? (
-                              <img src={m.image_url} alt={m.full_name} className="w-full h-full object-cover" />
+                          <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-[#2A2A2A] overflow-hidden">
+                            {member.image_url ? (
+                              <img src={member.image_url} alt="" className="w-full h-full object-cover" />
                             ) : (
-                              <div className="w-full h-full flex items-center justify-center text-slate-400"><User size={16} /></div>
+                              <div className="w-full h-full flex items-center justify-center text-slate-400"><User size={14} /></div>
                             )}
                           </div>
                           <div>
-                            <div className="font-medium text-slate-900 dark:text-white">{m.full_name}</div>
-                            <div className="text-xs text-slate-500 dark:text-slate-400">{m.email}</div>
+                            <div className="font-medium text-slate-900 dark:text-white">{member.full_name}</div>
+                            <div className="text-xs text-slate-500">{member.email}</div>
                           </div>
                         </div>
                       </td>
-                      <td className="px-3 py-2 font-mono">{m.npm}</td>
-                      <td className="px-3 py-2">{m.division}</td>
-                      <td className="px-3 py-2">{m.position}</td>
-                      <td className="px-3 py-2">{m.join_year}</td>
-                      <td className="px-3 py-2">
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase border ${getStatusColor(m.status)}`}>{getStatusLabel(m.status)}</span>
+                      <td className="px-6 py-4 font-mono text-slate-600 dark:text-slate-400">{member.npm}</td>
+                      <td className="px-6 py-4 text-slate-700 dark:text-slate-300">{member.division}</td>
+                      <td className="px-6 py-4 text-slate-700 dark:text-slate-300">
+                        <span className="px-2 py-1 rounded bg-slate-100 dark:bg-[#333] text-xs font-medium">
+                          {member.position}
+                        </span>
                       </td>
-                      <td className="px-3 py-2 text-right">
-                        <div className="inline-flex items-center gap-1">
-                          <button className="p-2 text-slate-400 hover:text-blue-600 rounded-lg hover:bg-blue-50" title="Kartu Anggota" onClick={() => setCardTarget(m)}>
+                      <td className="px-6 py-4 text-slate-700 dark:text-slate-300">{member.join_year}</td>
+                      <td className="px-6 py-4">
+                        <span className={`px-2 py-1 rounded-full text-xs font-bold uppercase border ${getStatusColor(member.status)}`}>
+                          {getStatusLabel(member.status)}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex items-center justify-end gap-2 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            className="p-1.5 text-slate-400 hover:text-blue-600 rounded hover:bg-blue-50"
+                            title="Kartu Anggota"
+                            onClick={() => setCardTarget(member)}
+                          >
                             <QrCode size={16} />
                           </button>
-                          <button className={`p-2 rounded-lg ${canManage ? 'text-slate-400 hover:text-emerald-600 hover:bg-emerald-50' : 'text-slate-300 cursor-not-allowed'}`} title={canManage ? 'Edit Profil' : 'Hanya pengurus inti'} onClick={() => canManage && setEditTarget(m)}>
-                            <MoreVertical size={16} />
-                          </button>
+                          {canManage && (
+                            <button
+                              className="p-1.5 text-slate-400 hover:text-emerald-600 rounded hover:bg-emerald-50"
+                              title="Edit Profil"
+                              onClick={() => setEditTarget(member)}
+                            >
+                              <MoreVertical size={16} />
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -373,33 +408,41 @@ const MembersPage: React.FC = () => {
         </div>
       )}
 
-      {showForm && (
-        <MemberForm
-          onClose={() => setShowForm(false)}
-          onSuccess={loadMembers}
-        />
-      )}
-      {showImport && (
-        <MemberImportModal
-          onClose={() => setShowImport(false)}
-          onImported={loadMembers}
-          existingMembers={members}
-        />
-      )}
-      {editTarget && (
-        <MemberEditForm
-          member={editTarget}
-          onClose={() => setEditTarget(null)}
-          onUpdated={async () => { await loadMembers(); setEditTarget(null) }}
-        />
-      )}
-      {cardTarget && (
-        <MemberCardModal
-          member={cardTarget}
-          onClose={() => setCardTarget(null)}
-        />
-      )}
-    </div>
+      {
+        showForm && (
+          <MemberForm
+            onClose={() => setShowForm(false)}
+            onSuccess={loadMembers}
+          />
+        )
+      }
+      {
+        showImport && (
+          <MemberImportModal
+            onClose={() => setShowImport(false)}
+            onImported={loadMembers}
+            existingMembers={members}
+          />
+        )
+      }
+      {
+        editTarget && (
+          <MemberEditForm
+            member={editTarget}
+            onClose={() => setEditTarget(null)}
+            onUpdated={async () => { await loadMembers(); setEditTarget(null) }}
+          />
+        )
+      }
+      {
+        cardTarget && (
+          <MemberCardModal
+            member={cardTarget}
+            onClose={() => setCardTarget(null)}
+          />
+        )
+      }
+    </div >
   )
 }
 

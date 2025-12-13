@@ -83,7 +83,7 @@ const MemberEditForm: React.FC<MemberEditFormProps> = ({ member, onClose, onUpda
       const updated = await membersAPI.update(member.id, {
         full_name: fullName,
         npm,
-        email,
+        email: email || null,
         phone,
         division,
         position,
@@ -223,7 +223,6 @@ const MemberEditForm: React.FC<MemberEditFormProps> = ({ member, onClose, onUpda
                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Email</label>
                     <input
                       type="email"
-                      required
                       value={email || ''}
                       onChange={(e) => setEmail(e.target.value)}
                       className="w-full px-4 py-2 border border-slate-200 dark:border-[#2A2A2A] rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-[#1A1A1A] dark:text-white"
@@ -280,9 +279,8 @@ const MemberEditForm: React.FC<MemberEditFormProps> = ({ member, onClose, onUpda
                     className="w-full px-4 py-2 border border-slate-200 dark:border-[#2A2A2A] rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-[#1A1A1A] dark:text-white"
                   >
                     <option value="active">Aktif</option>
-                    <option value="leave">Cuti</option>
-                    <option value="alumni">Alumni</option>
-                    <option value="resigned">Mengundurkan Diri</option>
+                    <option value="inactive">Tidak Aktif</option>
+                    <option value="demisioner">Demisioner</option>
                   </select>
                 </div>
               </div>

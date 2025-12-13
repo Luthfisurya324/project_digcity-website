@@ -136,7 +136,7 @@ const DocumentsPage: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
+        <div id="documents-header">
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Administrasi Dokumen</h1>
           <p className="text-slate-500 dark:text-slate-400">Arsip surat masuk, keluar, dan laporan organisasi</p>
           <p className="flex items-center gap-1 text-xs text-slate-400 mt-1">
@@ -146,6 +146,7 @@ const DocumentsPage: React.FC = () => {
         </div>
         <div className="flex gap-2">
           <button
+            id="documents-templates-btn"
             className="px-4 py-2 bg-white dark:bg-[#1E1E1E] border border-slate-200 dark:border-[#2A2A2A] text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 transition-colors flex items-center gap-2"
             onClick={() => setShowTemplates(true)}
           >
@@ -153,6 +154,7 @@ const DocumentsPage: React.FC = () => {
             <span className="hidden sm:inline">Templates</span>
           </button>
           <button
+            id="documents-add-btn"
             disabled={!canManage}
             title={canManage ? undefined : 'Hanya pengurus inti yang dapat membuat dokumen'}
             className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-colors shadow-lg shadow-blue-200 dark:shadow-none ${canManage ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-slate-200 text-slate-500 cursor-not-allowed'
@@ -166,7 +168,7 @@ const DocumentsPage: React.FC = () => {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-4 bg-white dark:bg-[#1E1E1E] p-4 rounded-xl border border-slate-200 dark:border-[#2A2A2A]">
+      <div id="documents-filters" className="flex flex-col sm:flex-row gap-4 bg-white dark:bg-[#1E1E1E] p-4 rounded-xl border border-slate-200 dark:border-[#2A2A2A]">
         <div className="flex-1 relative">
           <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
@@ -199,7 +201,7 @@ const DocumentsPage: React.FC = () => {
       </div>
 
       {/* Documents List */}
-      <div className="bg-white dark:bg-[#1E1E1E] rounded-xl border border-slate-200 dark:border-[#2A2A2A] overflow-hidden">
+      <div id="documents-list" className="bg-white dark:bg-[#1E1E1E] rounded-xl border border-slate-200 dark:border-[#2A2A2A] overflow-hidden">
         {filteredDocuments.length > 0 ? (
           <div className="divide-y divide-slate-100 dark:divide-[#2A2A2A]">
             {filteredDocuments.map((doc) => (

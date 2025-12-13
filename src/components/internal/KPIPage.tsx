@@ -169,9 +169,116 @@ const KPIPage: React.FC = () => {
             .sort((a, b) => (b.kpi?.final_score || 0) - (a.kpi?.final_score || 0))
     }, [members, kpis, searchQuery])
 
+    const { bphMembers, divisionGroups } = useMemo(() => {
+        const bph = filteredData.filter(m => m.division === 'BPH')
+        const others = filteredData.filter(m => m.division !== 'BPH')
+
+        const groups: Record<string, typeof filteredData> = {}
+        others.forEach(m => {
+            const div = m.division || 'Lainnya'
+            if (!groups[div]) groups[div] = []
+            groups[div].push(m)
+        })
+
+        return { bphMembers: bph, divisionGroups: groups }
+    }, [filteredData])
+
+    const renderTableSection = (title: string, data: typeof filteredData) => {
+        if (!data || data.length === 0) return null
+
+        return (
+            <div key={title} className="space-y-3">
+                <h3 className="text-lg font-bold text-slate-700 dark:text-slate-200 px-1 border-l-4 border-blue-500 pl-3">
+                    {title} <span className="text-sm font-normal text-slate-500">({data.length} anggota)</span>
+                </h3>
+                <div className="bg-white dark:bg-[#1E1E1E] rounded-xl border border-slate-200 dark:border-[#2A2A2A] overflow-hidden flex flex-col max-h-[500px]">
+                    <div className="overflow-auto custom-scrollbar">
+                        <table className="w-full text-left relative">
+                            <thead className="bg-slate-50 dark:bg-[#232323] border-b border-slate-200 dark:border-[#2A2A2A] sticky top-0 z-10 shadow-sm">
+                                <tr>
+                                    <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider bg-slate-50 dark:bg-[#232323]">Anggota</th>
+                                    <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-center bg-slate-50 dark:bg-[#232323]">Kehadiran (15%)</th>
+                                    <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-center bg-slate-50 dark:bg-[#232323]">Proyek (40%)</th>
+                                    <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-center bg-slate-50 dark:bg-[#232323]">Sikap (30%)</th>
+                                    <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-center bg-slate-50 dark:bg-[#232323]">Skill (15%)</th>
+                                    <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-center bg-slate-50 dark:bg-[#232323]">Nilai Akhir</th>
+                                    <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-center bg-slate-50 dark:bg-[#232323]">Grade</th>
+                                    <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right bg-slate-50 dark:bg-[#232323]">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100 dark:divide-[#2A2A2A]">
+                                {data.map((item) => (
+                                    <tr key={item.id} className="hover:bg-slate-50 dark:hover:bg-[#232323] transition-colors">
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-[#2A2A2A] flex items-center justify-center text-slate-600 dark:text-slate-300 font-bold overflow-hidden shrink-0">
+                                                    {item.image_url ? (
+                                                        <img src={item.image_url} alt={item.full_name} className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        item.full_name.charAt(0).toUpperCase()
+                                                    )}
+                                                </div>
+                                                <div>
+                                                    <p className="font-medium text-slate-900 dark:text-white text-sm">{item.full_name}</p>
+                                                    <p className="text-[10px] text-slate-500">{item.division}</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 text-center">
+                                            <span className="font-medium text-slate-700 dark:text-slate-300">
+                                                {item.kpi?.attendance_score || 0}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 text-center">
+                                            <span className="font-medium text-slate-700 dark:text-slate-300">
+                                                {item.kpi?.project_score || 0}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 text-center">
+                                            <span className="font-medium text-slate-700 dark:text-slate-300">
+                                                {item.kpi?.attitude_score || 0}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 text-center">
+                                            <span className="font-medium text-slate-700 dark:text-slate-300">
+                                                {item.kpi?.skill_score || 0}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 text-center">
+                                            <span className="font-bold text-slate-900 dark:text-white">
+                                                {item.kpi?.final_score?.toFixed(1) || '0.0'}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 text-center">
+                                            <span className={`px-2 py-1 rounded-lg text-xs font-bold border ${getGradeColor(item.kpi?.grade || 'E')}`}>
+                                                {item.kpi?.grade || 'E'}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 text-right">
+                                            <button
+                                                onClick={() => {
+                                                    setSelectedMember(item)
+                                                    setShowAssessmentModal(true)
+                                                }}
+                                                className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                                                title="Nilai Manual"
+                                            >
+                                                <Edit3 size={16} />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
     return (
         <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div id="kpi-header" className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-slate-900 dark:text-white">KPI Anggota</h1>
                     <p className="text-slate-500 dark:text-slate-400">Evaluasi kinerja anggota periode {period}</p>
@@ -263,113 +370,44 @@ const KPIPage: React.FC = () => {
                 </div>
             </div>
 
-            <div className="bg-white dark:bg-[#1E1E1E] rounded-xl border border-slate-200 dark:border-[#2A2A2A] overflow-hidden">
-                <div className="p-4 border-b border-slate-200 dark:border-[#2A2A2A] flex items-center gap-4">
-                    <div className="relative flex-1">
-                        <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                        <input
-                            type="text"
-                            placeholder="Cari anggota..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 border border-slate-200 dark:border-[#2A2A2A] rounded-lg bg-slate-50 dark:bg-[#1A1A1A] focus:ring-2 focus:ring-blue-500"
-                        />
-                    </div>
+            {/* Search Bar - Separated */}
+            <div id="kpi-search" className="bg-white dark:bg-[#1E1E1E] p-4 rounded-xl border border-slate-200 dark:border-[#2A2A2A] shadow-sm sticky top-4 z-20">
+                <div className="relative">
+                    <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <input
+                        type="text"
+                        placeholder="Cari anggota berdasarkan nama atau divisi..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2 border border-slate-200 dark:border-[#2A2A2A] rounded-lg bg-slate-50 dark:bg-[#1A1A1A] focus:ring-2 focus:ring-blue-500 transition-all"
+                    />
                 </div>
+            </div>
 
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left">
-                        <thead className="bg-slate-50 dark:bg-[#232323] border-b border-slate-200 dark:border-[#2A2A2A]">
-                            <tr>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Anggota</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-center">Kehadiran (15%)</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-center">Proyek (40%)</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-center">Sikap (30%)</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-center">Skill (15%)</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-center">Nilai Akhir</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-center">Grade</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100 dark:divide-[#2A2A2A]">
-                            {loading ? (
-                                <tr>
-                                    <td colSpan={8} className="px-6 py-12 text-center text-slate-500">
-                                        Memuat data KPI...
-                                    </td>
-                                </tr>
-                            ) : filteredData.length === 0 ? (
-                                <tr>
-                                    <td colSpan={8} className="px-6 py-12 text-center text-slate-500">
-                                        Tidak ada data anggota.
-                                    </td>
-                                </tr>
-                            ) : (
-                                filteredData.map((item) => (
-                                    <tr key={item.id} className="hover:bg-slate-50 dark:hover:bg-[#232323] transition-colors">
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-[#2A2A2A] flex items-center justify-center text-slate-600 dark:text-slate-300 font-bold overflow-hidden">
-                                                    {item.image_url ? (
-                                                        <img src={item.image_url} alt={item.full_name} className="w-full h-full object-cover" />
-                                                    ) : (
-                                                        item.full_name.charAt(0).toUpperCase()
-                                                    )}
-                                                </div>
-                                                <div>
-                                                    <p className="font-medium text-slate-900 dark:text-white text-sm">{item.full_name}</p>
-                                                    <p className="text-[10px] text-slate-500">{item.division}</p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 text-center">
-                                            <span className="font-medium text-slate-700 dark:text-slate-300">
-                                                {item.kpi?.attendance_score || 0}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-center">
-                                            <span className="font-medium text-slate-700 dark:text-slate-300">
-                                                {item.kpi?.project_score || 0}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-center">
-                                            <span className="font-medium text-slate-700 dark:text-slate-300">
-                                                {item.kpi?.attitude_score || 0}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-center">
-                                            <span className="font-medium text-slate-700 dark:text-slate-300">
-                                                {item.kpi?.skill_score || 0}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-center">
-                                            <span className="font-bold text-slate-900 dark:text-white">
-                                                {item.kpi?.final_score?.toFixed(1) || '0.0'}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-center">
-                                            <span className={`px-2 py-1 rounded-lg text-xs font-bold border ${getGradeColor(item.kpi?.grade || 'E')}`}>
-                                                {item.kpi?.grade || 'E'}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <button
-                                                onClick={() => {
-                                                    setSelectedMember(item)
-                                                    setShowAssessmentModal(true)
-                                                }}
-                                                className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-                                                title="Nilai Manual"
-                                            >
-                                                <Edit3 size={16} />
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+            <div className="space-y-8 pb-10">
+                {loading ? (
+                    <div className="text-center py-20 bg-white dark:bg-[#1E1E1E] rounded-xl border border-dashed border-slate-300 dark:border-[#2A2A2A]">
+                        <p className="text-slate-500 animate-pulse">Memuat data KPI...</p>
+                    </div>
+                ) : filteredData.length === 0 ? (
+                    <div className="text-center py-20 bg-white dark:bg-[#1E1E1E] rounded-xl border border-dashed border-slate-300 dark:border-[#2A2A2A]">
+                        <p className="text-slate-500">Tidak ada data anggota yang ditemukan.</p>
+                    </div>
+                ) : (
+                    <>
+                        {/* BPH Section */}
+                        {bphMembers.length > 0 && (
+                            <div id="kpi-table-bph">
+                                {renderTableSection('BPH (Badan Pengurus Harian)', bphMembers)}
+                            </div>
+                        )}
+
+                        {/* Other Divisions Section */}
+                        {Object.keys(divisionGroups).sort().map(division =>
+                            renderTableSection(division, divisionGroups[division])
+                        )}
+                    </>
+                )}
             </div>
 
             {showAssessmentModal && selectedMember && (

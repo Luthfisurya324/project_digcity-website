@@ -25,7 +25,7 @@ const ActivityPage: React.FC = () => {
       try {
         const { data: { user } } = await supabase.auth.getUser()
         setCurrentUserEmail(user?.email || '')
-      } catch {}
+      } catch { }
     }
     getUserEmail()
   }, [])
@@ -66,7 +66,7 @@ const ActivityPage: React.FC = () => {
       arr.push(l)
       groups.set(key, arr)
     })
-    return Array.from(groups.entries()).map(([date, items]) => ({ date, items: items.sort((a,b) => a.created_at < b.created_at ? 1 : -1) }))
+    return Array.from(groups.entries()).map(([date, items]) => ({ date, items: items.sort((a, b) => a.created_at < b.created_at ? 1 : -1) }))
   }, [filtered])
 
   if (loading) {
@@ -80,11 +80,11 @@ const ActivityPage: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
+        <div id="activity-header">
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Log Aktivitas</h1>
           <p className="text-slate-500 dark:text-slate-400">Timeline audit tindakan pengguna di sistem internal</p>
         </div>
-        <div className="flex gap-2">
+        <div id="activity-filters" className="flex gap-2">
           <div className="relative">
             <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
@@ -120,7 +120,7 @@ const ActivityPage: React.FC = () => {
           <p className="text-slate-500 dark:text-slate-400">Aksi yang Anda lakukan akan muncul di sini.</p>
         </div>
       ) : (
-        <div className="space-y-8">
+        <div id="activity-list" className="space-y-8">
           {groupedByDate.map((group) => (
             <div key={group.date}>
               <div className="flex items-center gap-2 mb-4">

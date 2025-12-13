@@ -1,6 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { orgAPI, type OrganizationProfile, type OrganizationDivision, membersAPI, positionsAPI, type OrganizationPosition } from '../../lib/supabase'
-import { Upload, Plus, Trash2, Save, Settings, ArrowUpDown, Users, Calendar, Link as LinkIcon, Shield, RefreshCcw, Download } from 'lucide-react'
+import { Upload, Plus, Trash2, Save, Settings, ArrowUpDown, Users, Shield, RefreshCcw, Download, Sparkles } from 'lucide-react'
 
 const OrganizationSettings: React.FC = () => {
   const [profile, setProfile] = useState<OrganizationProfile | null>(null)
@@ -18,6 +18,9 @@ const OrganizationSettings: React.FC = () => {
   const [logoUploading, setLogoUploading] = useState(false)
   const [saving, setSaving] = useState(false)
 
+  // Campaign State
+  const [isCampaignActive, setIsCampaignActive] = useState(false)
+
   // Succession State
   const [demisionerYear, setDemisionerYear] = useState<string>(new Date().getFullYear().toString()) // e.g. 2023
   const [nextYear, setNextYear] = useState<string>((new Date().getFullYear() + 1).toString()) // e.g. 2024
@@ -34,6 +37,7 @@ const OrganizationSettings: React.FC = () => {
         setPaymentProvider(p.payment_provider || '')
         setPeriodStart(p.period_start || '')
         setPeriodEnd(p.period_end || '')
+        setIsCampaignActive(p.is_campaign_active || false)
         const list = await orgAPI.getStructure(null)
         setDivisions(list)
         const posList = await positionsAPI.getAll()
@@ -58,6 +62,19 @@ const OrganizationSettings: React.FC = () => {
       alert('Gagal upload logo')
     } finally {
       setLogoUploading(false)
+    }
+  }
+
+  const handleToggleCampaign = async () => {
+    const newValue = !isCampaignActive
+    setIsCampaignActive(newValue) // Optimistic
+    try {
+      await orgAPI.updateProfile({ is_campaign_active: newValue })
+      // No need to refresh full profile, just assume success
+    } catch (e) {
+      console.error(e)
+      setIsCampaignActive(!newValue) // Revert
+      alert('Gagal mengupdate status campaign. Pastikan Anda memiliki akses.')
     }
   }
 
@@ -144,7 +161,13 @@ const OrganizationSettings: React.FC = () => {
   const saveProfile = async () => {
     setSaving(true)
     try {
-      await orgAPI.updateProfile({ name: orgName, external_drive_url: driveUrl, payment_provider: paymentProvider, period_start: periodStart || null as any, period_end: periodEnd || null as any })
+      await orgAPI.updateProfile({
+        name: orgName,
+        external_drive_url: driveUrl,
+        payment_provider: paymentProvider,
+        period_start: periodStart || null as any,
+        period_end: periodEnd || null as any
+      })
       const refreshed = await orgAPI.getProfile()
       setProfile(refreshed)
     } catch (e) {
@@ -225,7 +248,7 @@ const OrganizationSettings: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
+        <div id="org-settings-header">
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Pengaturan Organisasi</h1>
           <p className="text-slate-500 dark:text-slate-400">Kelola profil, struktur, dan periode kepengurusan</p>
         </div>
@@ -237,7 +260,7 @@ const OrganizationSettings: React.FC = () => {
 
       {/* Profil */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <div className="xl:col-span-2 bg-white dark:bg-[#1E1E1E] rounded-xl p-6 border border-slate-200 dark:border-[#2A2A2A]">
+        <div id="org-profile-section" className="xl:col-span-2 bg-white dark:bg-[#1E1E1E] rounded-xl p-6 border border-slate-200 dark:border-[#2A2A2A]">
           <h3 className="text-lg font-bold mb-4 flex items-center gap-2"><Settings size={18} /> Profil Organisasi</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -281,8 +304,31 @@ const OrganizationSettings: React.FC = () => {
         </div>
       </div>
 
-      {/* Struktur Divisi */}
+      {/* Campaign Settings */}
       <div className="bg-white dark:bg-[#1E1E1E] rounded-xl p-6 border border-slate-200 dark:border-[#2A2A2A]">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-bold flex items-center gap-2"><Sparkles size={18} className="text-yellow-500" /> Campaign & Events</h3>
+            <p className="text-sm text-slate-500 mt-1">
+              Aktifkan banner promosi/event khusus di halaman utama website.
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className={`text-sm font-medium ${isCampaignActive ? 'text-green-600' : 'text-slate-500'}`}>
+              {isCampaignActive ? 'Aktif' : 'Non-aktif'}
+            </span>
+            <button
+              onClick={handleToggleCampaign}
+              className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${isCampaignActive ? 'bg-green-500' : 'bg-slate-300'}`}
+            >
+              <div className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform duration-200 ${isCampaignActive ? 'translate-x-6' : 'translate-x-0'}`}></div>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Struktur Divisi */}
+      <div id="org-divisions-management" className="bg-white dark:bg-[#1E1E1E] rounded-xl p-6 border border-slate-200 dark:border-[#2A2A2A]">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-lg font-bold flex items-center gap-2"><Users size={18} /> Struktur Divisi</h3>
           <div className="flex gap-2">
@@ -307,7 +353,7 @@ const OrganizationSettings: React.FC = () => {
       </div>
 
       {/* Struktur Jabatan */}
-      <div className="bg-white dark:bg-[#1E1E1E] rounded-xl p-6 border border-slate-200 dark:border-[#2A2A2A]">
+      <div id="org-positions-management" className="bg-white dark:bg-[#1E1E1E] rounded-xl p-6 border border-slate-200 dark:border-[#2A2A2A]">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-lg font-bold flex items-center gap-2"><Users size={18} /> Struktur Jabatan</h3>
           <div className="flex gap-2">
@@ -331,7 +377,7 @@ const OrganizationSettings: React.FC = () => {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-[#1E1E1E] rounded-xl p-6 border border-slate-200 dark:border-[#2A2A2A]">
+      <div id="org-succession-section" className="bg-white dark:bg-[#1E1E1E] rounded-xl p-6 border border-slate-200 dark:border-[#2A2A2A]">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-lg font-bold flex items-center gap-2 text-blue-600 dark:text-blue-400">
             <RefreshCcw size={18} /> Estafet Kepengurusan

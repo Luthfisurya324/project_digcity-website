@@ -7,7 +7,6 @@ import {
   Plus,
   Search,
   Filter,
-  Download,
   ArrowUpRight,
   ArrowDownRight,
   Calendar,
@@ -17,14 +16,20 @@ import {
   CheckCircle,
   XCircle,
   Edit3,
-  Printer,
   BarChart3,
   Wallet
 } from 'lucide-react'
 import DivisionCashPanel from './DivisionCashPanel'
 import UPMPanel from './UPMPanel'
 
-const FinancePage: React.FC = () => {
+interface FinancePageProps {
+  userRole?: string
+  userPosition?: string
+}
+
+const FinancePage: React.FC<FinancePageProps> = ({ userRole = 'anggota', userPosition = '' }) => {
+  // const { userRole } = useOutletContext<{ userRole: string }>()
+  const canManage = userRole === 'bph' && userPosition.toLowerCase().includes('bendahara')
   const [transactions, setTransactions] = useState<FinanceTransaction[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
@@ -248,45 +253,37 @@ const FinancePage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div id="finance-header" className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Laporan Keuangan</h1>
           <p className="text-slate-500 dark:text-slate-400">Kelola pemasukan dan pengeluaran organisasi</p>
         </div>
-        <div className="flex gap-2 flex-wrap">
-          <button
-            onClick={() => setShowImportModal(true)}
-            className="px-4 py-2 bg-white dark:bg-[#1E1E1E] border border-slate-200 dark:border-[#2A2A2A] text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 transition-colors flex items-center gap-2"
-          >
-            <FileText size={18} />
-            <span className="hidden sm:inline">Import Excel</span>
-          </button>
-          <button
-            onClick={handleExportPdf}
-            className="px-4 py-2 bg-white dark:bg-[#1E1E1E] border border-slate-200 dark:border-[#2A2A2A] text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 transition-colors flex items-center gap-2"
-          >
-            <Printer size={18} />
-            <span>Export PDF</span>
-          </button>
-          <button
-            onClick={handleExport}
-            className="px-4 py-2 bg-white dark:bg-[#1E1E1E] border border-slate-200 dark:border-[#2A2A2A] text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 transition-colors flex items-center gap-2"
-          >
-            <Download size={18} />
-            <span className="hidden sm:inline">Export CSV</span>
-          </button>
-          <button
-            onClick={openCreateForm}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-lg shadow-blue-200 dark:shadow-none"
-          >
-            <Plus size={18} />
-            <span>Catat Transaksi</span>
-          </button>
+        <div id="finance-action-buttons" className="flex gap-2 flex-wrap">
+          {canManage && (
+            <>
+              <button
+                id="finance-import-btn"
+                onClick={() => setShowImportModal(true)}
+                className="px-4 py-2 bg-white dark:bg-[#1E1E1E] border border-slate-200 dark:border-[#2A2A2A] text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 transition-colors flex items-center gap-2"
+              >
+                <FileText size={18} />
+                <span className="hidden sm:inline">Import Excel</span>
+              </button>
+              <button
+                id="finance-create-btn"
+                onClick={openCreateForm}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-lg shadow-blue-200 dark:shadow-none"
+              >
+                <Plus size={18} />
+                <span>Catat Transaksi</span>
+              </button>
+            </>
+          )}
         </div>
       </div>
 
       {/* Financial Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div id="finance-overview-cards" className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Income Card */}
         <div className="bg-white dark:bg-[#1E1E1E] p-6 rounded-xl border border-slate-200 dark:border-[#2A2A2A] relative overflow-hidden group">
           <div className="absolute right-0 top-0 w-32 h-32 bg-emerald-50 dark:bg-emerald-900/10 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110"></div>
@@ -348,49 +345,9 @@ const FinancePage: React.FC = () => {
       <UPMPanel />
 
       {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-4 bg-white dark:bg-[#1E1E1E] p-4 rounded-xl border border-slate-200 dark:border-[#2A2A2A]">
-        <div className="flex-1 relative">
-          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Cari transaksi..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-slate-200 dark:border-[#2A2A2A] rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-[#1A1A1A] dark:text-white"
-          />
-        </div>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setFilter('all')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${filter === 'all'
-              ? 'bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800'
-              : 'bg-white dark:bg-[#1E1E1E] text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-[#2A2A2A]'
-              }`}
-          >
-            Semua
-          </button>
-          <button
-            onClick={() => setFilter('income')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${filter === 'income'
-              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800'
-              : 'bg-white dark:bg-[#1E1E1E] text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-[#2A2A2A]'
-              }`}
-          >
-            Pemasukan
-          </button>
-          <button
-            onClick={() => setFilter('expense')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${filter === 'expense'
-              ? 'bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-900/20 dark:text-rose-400 dark:border-rose-800'
-              : 'bg-white dark:bg-[#1E1E1E] text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-[#2A2A2A]'
-              }`}
-          >
-            Pengeluaran
-          </button>
-        </div>
-      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+      <div id="finance-charts" className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="bg-white dark:bg-[#1E1E1E] rounded-xl border border-slate-200 dark:border-[#2A2A2A] p-5">
           <div className="flex items-center justify-between">
             <div>
@@ -483,8 +440,50 @@ const FinancePage: React.FC = () => {
         )}
       </div>
 
+      <div id="finance-filters" className="flex flex-col sm:flex-row gap-4 bg-white dark:bg-[#1E1E1E] p-4 rounded-xl border border-slate-200 dark:border-[#2A2A2A]">
+        <div className="flex-1 relative">
+          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input
+            type="text"
+            placeholder="Cari transaksi..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 border border-slate-200 dark:border-[#2A2A2A] rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-[#1A1A1A] dark:text-white"
+          />
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setFilter('all')}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${filter === 'all'
+              ? 'bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800'
+              : 'bg-white dark:bg-[#1E1E1E] text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-[#2A2A2A]'
+              }`}
+          >
+            Semua
+          </button>
+          <button
+            onClick={() => setFilter('income')}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${filter === 'income'
+              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800'
+              : 'bg-white dark:bg-[#1E1E1E] text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-[#2A2A2A]'
+              }`}
+          >
+            Pemasukan
+          </button>
+          <button
+            onClick={() => setFilter('expense')}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${filter === 'expense'
+              ? 'bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-900/20 dark:text-rose-400 dark:border-rose-800'
+              : 'bg-white dark:bg-[#1E1E1E] text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-[#2A2A2A]'
+              }`}
+          >
+            Pengeluaran
+          </button>
+        </div>
+      </div>
+
       {/* Transactions List */}
-      <div className="bg-white dark:bg-[#1E1E1E] rounded-xl border border-slate-200 dark:border-[#2A2A2A] overflow-hidden flex flex-col max-h-[600px]">
+      <div id="finance-transactions-list" className="bg-white dark:bg-[#1E1E1E] rounded-xl border border-slate-200 dark:border-[#2A2A2A] overflow-hidden flex flex-col max-h-[600px]">
         <div className="p-4 border-b border-slate-100 dark:border-[#2A2A2A] flex justify-between items-center bg-slate-50/50 dark:bg-[#232323]/50">
           <h3 className="font-bold text-slate-700 dark:text-slate-200">Riwayat Transaksi</h3>
           <span className="text-xs text-slate-500">{filteredTransactions.length} transaksi</span>
@@ -546,7 +545,7 @@ const FinancePage: React.FC = () => {
 
                       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
                         {/* Approval Actions for Pending Expense */}
-                        {t.type === 'expense' && t.status === 'pending' && (
+                        {canManage && t.type === 'expense' && t.status === 'pending' && (
                           <>
                             <button
                               onClick={() => handleStatusUpdate(t.id, 'approved')}
@@ -565,20 +564,24 @@ const FinancePage: React.FC = () => {
                           </>
                         )}
 
-                        <button
-                          onClick={() => openEditForm(t)}
-                          className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg"
-                          title="Edit"
-                        >
-                          <Edit3 size={18} />
-                        </button>
-                        <button
-                          onClick={() => confirmDelete(t.id)}
-                          className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg"
-                          title="Hapus"
-                        >
-                          <Trash2 size={18} />
-                        </button>
+                        {canManage && (
+                          <>
+                            <button
+                              onClick={() => openEditForm(t)}
+                              className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg"
+                              title="Edit"
+                            >
+                              <Edit3 size={18} />
+                            </button>
+                            <button
+                              onClick={() => confirmDelete(t.id)}
+                              className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg"
+                              title="Hapus"
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>

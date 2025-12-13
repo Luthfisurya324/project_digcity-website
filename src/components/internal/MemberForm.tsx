@@ -18,7 +18,7 @@ const MemberForm: React.FC<MemberFormProps> = ({ onClose, onSuccess }) => {
   const [division, setDivision] = useState('')
   const [position, setPosition] = useState('')
   const [joinYear, setJoinYear] = useState(new Date().getFullYear().toString())
-  const [status, setStatus] = useState<'active' | 'leave' | 'alumni' | 'resigned'>('active')
+  const [status, setStatus] = useState<'active' | 'inactive' | 'demisioner'>('active')
   const [imageUrl, setImageUrl] = useState('')
   const [linkedinUrl, setLinkedinUrl] = useState('')
   const [instagramHandle, setInstagramHandle] = useState('')
@@ -77,7 +77,7 @@ const MemberForm: React.FC<MemberFormProps> = ({ onClose, onSuccess }) => {
       const created = await membersAPI.create({
         full_name: fullName,
         npm,
-        email,
+        email: email || null,
         phone,
         division,
         position,
@@ -254,9 +254,8 @@ const MemberForm: React.FC<MemberFormProps> = ({ onClose, onSuccess }) => {
                     className="w-full px-4 py-2 border border-slate-200 dark:border-[#2A2A2A] rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-[#1A1A1A] dark:text-white"
                   >
                     <option value="active">Aktif</option>
-                    <option value="leave">Cuti</option>
-                    <option value="alumni">Alumni</option>
-                    <option value="resigned">Mengundurkan Diri</option>
+                    <option value="inactive">Tidak Aktif</option>
+                    <option value="demisioner">Demisioner</option>
                   </select>
                 </div>
               </div>

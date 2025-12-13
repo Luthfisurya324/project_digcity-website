@@ -85,11 +85,12 @@ const InventoryPage: React.FC = () => {
         <div className="space-y-8">
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
+                <div id="inventory-header">
                     <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Inventaris Sekretariat</h1>
                     <p className="text-slate-500 dark:text-slate-400">Manajemen aset dan perlengkapan organisasi</p>
                 </div>
                 <button
+                    id="inventory-add-btn"
                     onClick={handleAdd}
                     className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors flex items-center gap-2 shadow-lg shadow-blue-200 dark:shadow-none"
                 >
@@ -99,7 +100,7 @@ const InventoryPage: React.FC = () => {
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div id="inventory-stats" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="bg-white dark:bg-[#1E1E1E] p-6 rounded-2xl border border-slate-100 dark:border-[#2A2A2A] shadow-sm">
                     <div className="flex items-center gap-4">
                         <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl text-blue-600 dark:text-blue-400">
@@ -152,7 +153,7 @@ const InventoryPage: React.FC = () => {
             </div>
 
             {/* Filters */}
-            <div className="flex flex-col md:flex-row gap-4 bg-white dark:bg-[#1E1E1E] p-4 rounded-2xl border border-slate-100 dark:border-[#2A2A2A] shadow-sm">
+            <div id="inventory-filters" className="flex flex-col md:flex-row gap-4 bg-white dark:bg-[#1E1E1E] p-4 rounded-2xl border border-slate-100 dark:border-[#2A2A2A] shadow-sm">
                 <div className="flex-1 relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
                     <input
@@ -203,7 +204,7 @@ const InventoryPage: React.FC = () => {
                     <p className="text-slate-500 dark:text-slate-400">Coba ubah filter atau tambahkan barang baru.</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                <div id="inventory-grid" className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                     {filteredItems.map((item) => (
                         <div key={item.id} className="bg-white dark:bg-[#1E1E1E] rounded-2xl border border-slate-100 dark:border-[#2A2A2A] overflow-hidden shadow-sm hover:shadow-md transition-all group">
                             <div className="aspect-video bg-slate-100 dark:bg-[#2A2A2A] relative overflow-hidden">

@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { eventAPI, newsAPI, galleryAPI, newsletterAPI } from '../../lib/supabase'
 import { getAdminBasePath } from '../../utils/domainDetection'
-import { 
-  Calendar, 
-  Newspaper, 
-  Image, 
-  Plus, 
-  Edit3, 
-  Upload, 
+import {
+  Calendar,
+  Newspaper,
+  Image,
+  Plus,
+  Edit3,
+  Upload,
   Send,
   CheckCircle,
   TrendingUp,
@@ -174,7 +174,7 @@ const AdminDashboard: React.FC = () => {
               <div className="flex items-baseline gap-2">
                 <p className="text-2xl font-bold text-secondary-900 dark:text-neutral-100">{stats.totalEvents}</p>
                 <span className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
-                {stats.upcomingEvents} upcoming
+                  {stats.upcomingEvents} upcoming
                 </span>
               </div>
             </div>
@@ -191,7 +191,7 @@ const AdminDashboard: React.FC = () => {
               <div className="flex items-baseline gap-2">
                 <p className="text-2xl font-bold text-secondary-900 dark:text-neutral-100">{stats.totalNews}</p>
                 <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
-                {stats.recentNews} recent
+                  {stats.recentNews} recent
                 </span>
               </div>
             </div>
@@ -256,7 +256,7 @@ const AdminDashboard: React.FC = () => {
                 <span className="text-xs text-secondary-500 dark:text-secondary-400">Create new activity</span>
               </div>
             </button>
-            
+
             <button
               className="flex items-center p-4 bg-white border border-secondary-100 rounded-xl hover:border-green-300 hover:shadow-md transition-all group dark:bg-[#232323] dark:border-[#2A2A2A] dark:hover:border-green-500"
               onClick={() => navigate(`${adminPath}/news/new`)}
@@ -269,7 +269,7 @@ const AdminDashboard: React.FC = () => {
                 <span className="text-xs text-secondary-500 dark:text-secondary-400">Publish article</span>
               </div>
             </button>
-            
+
             <button
               className="flex items-center p-4 bg-white border border-secondary-100 rounded-xl hover:border-purple-300 hover:shadow-md transition-all group dark:bg-[#232323] dark:border-[#2A2A2A] dark:hover:border-purple-500"
               onClick={() => navigate(`${adminPath}/gallery`)}
@@ -282,7 +282,7 @@ const AdminDashboard: React.FC = () => {
                 <span className="text-xs text-secondary-500 dark:text-secondary-400">Add to gallery</span>
               </div>
             </button>
-            
+
             <button
               className="flex items-center p-4 bg-white border border-secondary-100 rounded-xl hover:border-pink-300 hover:shadow-md transition-all group dark:bg-[#232323] dark:border-[#2A2A2A] dark:hover:border-pink-500"
               onClick={() => navigate(`${adminPath}/newsletter`)}
@@ -309,12 +309,11 @@ const AdminDashboard: React.FC = () => {
           <div className="space-y-4">
             {recentActivity.length > 0 ? recentActivity.map((activity) => (
               <div key={activity.id} className="flex items-center space-x-4 p-3 hover:bg-secondary-50 rounded-xl transition-colors dark:hover:bg-[#232323]">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 border ${
-                  activity.type === 'event' ? 'bg-blue-50 border-blue-100 text-blue-600' :
-                  activity.type === 'news' ? 'bg-green-50 border-green-100 text-green-600' :
-                  activity.type === 'gallery' ? 'bg-purple-50 border-purple-100 text-purple-600' : 
-                  'bg-secondary-50 border-secondary-100 text-secondary-600'
-                }`}>
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 border ${activity.type === 'event' ? 'bg-blue-50 border-blue-100 text-blue-600' :
+                    activity.type === 'news' ? 'bg-green-50 border-green-100 text-green-600' :
+                      activity.type === 'gallery' ? 'bg-purple-50 border-purple-100 text-purple-600' :
+                        'bg-secondary-50 border-secondary-100 text-secondary-600'
+                  }`}>
                   {activity.type === 'event' && <Calendar size={18} />}
                   {activity.type === 'news' && <Newspaper size={18} />}
                   {activity.type === 'gallery' && <Image size={18} />}
@@ -328,11 +327,10 @@ const AdminDashboard: React.FC = () => {
                     {activity.timestamp}
                   </p>
                 </div>
-                <div className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${
-                  activity.status === 'published' ? 'bg-green-50 text-green-700 border border-green-100' :
-                  activity.status === 'draft' ? 'bg-yellow-50 text-yellow-700 border border-yellow-100' :
-                  'bg-red-50 text-red-700 border border-red-100'
-                }`}>
+                <div className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${activity.status === 'published' ? 'bg-green-50 text-green-700 border border-green-100' :
+                    activity.status === 'draft' ? 'bg-yellow-50 text-yellow-700 border border-yellow-100' :
+                      'bg-red-50 text-red-700 border border-red-100'
+                  }`}>
                   {activity.status}
                 </div>
               </div>
