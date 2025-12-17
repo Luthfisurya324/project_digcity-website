@@ -17,7 +17,7 @@ import {
   Clock
 } from 'lucide-react'
 import DashboardQRScanner from './DashboardQRScanner'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams, useNavigate } from 'react-router-dom'
 import { getInternalBasePath } from '../../utils/domainDetection'
 
 interface FinancialSummary {
@@ -28,6 +28,9 @@ interface FinancialSummary {
 
 const InternalDashboard: React.FC = () => {
   const basePath = getInternalBasePath()
+  const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
+  const { notify } = useNotifications()
   const [summary, setSummary] = useState<FinancialSummary>({
     totalIncome: 0,
     totalExpense: 0,
@@ -46,6 +49,28 @@ const InternalDashboard: React.FC = () => {
 
   useEffect(() => {
     loadDashboardData()
+
+    // Check for check-in status from redirect
+    const status = searchParams.get('status')
+    const eventName = searchParams.get('event')
+
+    if (status === 'success') {
+      notify({
+        type: 'success',
+        title: 'Presensi Berhasil',
+        message: `Kehadiran Anda di "${eventName}" telah tercatat.`
+      })
+      // Clear params
+      navigate(basePath || '/', { replace: true })
+    } else if (status === 'already_attended') {
+      notify({
+        type: 'info',
+        title: 'Sudah Presensi',
+        message: `Anda sudah melakukan presensi di "${eventName}" sebelumnya.`
+      })
+      // Clear params
+      navigate(basePath || '/', { replace: true })
+    }
   }, [])
 
   const loadDashboardData = async () => {

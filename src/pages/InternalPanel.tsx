@@ -12,6 +12,7 @@ import MembersPage from '../components/internal/MembersPage'
 import AttendancePage from '../components/internal/AttendancePage'
 import LeaderboardPage from '../components/internal/LeaderboardPage'
 import DocumentsPage from '../components/internal/DocumentsPage'
+import DocumentsDashboard from '../components/internal/DocumentsDashboard'
 import ActivityPage from '../components/internal/ActivityPage'
 import KPIPage from '../components/internal/KPIPage'
 import CheckInPage from '../components/internal/CheckInPage'
@@ -151,7 +152,11 @@ const navigationItems: NavigationItem[] = [
     icon: FileText,
     accent: 'from-pink-500 to-rose-500',
     path: '/documents',
-    section: 'management'
+    section: 'management',
+    children: [
+      { id: 'documents_dashboard', name: 'Dashboard', path: '/documents/dashboard' },
+      { id: 'documents_archive', name: 'Arsip Surat', path: '/documents' }
+    ]
   },
   {
     id: 'activity',
@@ -462,6 +467,7 @@ const AuthenticatedLayout: React.FC<{
                 <Route path="/kpi" element={<KPIPage />} />
                 <Route path="/inventory" element={<InventoryPage />} />
                 <Route path="/checkin" element={<CheckInPage />} />
+                <Route path="/documents/dashboard" element={MANAGEMENT_ROLES.includes(internalRole.toLowerCase()) ? <DocumentsDashboard /> : <Navigate to="/" replace />} />
                 <Route path="/documents" element={MANAGEMENT_ROLES.includes(internalRole.toLowerCase()) ? <DocumentsPage /> : <Navigate to="/" replace />} />
                 <Route path="/activity" element={MANAGEMENT_ROLES.includes(internalRole.toLowerCase()) ? <ActivityPage /> : <Navigate to="/" replace />} />
                 <Route path="/reports" element={MANAGEMENT_ROLES.includes(internalRole.toLowerCase()) ? <ReportsPage /> : <Navigate to="/" replace />} />

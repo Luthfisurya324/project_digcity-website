@@ -26,10 +26,24 @@ const TutorialButton: React.FC<TutorialButtonProps> = () => {
     }, [])
 
     const activeTutorials = TUTORIALS.filter(t => {
-        // Strict path matching to ensure tutorials only appear on their specific pages
-        const currentPath = location.pathname.replace(/\/$/, '') || '/'
-        const targetPath = t.pathStr.replace(/\/$/, '') || '/'
-        return currentPath === targetPath
+        // Normalisasi current path
+        let currentPath = location.pathname.replace(/\/$/, '') || '/'
+
+        // Normalisasi target path dari definisi tutorial
+        let targetPath = t.pathStr.replace(/\/$/, '') || '/'
+
+        // 1. Direct match (e.g. localhost:3000/internal/finance === /internal/finance)
+        if (currentPath === targetPath) return true
+
+        // 2. Subdomain match logic
+        // Definisi tutorial selalu pakai /internal/..., tapi di subdomain prefix itu hilang
+        // Jadi kita coba strip '/internal' dari targetPath
+        const strippedTarget = targetPath.replace(/^\/internal/, '') || '/'
+
+        // Jika stripped target match dengan current path, berarti cocok untuk subdomain
+        if (currentPath === strippedTarget) return true
+
+        return false
     })
 
     const startTour = (tutorial: TutorialDefinition) => {

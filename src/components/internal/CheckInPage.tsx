@@ -76,8 +76,7 @@ const CheckInPage: React.FC = () => {
       })
 
       if (alreadyChecked) {
-        setStatus('success')
-        setMessage('Anda sudah melakukan presensi sebelumnya.')
+        navigate(`/internal?status=already_attended&event=${encodeURIComponent(event.title)}`)
         return
       }
 
@@ -92,8 +91,7 @@ const CheckInPage: React.FC = () => {
         notes: 'QR Check-in'
       })
 
-      setStatus('success')
-      setMessage('Presensi berhasil tercatat!')
+      navigate(`/internal?status=success&event=${encodeURIComponent(event.title)}`)
 
     } catch (error: any) {
       console.error('Check-in error:', error)

@@ -10,7 +10,7 @@ interface EventQRModalProps {
 
 const EventQRModal: React.FC<EventQRModalProps> = ({ event, onClose }) => {
   const [qrCode, setQrCode] = useState(event.qr_code || '')
-  const [countdown, setCountdown] = useState(60)
+  const [countdown, setCountdown] = useState(5)
   const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState('')
 
@@ -18,7 +18,7 @@ const EventQRModal: React.FC<EventQRModalProps> = ({ event, onClose }) => {
   const baseUrl = window.location.origin
   const checkInUrl = qrCode ? `${baseUrl}/internal/checkin?event=${event.id}&token=${qrCode}` : `${baseUrl}/internal/checkin?event=${event.id}`
   const qrImageUrl = qrCode
-    ? `https://api.qrserver.com/v1/create-qr-code/?size=320x320&data=${encodeURIComponent(checkInUrl)}&bgcolor=ffffff`
+    ? `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(checkInUrl)}&bgcolor=ffffff`
     : ''
 
   useEffect(() => {
@@ -31,7 +31,7 @@ const EventQRModal: React.FC<EventQRModalProps> = ({ event, onClose }) => {
         setError('')
         const newCode = await attendanceAPI.refreshQrCode(event.id)
         setQrCode(newCode)
-        setCountdown(60)
+        setCountdown(5)
       } catch (err) {
         console.error('Failed to refresh QR code', err)
         setError('Gagal memuat QR baru, coba ulangi dalam beberapa detik.')
@@ -41,7 +41,7 @@ const EventQRModal: React.FC<EventQRModalProps> = ({ event, onClose }) => {
     }
 
     refreshQr()
-    refreshInterval = setInterval(refreshQr, 60000)
+    refreshInterval = setInterval(refreshQr, 5000)
     countdownInterval = setInterval(() => {
       setCountdown((prev) => (prev > 0 ? prev - 1 : 0))
     }, 1000)
@@ -71,7 +71,7 @@ const EventQRModal: React.FC<EventQRModalProps> = ({ event, onClose }) => {
 
   return createPortal(
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
-      <div className="bg-white dark:bg-[#1E1E1E] rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl transform transition-all">
+      <div className="bg-white dark:bg-[#1E1E1E] rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl transform transition-all">
         <div className="relative bg-blue-600 p-6 text-center text-white">
           <button
             onClick={onClose}
@@ -89,7 +89,7 @@ const EventQRModal: React.FC<EventQRModalProps> = ({ event, onClose }) => {
               <img
                 src={qrImageUrl}
                 alt="QR Code Presensi"
-                className="w-48 h-48 object-contain"
+                className="w-96 h-96 object-contain"
               />
             ) : (
               <div className="flex flex-col items-center text-center text-slate-400 gap-3">
