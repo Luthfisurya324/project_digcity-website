@@ -120,7 +120,9 @@ const DocumentsPage: React.FC = () => {
     switch (type) {
       case 'incoming': return 'Surat Masuk'
       case 'outgoing': return 'Surat Keluar'
-      case 'report': return 'Laporan (LPJ)'
+      case 'proposal': return 'Proposal Acara'
+      case 'lpj': return 'LPJ Acara'
+      case 'report': return 'Laporan'
       default: return 'Dokumen Lain'
     }
   }
@@ -184,7 +186,9 @@ const DocumentsPage: React.FC = () => {
             { id: 'all', label: 'Semua' },
             { id: 'incoming', label: 'Masuk' },
             { id: 'outgoing', label: 'Keluar' },
-            { id: 'report', label: 'LPJ' }
+            { id: 'proposal', label: 'Proposal' },
+            { id: 'lpj', label: 'LPJ' },
+            { id: 'report', label: 'Laporan Lain' }
           ].map((type) => (
             <button
               key={type.id}

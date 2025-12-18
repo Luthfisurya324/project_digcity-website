@@ -15,10 +15,23 @@ interface EventFormProps {
 
 const EventForm: React.FC<EventFormProps> = ({ onClose, onSuccess, initialType = 'meeting', initialData, userRole, userDivision }) => {
   const { notify } = useNotifications()
+  // Helper to get local string for datetime-local input (YYYY-MM-DDTHH:mm)
+  const formatForInput = (dateStr: string) => {
+    if (!dateStr) return ''
+    const d = new Date(dateStr)
+    const pad = (n: number) => n.toString().padStart(2, '0')
+    const year = d.getFullYear()
+    const month = pad(d.getMonth() + 1)
+    const day = pad(d.getDate())
+    const hours = pad(d.getHours())
+    const minutes = pad(d.getMinutes())
+    return `${year}-${month}-${day}T${hours}:${minutes}`
+  }
+
   const [title, setTitle] = useState(initialData?.title || '')
   const [description, setDescription] = useState(initialData?.description || '')
-  const [date, setDate] = useState(initialData?.date ? new Date(initialData.date).toISOString().slice(0, 16) : '')
-  const [endDate, setEndDate] = useState(initialData?.end_date ? new Date(initialData.end_date).toISOString().slice(0, 16) : '')
+  const [date, setDate] = useState(initialData?.date ? formatForInput(initialData.date) : '')
+  const [endDate, setEndDate] = useState(initialData?.end_date ? formatForInput(initialData.end_date) : '')
   const [location, setLocation] = useState(initialData?.location || '')
   const [divisionId, setDivisionId] = useState(initialData?.division_id || '')
   const [type, setType] = useState<'meeting' | 'work_program' | 'gathering' | 'other'>(

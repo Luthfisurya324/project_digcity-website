@@ -19,7 +19,9 @@ import {
   TrendingUp,
   Medal,
   Filter,
-  Trash2
+  Trash2,
+  Download,
+  FileText
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
@@ -345,6 +347,87 @@ const AttendancePage: React.FC<AttendancePageProps> = ({ userRole = 'anggota', u
     window.open(url, '_blank')
   }
 
+  const handleExportCSV = () => {
+    const headers = ['Nama', 'Agenda', 'Tipe', 'Tanggal', 'Waktu Check-in', 'Status']
+    const csvContent = [
+      headers.join(','),
+      ...attendanceRecords.map(r => {
+        const event = events.find(e => e.id === r.event_id)
+        return [
+          `"${r.name}"`,
+          `"${event?.title || '-'}"`,
+          event?.type || '-',
+          new Date(r.check_in_time).toLocaleDateString('id-ID'),
+          new Date(r.check_in_time).toLocaleTimeString('id-ID'),
+          statusLabels[r.status] || r.status
+        ].join(',')
+      })
+    ].join('\n')
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    link.href = URL.createObjectURL(blob)
+    link.download = `laporan_presensi_digcity_${new Date().toISOString().slice(0, 10)}.csv`
+    link.click()
+  }
+
+  const handleExportPDF = () => {
+    const rows = attendanceRecords.map((r) => {
+      const event = events.find(e => e.id === r.event_id)
+      return `
+      <tr>
+        <td>${r.name}</td>
+        <td>${event?.title || '-'}</td>
+        <td>${event?.type || '-'}</td>
+        <td>${new Date(r.check_in_time).toLocaleDateString('id-ID')}</td>
+        <td>${new Date(r.check_in_time).toLocaleTimeString('id-ID')}</td>
+        <td>${statusLabels[r.status] || r.status}</td>
+      </tr>
+      `
+    }).join('')
+
+    const html = `
+    <html>
+      <head>
+        <title>Laporan Presensi DIGCITY</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 24px; }
+          h1 { font-size: 20px; margin-bottom: 8px; }
+          p { font-size: 12px; color: #666; margin-bottom: 16px; }
+          table { width: 100%; border-collapse: collapse; }
+          th, td { border: 1px solid #ddd; padding: 8px; font-size: 11px; }
+          th { background: #f4f4f4; text-align: left; }
+        </style>
+      </head>
+      <body>
+        <h1>Laporan Presensi DIGCITY</h1>
+        <p>Total: ${attendanceRecords.length} record | Dicetak: ${new Date().toLocaleString('id-ID')}</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Nama</th>
+              <th>Agenda</th>
+              <th>Tipe</th>
+              <th>Tanggal</th>
+              <th>Waktu</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows}
+          </tbody>
+        </table>
+      </body>
+    </html>
+    `
+
+    const win = window.open('', '_blank')
+    if (!win) return
+    win.document.write(html)
+    win.document.close()
+    win.print()
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -374,6 +457,24 @@ const AttendancePage: React.FC<AttendancePageProps> = ({ userRole = 'anggota', u
           >
             <QrCode size={18} />
             <span className="hidden sm:inline">Scan QR</span>
+          </button>
+          <button
+            id="attendance-export-csv-btn"
+            onClick={handleExportCSV}
+            className="px-4 py-2 bg-white dark:bg-[#1E1E1E] border border-slate-200 dark:border-[#2A2A2A] text-slate-700 dark:text-slate-300 rounded-lg flex items-center gap-2 hover:bg-slate-50 dark:hover:bg-[#2A2A2A] transition-colors shadow-sm"
+            title="Export ke CSV/Excel"
+          >
+            <Download size={18} />
+            <span className="hidden sm:inline">Export</span>
+          </button>
+          <button
+            id="attendance-export-pdf-btn"
+            onClick={handleExportPDF}
+            className="px-4 py-2 bg-white dark:bg-[#1E1E1E] border border-slate-200 dark:border-[#2A2A2A] text-slate-700 dark:text-slate-300 rounded-lg flex items-center gap-2 hover:bg-slate-50 dark:hover:bg-[#2A2A2A] transition-colors shadow-sm"
+            title="Cetak/Print PDF"
+          >
+            <FileText size={18} />
+            <span className="hidden sm:inline">Print</span>
           </button>
           <button
             id="attendance-create-btn"

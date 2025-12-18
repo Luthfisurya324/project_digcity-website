@@ -1,19 +1,13 @@
-import React, { useState, useEffect, useMemo } from 'react'
-import { financeAPI, attendanceAPI, documentsAPI, notificationsAPI, supabase, membersAPI, duesAPI, orgAPI, type FinanceTransaction, type Document, type NotificationItemDB, type MemberDue } from '../../lib/supabase'
+import React, { useState, useEffect } from 'react'
+import { financeAPI, attendanceAPI, documentsAPI, supabase, membersAPI, duesAPI, type FinanceTransaction, type Document } from '../../lib/supabase'
 import { useNotifications } from '../common/NotificationCenter'
 import {
   Wallet,
-  TrendingUp,
-  TrendingDown,
   ArrowRight,
-  Plus,
-  Calendar,
   CheckCircle,
   AlertTriangle,
-  Bell,
   Users,
   Briefcase,
-  FileText,
   Clock
 } from 'lucide-react'
 import DashboardQRScanner from './DashboardQRScanner'
@@ -41,7 +35,6 @@ const InternalDashboard: React.FC = () => {
   const [userRole, setUserRole] = useState<string>('Anggota')
   const [pendingExpenses, setPendingExpenses] = useState<FinanceTransaction[]>([])
   const [pendingDocs, setPendingDocs] = useState<Document[]>([])
-  const [notifications, setNotifications] = useState<NotificationItemDB[]>([])
   const [memberCount, setMemberCount] = useState(0)
   const [activeProgramsCount, setActiveProgramsCount] = useState(0)
 
@@ -93,18 +86,16 @@ const InternalDashboard: React.FC = () => {
         }
       } catch { }
 
-      const [ev, txAll, docsAll, notifs, members] = await Promise.all([
+      const [ev, txAll, docsAll, members] = await Promise.all([
         attendanceAPI.getEvents(),
         financeAPI.getAll(),
         documentsAPI.getAll(),
-        notificationsAPI.list({ unreadOnly: true, limit: 5 }),
         membersAPI.getAll()
       ])
 
       setActiveProgramsCount(ev.filter(e => e.type === 'work_program' && e.status !== 'cancelled').length)
       setPendingExpenses((txAll as FinanceTransaction[]).filter(t => t.status === 'pending').slice(0, 5))
       setPendingDocs((docsAll as Document[]).filter(d => d.status === 'pending_review').slice(0, 5))
-      setNotifications(notifs)
       setMemberCount(members.length)
 
     } catch (error) {

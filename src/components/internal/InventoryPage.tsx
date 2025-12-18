@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import {
     Plus, Search, Filter, Package, Wrench, AlertTriangle,
-    MoreVertical, Edit, Trash2, MapPin, Calendar
+    MoreVertical, Edit, Trash2, MapPin, Calendar, Download
 } from 'lucide-react'
 import { inventoryAPI, InventoryItem } from '../../lib/supabase'
 import InventoryModal from './InventoryModal'
@@ -81,6 +81,38 @@ const InventoryPage: React.FC = () => {
         }
     }
 
+    const getConditionLabel = (condition: string) => {
+        switch (condition) {
+            case 'good': return 'Layak Pakai'
+            case 'repair_needed': return 'Perlu Perbaikan'
+            case 'broken': return 'Rusak'
+            default: return condition
+        }
+    }
+
+    const handleExportCSV = () => {
+        const headers = ['Nama', 'Kategori', 'Jumlah', 'Kondisi', 'Lokasi', 'Harga Satuan', 'Tanggal Perolehan', 'Catatan']
+        const csvContent = [
+            headers.join(','),
+            ...filteredItems.map(item => [
+                `"${item.name}"`,
+                `"${item.category}"`,
+                item.quantity,
+                `"${getConditionLabel(item.condition)}"`,
+                `"${item.location || '-'}"`,
+                item.price || 0,
+                item.acquisition_date || '-',
+                `"${(item.notes || '').replace(/"/g, '""')}"`
+            ].join(','))
+        ].join('\n')
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+        const link = document.createElement('a')
+        link.href = URL.createObjectURL(blob)
+        link.download = `inventaris_digcity_${new Date().toISOString().slice(0, 10)}.csv`
+        link.click()
+    }
+
     return (
         <div className="space-y-8">
             {/* Header */}
@@ -89,14 +121,24 @@ const InventoryPage: React.FC = () => {
                     <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Inventaris Sekretariat</h1>
                     <p className="text-slate-500 dark:text-slate-400">Manajemen aset dan perlengkapan organisasi</p>
                 </div>
-                <button
-                    id="inventory-add-btn"
-                    onClick={handleAdd}
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors flex items-center gap-2 shadow-lg shadow-blue-200 dark:shadow-none"
-                >
-                    <Plus size={18} />
-                    Tambah Barang
-                </button>
+                <div className="flex gap-2">
+                    <button
+                        id="inventory-export-btn"
+                        onClick={handleExportCSV}
+                        className="px-4 py-2 bg-white dark:bg-[#1E1E1E] border border-slate-200 dark:border-[#2A2A2A] text-slate-700 dark:text-slate-300 rounded-xl font-medium transition-colors flex items-center gap-2 hover:bg-slate-50 dark:hover:bg-[#2A2A2A]"
+                    >
+                        <Download size={18} />
+                        Export
+                    </button>
+                    <button
+                        id="inventory-add-btn"
+                        onClick={handleAdd}
+                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors flex items-center gap-2 shadow-lg shadow-blue-200 dark:shadow-none"
+                    >
+                        <Plus size={18} />
+                        Tambah Barang
+                    </button>
+                </div>
             </div>
 
             {/* Stats Cards */}

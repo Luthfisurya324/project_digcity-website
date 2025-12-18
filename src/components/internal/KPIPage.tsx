@@ -83,10 +83,14 @@ const KPIPage: React.FC = () => {
             const memberAttendanceMap = new Map<string, Set<string>>()
             attendanceRecords.forEach(record => {
                 if (record.status === 'present' || record.status === 'late') {
-                    if (!memberAttendanceMap.has(record.member_id)) {
-                        memberAttendanceMap.set(record.member_id, new Set())
+                    const memberId = record.member_id
+                    const eventId = record.event_id
+                    if (memberId && eventId) {
+                        if (!memberAttendanceMap.has(memberId)) {
+                            memberAttendanceMap.set(memberId, new Set())
+                        }
+                        memberAttendanceMap.get(memberId)?.add(eventId)
                     }
-                    memberAttendanceMap.get(record.member_id)?.add(record.event_id)
                 }
             })
 

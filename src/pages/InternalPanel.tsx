@@ -13,10 +13,10 @@ import AttendancePage from '../components/internal/AttendancePage'
 import LeaderboardPage from '../components/internal/LeaderboardPage'
 import DocumentsPage from '../components/internal/DocumentsPage'
 import DocumentsDashboard from '../components/internal/DocumentsDashboard'
+import EventDocumentsPage from '../components/internal/EventDocumentsPage'
 import ActivityPage from '../components/internal/ActivityPage'
 import KPIPage from '../components/internal/KPIPage'
 import CheckInPage from '../components/internal/CheckInPage'
-import ThemeToggle from '../components/common/ThemeToggle'
 import { useReminders } from '../hooks/useReminders'
 import ReportsPage from '../components/internal/ReportsPage'
 import OrganizationSettings from '../components/internal/OrganizationSettings'
@@ -33,7 +33,6 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
-  Globe,
   Shield,
   Building2,
   Briefcase,
@@ -42,7 +41,12 @@ import {
   ChevronUp,
   Menu,
   X,
-  Award
+  Award,
+  Settings,
+  Sun,
+  Moon,
+  ExternalLink,
+  User
 } from 'lucide-react'
 import MemberDuesPage from '../components/internal/MemberDuesPage'
 import AdminUserManagement from '../components/internal/AdminUserManagement'
@@ -155,6 +159,7 @@ const navigationItems: NavigationItem[] = [
     section: 'management',
     children: [
       { id: 'documents_dashboard', name: 'Dashboard', path: '/documents/dashboard' },
+      { id: 'documents_events', name: 'Dokumen Proker', path: '/documents/events' },
       { id: 'documents_archive', name: 'Arsip Surat', path: '/documents' }
     ]
   },
@@ -174,15 +179,6 @@ const navigationItems: NavigationItem[] = [
     icon: BarChart3,
     accent: 'from-teal-500 to-blue-500',
     path: '/reports',
-    section: 'management'
-  },
-  {
-    id: 'org',
-    name: 'Pengaturan',
-    description: 'Profil & struktur organisasi',
-    icon: Shield,
-    accent: 'from-slate-500 to-indigo-500',
-    path: '/org',
     section: 'management'
   }
 ]
@@ -233,17 +229,48 @@ const AuthenticatedLayout: React.FC<{
     // Only run reminders when authenticated
     useReminders(true)
 
+    // User menu dropdown state
+    const [userMenuOpen, setUserMenuOpen] = useState(false)
+    const [isDarkMode, setIsDarkMode] = useState(() => document.documentElement.classList.contains('dark'))
+
+    // Toggle theme function
+    const toggleTheme = () => {
+      const newMode = !isDarkMode
+      setIsDarkMode(newMode)
+      if (newMode) {
+        document.documentElement.classList.add('dark')
+        localStorage.setItem('theme', 'dark')
+      } else {
+        document.documentElement.classList.remove('dark')
+        localStorage.setItem('theme', 'light')
+      }
+    }
+
+    // Close user menu when clicking outside
+    useEffect(() => {
+      const handleClickOutside = (e: MouseEvent) => {
+        const target = e.target as HTMLElement
+        if (!target.closest('#user-menu-container')) {
+          setUserMenuOpen(false)
+        }
+      }
+      if (userMenuOpen) {
+        document.addEventListener('click', handleClickOutside)
+        return () => document.removeEventListener('click', handleClickOutside)
+      }
+    }, [userMenuOpen])
+
     const navButtonClasses = (isActive: boolean) => {
-      const base = 'group w-full flex items-center rounded-2xl transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40'
-      const spacing = sidebarCollapsed ? 'justify-center p-2.5' : 'px-3 py-2.5 gap-3'
+      const base = 'group w-full flex items-center rounded-xl transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40'
+      const spacing = sidebarCollapsed ? 'justify-center p-2' : 'px-2.5 py-2 gap-2.5'
       const defaultStyles = 'text-slate-600 hover:bg-slate-50/80 dark:text-[rgba(255,255,255,0.65)] dark:hover:bg-[#1A1A1A]'
       const activeStyles = 'bg-blue-600/10 text-blue-700 border border-blue-100/60 shadow-sm dark:text-blue-400 dark:bg-blue-900/20 dark:border-blue-800/30'
       return `${base} ${spacing} ${isActive ? activeStyles : defaultStyles}`
     }
 
     const navIconClasses = (isActive: boolean, accent: string) => {
-      const base = 'flex items-center justify-center rounded-xl transition-all duration-200'
-      const sizing = sidebarCollapsed ? 'h-9 w-9' : 'h-11 w-11'
+      const base = 'flex items-center justify-center rounded-lg transition-all duration-200 flex-shrink-0'
+      const sizing = sidebarCollapsed ? 'h-8 w-8' : 'h-8 w-8'
       const defaultStyles = 'bg-slate-100 text-slate-500 dark:bg-[#232323] dark:text-neutral-300'
       const activeStyles = `bg-gradient-to-br ${accent} text-white shadow-md`
       return `${base} ${sizing} ${isActive ? activeStyles : defaultStyles}`
@@ -261,19 +288,19 @@ const AuthenticatedLayout: React.FC<{
 
         <aside
           className={`fixed inset-y-0 left-0 z-30 bg-white dark:bg-[#101010] border-r border-slate-200 dark:border-[#1F1F1F] transition-all duration-300 lg:static lg:h-full lg:flex lg:flex-col
-            ${mobileMenuOpen ? 'translate-x-0 w-72' : '-translate-x-full lg:translate-x-0'}
-            ${sidebarCollapsed ? 'lg:w-20' : 'lg:w-72'}
+            ${mobileMenuOpen ? 'translate-x-0 w-64' : '-translate-x-full lg:translate-x-0'}
+            ${sidebarCollapsed ? 'lg:w-16' : 'lg:w-56'}
           `}
         >
-          <div className={`flex items-center ${sidebarCollapsed ? 'justify-center' : 'justify-between'} px-4 py-4 border-b border-slate-100 dark:border-[#1F1F1F] flex-shrink-0`}>
+          <div className={`flex items-center ${sidebarCollapsed ? 'justify-center' : 'justify-between'} px-3 py-3 border-b border-slate-100 dark:border-[#1F1F1F] flex-shrink-0`}>
             {(!sidebarCollapsed || mobileMenuOpen) && (
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-200">
-                  <Building2 size={20} />
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white shadow-md">
+                  <Building2 size={16} />
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-slate-900 dark:text-white">DIGCITY Internal</p>
-                  <p className="text-xs text-slate-500 dark:text-[rgba(255,255,255,0.6)]">Organization Portal</p>
+                  <p className="text-xs font-bold text-slate-900 dark:text-white">DIGCITY</p>
+                  <p className="text-[10px] text-slate-500 dark:text-[rgba(255,255,255,0.6)]">Internal</p>
                 </div>
               </div>
             )}
@@ -297,11 +324,11 @@ const AuthenticatedLayout: React.FC<{
 
 
 
-          <nav id="sidebar-nav" className={`flex-1 ${sidebarCollapsed ? 'px-2' : 'px-4'} py-6 overflow-y-auto space-y-6 custom-scrollbar`}>
+          <nav id="sidebar-nav" className={`flex-1 ${sidebarCollapsed ? 'px-1.5' : 'px-2'} py-4 overflow-y-auto space-y-4 custom-scrollbar`}>
             {groupedNavigation.map((group) => (
               <div key={group.label}>
                 {(!sidebarCollapsed || mobileMenuOpen) && (
-                  <p className="px-2 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
+                  <p className="px-2 text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2">
                     {group.label}
                   </p>
                 )}
@@ -324,32 +351,31 @@ const AuthenticatedLayout: React.FC<{
                             }
                           }}
                           className={navButtonClasses(isActive || false)}
-                          title={sidebarCollapsed ? item.name : undefined}
+                          title={item.name}
                         >
                           <div className={navIconClasses(isActive || false, item.accent)}>
-                            <Icon size={18} />
+                            <Icon size={16} />
                           </div>
                           {(!sidebarCollapsed || mobileMenuOpen) && (
-                            <div className="flex-1 text-left">
-                              <div className="flex items-center justify-between">
-                                <span className="text-sm font-medium">{item.name}</span>
+                            <div className="flex-1 text-left min-w-0">
+                              <div className="flex items-center justify-between gap-1">
+                                <span className="text-[13px] font-medium truncate">{item.name}</span>
                                 {hasChildren && (
-                                  isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />
+                                  isExpanded ? <ChevronUp size={12} className="flex-shrink-0" /> : <ChevronDown size={12} className="flex-shrink-0" />
                                 )}
                                 {item.badge && !hasChildren && (
-                                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 font-medium">
+                                  <span className="text-[9px] px-1 py-0.5 rounded bg-slate-100 text-slate-500 font-medium flex-shrink-0">
                                     {item.badge}
                                   </span>
                                 )}
                               </div>
-                              <p className="text-xs text-slate-500 truncate dark:text-slate-400">{item.description}</p>
                             </div>
                           )}
                         </button>
 
                         {/* Submenu */}
                         {(!sidebarCollapsed || mobileMenuOpen) && hasChildren && isExpanded && (
-                          <div className="mt-1 ml-12 space-y-1 border-l-2 border-slate-100 dark:border-[#2A2A2A] pl-3">
+                          <div className="mt-1 ml-10 space-y-0.5 border-l-2 border-slate-100 dark:border-[#2A2A2A] pl-2">
                             {item.children?.map((child) => {
                               const isChildActive = location.pathname === child.path
                               return (
@@ -359,7 +385,7 @@ const AuthenticatedLayout: React.FC<{
                                     navigate(`${getInternalBasePath()}${child.path}`)
                                     setMobileMenuOpen(false)
                                   }}
-                                  className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${isChildActive
+                                  className={`w-full text-left px-2 py-1.5 rounded-md text-xs transition-colors ${isChildActive
                                     ? 'text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-900/20 font-medium'
                                     : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-[#1A1A1A]'
                                     }`}
@@ -381,20 +407,22 @@ const AuthenticatedLayout: React.FC<{
           {/* Admin Only Menu */}
           {
             internalRole === 'admin' && (
-              <div className="pt-4 mt-4 border-t border-slate-100 dark:border-[#1F1F1F] flex-shrink-0">
-                <p className={`px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 ${sidebarCollapsed ? 'text-center' : ''}`}>
-                  {sidebarCollapsed ? 'ADM' : 'Admin'}
-                </p>
+              <div className="pt-3 mt-2 border-t border-slate-100 dark:border-[#1F1F1F] flex-shrink-0 px-2">
+                {(!sidebarCollapsed || mobileMenuOpen) && (
+                  <p className="px-2 text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Admin</p>
+                )}
                 <Link
                   to={`${getInternalBasePath()}/admin/users`}
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center px-4 py-3 text-sm font-medium transition-colors ${location.pathname === `${getInternalBasePath()}/admin/users`
-                    ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/20 border-r-2 border-blue-600'
+                  className={`flex items-center px-2.5 py-2 rounded-xl text-xs font-medium transition-colors ${location.pathname === `${getInternalBasePath()}/admin/users`
+                    ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/20'
                     : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-[#1A1A1A] hover:text-slate-900 dark:hover:text-white'
                     }`}
                 >
-                  <Shield size={20} className={sidebarCollapsed ? 'mx-auto' : 'mr-3'} />
-                  {(!sidebarCollapsed || mobileMenuOpen) && 'Manajemen User'}
+                  <div className={`flex items-center justify-center w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-900/30 ${sidebarCollapsed ? '' : 'mr-2'}`}>
+                    <Shield size={14} className="text-amber-600 dark:text-amber-400" />
+                  </div>
+                  {(!sidebarCollapsed || mobileMenuOpen) && 'User'}
                 </Link>
               </div>
             )
@@ -402,25 +430,85 @@ const AuthenticatedLayout: React.FC<{
 
 
 
-          <div id="user-profile-section" className="p-4 border-t border-slate-100 dark:border-[#1F1F1F] flex-shrink-0">
-            <div className={`flex items-center ${sidebarCollapsed ? 'justify-center' : 'gap-3'} mb-4`}>
-              <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-bold">
+          {/* User Profile with Dropdown Menu */}
+          <div id="user-menu-container" className="p-2 border-t border-slate-100 dark:border-[#1F1F1F] flex-shrink-0 relative">
+            <button
+              onClick={() => setUserMenuOpen(!userMenuOpen)}
+              className={`w-full flex items-center ${sidebarCollapsed ? 'justify-center' : 'gap-2'} p-2 rounded-xl bg-slate-50 dark:bg-[#1A1A1A] hover:bg-slate-100 dark:hover:bg-[#252525] transition-colors`}
+            >
+              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold text-xs flex-shrink-0">
                 {user.email.charAt(0).toUpperCase()}
               </div>
               {(!sidebarCollapsed || mobileMenuOpen) && (
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-slate-900 truncate dark:text-white">{user.email}</p>
-                  <p className="text-xs text-slate-500 truncate">{internalRole.toUpperCase()}</p>
-                </div>
+                <>
+                  <div className="flex-1 min-w-0 text-left">
+                    <p className="text-xs font-medium text-slate-900 truncate dark:text-white">{user.email.split('@')[0]}</p>
+                    <p className="text-[10px] text-slate-500 truncate">{internalRole}</p>
+                  </div>
+                  <ChevronUp size={14} className={`text-slate-400 transition-transform ${userMenuOpen ? '' : 'rotate-180'}`} />
+                </>
               )}
-            </div>
-            <button
-              onClick={handleLogout}
-              className={`w-full flex items-center ${sidebarCollapsed ? 'justify-center' : 'justify-start gap-3 px-3'} py-2 text-red-600 hover:bg-red-50 rounded-xl transition-colors`}
-            >
-              <LogOut size={18} />
-              {(!sidebarCollapsed || mobileMenuOpen) && <span className="text-sm font-medium">Keluar</span>}
             </button>
+
+            {/* Dropdown Menu */}
+            {userMenuOpen && (
+              <div className={`absolute ${sidebarCollapsed ? 'left-full ml-2 bottom-0' : 'bottom-full left-2 right-2 mb-1'} bg-white dark:bg-[#1A1A1A] border border-slate-200 dark:border-[#2A2A2A] rounded-xl shadow-lg overflow-hidden z-50`}>
+                {/* Profile & Settings */}
+                <div className="p-1">
+                  <Link
+                    to={`${getInternalBasePath()}/settings`}
+                    onClick={() => { setUserMenuOpen(false); setMobileMenuOpen(false) }}
+                    className="flex items-center gap-2 px-3 py-2 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#252525] rounded-lg transition-colors"
+                  >
+                    <User size={14} />
+                    <span>Pengaturan Profil</span>
+                  </Link>
+                  <Link
+                    to={`${getInternalBasePath()}/org`}
+                    onClick={() => { setUserMenuOpen(false); setMobileMenuOpen(false) }}
+                    className="flex items-center gap-2 px-3 py-2 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#252525] rounded-lg transition-colors"
+                  >
+                    <Settings size={14} />
+                    <span>Pengaturan Organisasi</span>
+                  </Link>
+                </div>
+
+                <div className="border-t border-slate-100 dark:border-[#2A2A2A]" />
+
+                {/* Website & Theme */}
+                <div className="p-1">
+                  <a
+                    href="https://digcity.my.id"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-2 px-3 py-2 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#252525] rounded-lg transition-colors"
+                  >
+                    <ExternalLink size={14} />
+                    <span>Website Utama</span>
+                  </a>
+                  <button
+                    onClick={toggleTheme}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#252525] rounded-lg transition-colors"
+                  >
+                    {isDarkMode ? <Sun size={14} /> : <Moon size={14} />}
+                    <span>{isDarkMode ? 'Mode Terang' : 'Mode Gelap'}</span>
+                  </button>
+                </div>
+
+                <div className="border-t border-slate-100 dark:border-[#2A2A2A]" />
+
+                {/* Logout */}
+                <div className="p-1">
+                  <button
+                    onClick={() => { setUserMenuOpen(false); handleLogout() }}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                  >
+                    <LogOut size={14} />
+                    <span>Keluar</span>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </aside >
 
@@ -438,17 +526,6 @@ const AuthenticatedLayout: React.FC<{
                   <h1 id="internal-dashboard-header" className="text-xl font-bold text-slate-900 dark:text-white">{activeTabInfo.name}</h1>
                   <p className="text-sm text-slate-500 dark:text-slate-400 hidden sm:block">{activeTabInfo.description}</p>
                 </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <div id="theme-toggle-btn">
-                  <ThemeToggle />
-                </div>
-                <a href="https://digcity.my.id" target="_blank" rel="noreferrer" className="p-2 text-slate-400 hover:text-blue-600 transition-colors hidden sm:block">
-                  <Globe size={20} />
-                </a>
-                <a href={`${getInternalBasePath()}/settings`} className="p-2 text-slate-400 hover:text-blue-600 transition-colors" title="Pengaturan Akun">
-                  <Shield size={20} />
-                </a>
               </div>
             </div>
           </header>
@@ -468,6 +545,7 @@ const AuthenticatedLayout: React.FC<{
                 <Route path="/inventory" element={<InventoryPage />} />
                 <Route path="/checkin" element={<CheckInPage />} />
                 <Route path="/documents/dashboard" element={MANAGEMENT_ROLES.includes(internalRole.toLowerCase()) ? <DocumentsDashboard /> : <Navigate to="/" replace />} />
+                <Route path="/documents/events" element={MANAGEMENT_ROLES.includes(internalRole.toLowerCase()) ? <EventDocumentsPage /> : <Navigate to="/" replace />} />
                 <Route path="/documents" element={MANAGEMENT_ROLES.includes(internalRole.toLowerCase()) ? <DocumentsPage /> : <Navigate to="/" replace />} />
                 <Route path="/activity" element={MANAGEMENT_ROLES.includes(internalRole.toLowerCase()) ? <ActivityPage /> : <Navigate to="/" replace />} />
                 <Route path="/reports" element={MANAGEMENT_ROLES.includes(internalRole.toLowerCase()) ? <ReportsPage /> : <Navigate to="/" replace />} />

@@ -35,20 +35,31 @@ const WorkProgramsPage: React.FC<WorkProgramsPageProps> = ({ userRole = 'anggota
             const allEvents = await attendanceAPI.getEvents()
             const workPrograms = allEvents.filter(e => e.type === 'work_program')
 
-            // Check for past events that are still upcoming
-            const today = new Date()
-            today.setHours(0, 0, 0, 0)
-
+            // Auto-update statuses based on date
+            const now = new Date()
             const updates = workPrograms.map(async (program) => {
-                if (program.status === 'upcoming') {
-                    const eventDate = new Date(program.end_date || program.date)
-                    if (eventDate < today) {
-                        try {
-                            await attendanceAPI.updateEvent(program.id, { status: 'completed' })
-                            program.status = 'completed' // Update local state immediately
-                        } catch (err) {
-                            console.error(`Failed to auto-complete program ${program.title}`, err)
-                        }
+                // Skip manually cancelled programs
+                if (program.status === 'cancelled') return program
+
+                const startDate = new Date(program.date)
+                const endDate = program.end_date ? new Date(program.end_date) : startDate
+
+                let newStatus: InternalEvent['status'] = 'upcoming'
+
+                if (now > endDate) {
+                    newStatus = 'completed'
+                } else if (now >= startDate && now <= endDate) {
+                    newStatus = 'ongoing'
+                }
+
+                if (program.status !== newStatus) {
+                    try {
+                        // Only update DB if it's a significant change to avoid thrashing?
+                        // Actually, we should sync DB to calculated state typicaly
+                        await attendanceAPI.updateEvent(program.id, { status: newStatus })
+                        program.status = newStatus
+                    } catch (err) {
+                        console.error(`Failed to auto-update status for ${program.title}`, err)
                     }
                 }
                 return program
@@ -171,10 +182,34 @@ const WorkProgramsPage: React.FC<WorkProgramsPageProps> = ({ userRole = 'anggota
                                     <div className="flex items-center gap-2">
                                         <Calendar size={16} className="text-slate-400" />
                                         <span>
-                                            {new Date(program.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
-                                            {program.end_date && program.end_date !== program.date && (
-                                                <> - {new Date(program.end_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</>
-                                            )}
+                                            {(() => {
+                                                const start = new Date(program.date)
+                                                const end = program.end_date ? new Date(program.end_date) : null
+
+                                                const isSameDay = end && start.toDateString() === end.toDateString()
+
+                                                if (!end) {
+                                                    return start.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                                                }
+
+                                                if (isSameDay) {
+                                                    return (
+                                                        <>
+                                                            {start.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                                            <span className="mx-1">•</span>
+                                                            {start.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} - {end.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                                                        </>
+                                                    )
+                                                }
+
+                                                return (
+                                                    <>
+                                                        {start.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                                        <span className="mx-1">-</span>
+                                                        {end.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                                    </>
+                                                )
+                                            })()}
                                         </span>
                                     </div>
                                     <div className="flex items-center gap-2">

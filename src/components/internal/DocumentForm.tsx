@@ -10,6 +10,8 @@ interface DocumentFormProps {
   onSuccess: () => void
   document?: Document
   mode?: DocumentFormMode
+  initialData?: Partial<Document>
+  fixedType?: boolean
 }
 
 const templatePresets = [
@@ -40,19 +42,20 @@ const templatePresets = [
   }
 ]
 
-const DocumentForm: React.FC<DocumentFormProps> = ({ onClose, onSuccess, document, mode = 'create' }) => {
+const DocumentForm: React.FC<DocumentFormProps> = ({ onClose, onSuccess, document, mode = 'create', initialData, fixedType = false }) => {
   const isEditMode = mode === 'edit' && document
   const isRevisionMode = mode === 'revision' && document
 
-  const [title, setTitle] = useState(document?.title || '')
-  const [type, setType] = useState<Document['type']>(document?.type || 'outgoing')
-  const [category, setCategory] = useState(document?.category || 'Umum')
+  const [title, setTitle] = useState(document?.title || initialData?.title || '')
+  const [type, setType] = useState<Document['type']>(document?.type || initialData?.type || 'outgoing')
+  const [category, setCategory] = useState(document?.category || initialData?.category || 'Umum')
   const [date, setDate] = useState(document?.date ? document.date.slice(0, 10) : new Date().toISOString().slice(0, 10))
   const [description, setDescription] = useState(document?.description || '')
   const [fileUrl, setFileUrl] = useState(document?.file_url || '')
   const [driveLink, setDriveLink] = useState(document?.drive_link || '')
   const [ticketNumber, setTicketNumber] = useState(document?.ticket_number || '')
   const [version, setVersion] = useState<number>(document?.version || 1)
+  const [eventId] = useState<string | undefined>(document?.event_id || initialData?.event_id)
 
   // New fields
   const [sender, setSender] = useState(document?.sender || '')
@@ -64,8 +67,12 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ onClose, onSuccess, documen
   useEffect(() => {
     let isMounted = true
     const fetchTicket = async () => {
-      if (!document && mode === 'create') {
-        if (type !== 'incoming') {
+      // Don't generate ticket for proposals/lpj as they might not need strictly sequential numbers or follow different format
+      if (!document && mode === 'create' && !ticketNumber) {
+        if (type === 'proposal' || type === 'lpj') {
+          // For proposal/lpj, we just set empty for now, or generated internal one on submit
+          if (isMounted) setTicketNumber('')
+        } else if (type !== 'incoming') {
           const ticket = await documentsAPI.getNextTicketNumber()
           if (isMounted) {
             setTicketNumber(ticket)
@@ -91,16 +98,18 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ onClose, onSuccess, documen
     { value: 'incoming', label: 'Surat Masuk' },
     { value: 'outgoing', label: 'Surat Keluar' },
     { value: 'report', label: 'Laporan (LPJ)' },
+    { value: 'proposal', label: 'Proposal Acara' },
+    { value: 'lpj', label: 'LPJ Acara' },
     { value: 'other', label: 'Dokumen Lain' }
   ]
 
-  const categoryOptions = ['Umum', 'Undangan', 'Peminjaman', 'Keputusan', 'Rekomendasi', 'MoU', 'SPJ', 'LPJ', 'Internal']
+  const categoryOptions = ['Umum', 'Undangan', 'Peminjaman', 'Keputusan', 'Rekomendasi', 'MoU', 'SPJ', 'LPJ', 'Proposal', 'Internal']
 
   const formTitle = useMemo(() => {
     if (isEditMode) return 'Ubah Dokumen'
     if (isRevisionMode) return `Buat Revisi v${version}`
-    return 'Buat Dokumen Baru'
-  }, [isEditMode, isRevisionMode, version])
+    return fixedType ? `Upload ${type === 'proposal' ? 'Proposal' : type === 'lpj' ? 'LPJ' : 'Dokumen'}` : 'Buat Dokumen Baru'
+  }, [isEditMode, isRevisionMode, version, fixedType, type])
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return
@@ -146,6 +155,7 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ onClose, onSuccess, documen
         sender: type === 'incoming' ? sender : undefined,
         recipient: type === 'outgoing' ? recipient : undefined,
         date_received: type === 'incoming' ? dateReceived : undefined,
+        event_id: eventId
       }
 
       if (isEditMode && document) {
@@ -158,8 +168,12 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ onClose, onSuccess, documen
       } else {
         // For incoming, use the manually entered ticket number
         // For outgoing, use generated or existing (if revision)
+        // For proposal/lpj, generate a unique ID if not provided (since hidden)
         let payloadTicket = ticketNumber
-        if (type !== 'incoming' && (!payloadTicket || payloadTicket === '')) {
+
+        if (type === 'proposal' || type === 'lpj') {
+          payloadTicket = `${type.toUpperCase()}-${new Date().getTime()}`
+        } else if (type !== 'incoming' && (!payloadTicket || payloadTicket === '')) {
           payloadTicket = documentsAPI.generateTicketNumber()
         }
 
@@ -208,7 +222,8 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ onClose, onSuccess, documen
                 required
                 value={type}
                 onChange={(e) => setType(e.target.value as any)}
-                className="w-full px-4 py-2 border border-slate-200 dark:border-[#2A2A2A] rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-[#1A1A1A] dark:text-white"
+                disabled={fixedType}
+                className={`w-full px-4 py-2 border border-slate-200 dark:border-[#2A2A2A] rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-[#1A1A1A] dark:text-white ${fixedType ? 'opacity-70 bg-slate-100 cursor-not-allowed' : ''}`}
               >
                 {typeOptions.map((option) => (
                   <option key={option.value} value={option.value}>{option.label}</option>
@@ -229,6 +244,9 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ onClose, onSuccess, documen
                 />
               </div>
 
+            </div>
+
+            {type !== 'proposal' && type !== 'lpj' && (
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nomor Surat</label>
                 <input
@@ -248,7 +266,7 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ onClose, onSuccess, documen
                       : 'Nomor surat digenerate otomatis.'}
                 </p>
               </div>
-            </div>
+            )}
 
             {/* Conditional Fields based on Type */}
             {type === 'incoming' && (
@@ -427,7 +445,7 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ onClose, onSuccess, documen
         </div>
       </div>
     </div>,
-    document.body
+    window.document.body
   )
 }
 

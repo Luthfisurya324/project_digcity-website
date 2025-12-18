@@ -464,7 +464,7 @@ const SanctionsSection: React.FC<{
 
   const addSanction = async () => {
     try {
-      const created = await memberSanctionsAPI.create({
+      await memberSanctionsAPI.create({
         member_id: memberId,
         sanction_status: sanctionStatus,
         sanction_date: sanctionDate ? new Date(sanctionDate).toISOString().slice(0, 10) : undefined,

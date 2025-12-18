@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { supabaseConfig, validateSupabaseConfig } from '../config/supabaseConfig'
 import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js'
+import { logErrorIfNeeded } from './errorHandler'
 
 // Validasi konfigurasi Supabase
 if (!validateSupabaseConfig()) {
@@ -123,7 +124,7 @@ export interface Document {
   id: string
   ticket_number: string
   title: string
-  type: 'incoming' | 'outgoing' | 'report' | 'other'
+  type: 'incoming' | 'outgoing' | 'report' | 'proposal' | 'lpj' | 'other'
   category: string
   date: string
   description?: string
@@ -137,6 +138,7 @@ export interface Document {
   sender?: string
   recipient?: string
   date_received?: string
+  event_id?: string
 }
 
 export interface OrganizationMember {
@@ -1214,20 +1216,67 @@ export const attendanceAPI = {
     if (error) throw error
     return data as Attendance[]
   },
-
-  // Recent attendance entries for analytics
+  // Recent attendance entries for analytics - fetches ALL records using pagination
   async getRecentAttendance(rangeDays: number = 90) {
     const since = new Date()
     since.setDate(since.getDate() - rangeDays)
 
-    const { data, error } = await supabase
-      .from('attendance')
-      .select('*')
-      .gte('check_in_time', since.toISOString())
-      .limit(50000)
+    // Use pagination to get ALL records (bypass 1000 row limit)
+    const PAGE_SIZE = 1000
+    let allData: Attendance[] = []
+    let from = 0
+    let hasMore = true
 
-    if (error) throw error
-    return data as Attendance[]
+    while (hasMore) {
+      const { data, error } = await supabase
+        .from('attendance')
+        .select('*')
+        .gte('check_in_time', since.toISOString())
+        .order('check_in_time', { ascending: false })
+        .range(from, from + PAGE_SIZE - 1)
+
+      if (error) throw error
+
+      if (data && data.length > 0) {
+        allData = [...allData, ...data]
+        from += PAGE_SIZE
+        hasMore = data.length === PAGE_SIZE // Continue if we got full page
+      } else {
+        hasMore = false
+      }
+    }
+
+    console.log(`Fetched ${allData.length} attendance records (paginated)`)
+    return allData as Attendance[]
+  },
+
+  // Get all attendance records without date filter - with pagination
+  async getAllAttendance() {
+    const PAGE_SIZE = 1000
+    let allData: Attendance[] = []
+    let from = 0
+    let hasMore = true
+
+    while (hasMore) {
+      const { data, error } = await supabase
+        .from('attendance')
+        .select('*')
+        .order('check_in_time', { ascending: false })
+        .range(from, from + PAGE_SIZE - 1)
+
+      if (error) throw error
+
+      if (data && data.length > 0) {
+        allData = [...allData, ...data]
+        from += PAGE_SIZE
+        hasMore = data.length === PAGE_SIZE
+      } else {
+        hasMore = false
+      }
+    }
+
+    console.log(`Fetched ALL ${allData.length} attendance records (paginated)`)
+    return allData as Attendance[]
   }
 }
 
@@ -1644,7 +1693,7 @@ export const auditAPI = {
       if (error) throw error
       return data as AuditLog[]
     } catch (err) {
-      console.warn('Audit list error:', err)
+      logErrorIfNeeded('AuditLog', 'list', err)
       return []
     }
   }
@@ -1665,7 +1714,7 @@ export const notificationsAPI = {
       if (error) throw error
       return data as NotificationItemDB
     } catch (err) {
-      console.warn('Notifications insert error:', err)
+      logErrorIfNeeded('Notifications', 'create', err)
       return null
     }
   },
@@ -1680,7 +1729,7 @@ export const notificationsAPI = {
       if (error) throw error
       return data as NotificationItemDB[]
     } catch (err) {
-      console.warn('Notifications list error:', err)
+      logErrorIfNeeded('Notifications', 'list', err)
       return []
     }
   },
@@ -1692,7 +1741,7 @@ export const notificationsAPI = {
         .eq('id', id)
       if (error) throw error
     } catch (err) {
-      console.warn('Notifications markRead error:', err)
+      logErrorIfNeeded('Notifications', 'markRead', err)
     }
   }
 }
